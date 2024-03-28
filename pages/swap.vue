@@ -117,7 +117,7 @@
       >
         <h5 class="mb-0 d-flex align-center" style="gap: 5px">
           FEE ESTIMADO
-          <img src="@/assets/sources/icons/warning-blue.svg" alt="info">
+          <img src="@/assets/sources/icons/warning-orange.svg" alt="info">
         </h5>
         
         <div class="d-flex flex-column align-end">
