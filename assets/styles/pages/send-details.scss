@@ -1,0 +1,51 @@
+#send-details {
+  @include parent;
+  padding-inline: var(--margin-global);
+
+
+  h5 {
+    --fw: 700;
+    --fs: 12px;
+    color: #333;
+    font-family: var(--font2);
+    line-height: normal;
+    text-transform: uppercase;
+  }
+
+
+  h2 {
+    --fw: 700;
+    --fs: 48px;
+    color: #000;
+    text-align: center;
+    line-height: 1.15ch;
+    margin-block: 64px 25px;
+    display: flex;
+    flex-direction: column;
+
+
+    span {
+      --fw: 700;
+      font-size: 16px !important;
+      color: #000;
+      text-align: center;
+      line-height: normal;
+      letter-spacing: 1.76px !important;
+      text-transform: uppercase;
+    }
+  }
+
+  .v-input input { text-align: right }
+
+  .card-common-payee {
+    span {
+      --fw: 700;
+      color: #333;
+      font-family: var(--font2);
+      font-size: 10px !important;
+      line-height: normal;
+
+      + span { --fw: 500 }
+    }
+  }
+}

@@ -1,0 +1,203 @@
+// @use "mixins" as *;
+@import '~vuetify/src/styles/styles.sass';
+@import "mixins";
+
+//========== Variables ==========//
+:root {
+  //------- color -------//
+  --error: #ff4081;
+  --warning: #FFC260;
+  --success: #3CD4A0;
+  --c: var(--text);
+  //------- themes -------//
+  &.light {
+    // default color
+    --primary: #ED6D05;
+    --secondary: #DEE6EA;
+    --accent: rgb(176, 114, 0);
+    --active: var(--primary);
+    --gradient: linear-gradient(to right top,#356D74,#2A505C,#21394A,#1A293D,#172035,#161D33,#161E34,#192539,#1E3143,#244251,#2D5862,#387378,#449492,#53B9B1,#63E2D2);
+    --bg-app: #F6F5F5;
+    --text: #000;
+    --text2: #333;
+    --hover: hsl(288 90% 10%);
+    --scroll: var(--primary);
+    --bg-scroll: var(--secondary);
+    // cards
+    --card: #F6F5F5;
+    --card-2: #DEE6EA;
+    --border: #7C7B7F;
+    // buttons
+    --btn: var(--primary);
+    /*--btn-pressed: #AD0FD5;
+    --btn-inactive: #AD0FD5;*/
+    --text-btn: #000000;
+    // badge
+    --badge: var(--primary);
+    --text-text-badge: #000000;
+    // line
+    --line: hsl(59, 83%, 53%, .5);
+  }
+  &.dark {
+    // default color
+    --primary: #ED6D05;
+    --secondary: #DEE6EA;
+    --accent: rgb(176, 114, 0);
+    --active: var(--primary);
+    --gradient: linear-gradient(to right top,#356D74,#2A505C,#21394A,#1A293D,#172035,#161D33,#161E34,#192539,#1E3143,#244251,#2D5862,#387378,#449492,#53B9B1,#63E2D2);
+    --bg-ap: #F6F5F5;
+    --text: #FFFFFF;
+    --hover: hsl(288 90% 90%);
+    --scroll: var(--primary);
+    --bg-scroll: var(--secondary);
+    // cards
+    --card: #191919;
+    --border: #7C7B7F;
+    // buttons
+    --btn: var(--primary);
+    /*--btn-pressed: #AD0FD5;
+    --btn-inactive: #AD0FD5;*/
+    --text-btn: #FFFFFF;
+    // badge
+    --badge: var(--primary);
+    --text-text-badge: #000000;
+    // line
+    --line: hsl(59, 83%, 53%, .5);
+  }
+  //------- fonts -------//
+  --font1: 'Montserrat', sans-serif;
+  --font2: 'Karla', sans-serif;
+  --fw: initial;
+  //------- sizes -------//
+  --resizer: clamp(12px, 1vw, 16px);
+  --resizer-mobile: clamp(10px, 1.5vw, 12px);
+  --margin-header: 50px;
+  --margin-footer: 100px;
+  --margin-global: 37px;
+  @include media(max, xx-small) { --margin-global: 27px }
+  --margin-global: 37px; // too can use 6em
+  // @include media(max, small) {--margin-global: clamp(37px, 5vw, 4em)}
+  --parent: 400px; //1600px;
+  --subparent: 1900px;
+  --h-navbar: 100px;
+  --w-scroll: 8px;
+  //------- shadows -------//
+  --sombra-filter: drop-shadow(0px 4px 1px rgba(0, 0, 0, 0.3));
+  --sombra-card: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  --sombra-btn: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+//========== Sidebar ==========//
+$drawer-items-padding:                     32px !default;
+$navigation-drawer-mini-variant-width:     96px!important;
+
+//========== Layout ==========//
+$body-bg: #20232C !default;
+$content-padding:                           24px;
+$sombra-filter: drop-shadow(0px 4px 1px rgba(0, 0, 0, 0.3));
+
+//========== Colors ==========//
+$primary:           #ED6D05;
+$secondary:         #DEE6EA;
+$accent:            #b07200;
+$error:             #ff4081;
+$warning:           #FFC260;
+$success:           #3CD4A0;
+$info:              #9013FE;
+$label:             #6e6e6e;
+$text-grey:         #b9b9b9;
+$title-grey:        #4a4a4a;
+$btn:           #EAE823;
+// $btn-pressed:   #AD0FD5;
+// $btn-inactive:  #AD0FD5;
+$text-btn:      #000000;
+$card:          hsl(210, 48%, 13%, .45);
+$border:        #7C7B7F;
+$line:          hsl(59, 83%, 53%, .5);
+$gradient:      linear-gradient(to right top,#356D74,#2A505C,#21394A,#1A293D,#172035,#161D33,#161E34,#192539,#1E3143,#244251,#2D5862,#387378,#449492,#53B9B1,#63E2D2);
+$hover:         hsl(288 90% 10%);
+$card-title-color:  $label;
+
+//========== Typography ==========//
+$h1-font-size:                3rem !default;      // 28px
+$h2-font-size:                2rem !default;       // 24px
+$h3-font-size:                1.64rem !default;     // 22px
+$h4-font-size:                1.5rem !default;     // 20px
+$h5-font-size:                1.285rem !default;         // 16px
+$h6-font-size:                1.142rem !default;     // 14px
+
+//========== Card ==========//
+$card-shadow: 0 3px 11px 0 #111011, 0 3px 3px -2px #B2B2B21A, 0 1px 8px 0 #9A9A9A1A;
+$sombra-card: 0px 4px 4px rgba(0, 0, 0, 0.25);
+$border-card: 20px;
+
+//========== Buttons ==========//
+$button-shadow: 0px 3px 11px 0px #E8EAFC, 0 3px 3px -2px #B2B2B21A, 0 1px 8px 0 #9A9A9A1A;
+$sombra-btn: 0px 4px 4px rgba(0, 0, 0, 0.25);
+$border-btn: 10px;
+
+//========== boxes ==========//
+$clip-path: polygon(
+  0% var(--c-size),
+  var(--c-size) var(--c-size),
+  var(--c-size) 0%,
+  calc(100% - var(--c-size)) 0%,
+  calc(100% - var(--c-size)) var(--c-size),
+  100% var(--c-size),
+  100% calc(100% - var(--c-size)),
+  calc(100% - var(--c-size)) calc(100% - var(--c-size)),
+  calc(100% - var(--c-size)) 100%,
+  var(--c-size) 100%,
+  var(--c-size) calc(100% - var(--c-size)),
+  0% calc(100% - var(--c-size))
+);
+$clip-path-top: polygon(
+  0% var(--c-size),
+  var(--c-size) var(--c-size),
+  var(--c-size) 0%,
+  calc(100% - var(--c-size)) 0%,
+  calc(100% - var(--c-size)) var(--c-size),
+  100% var(--c-size),
+  100% 100%,
+  0% 100%
+);
+$clip-path-bottom: polygon(
+  0% 0%,
+  100% 0%,
+  100% calc(100% - var(--c-size)),
+  calc(100% - var(--c-size)) calc(100% - var(--c-size)),
+  calc(100% - var(--c-size)) 100%,
+  var(--c-size) 100%,
+  var(--c-size) calc(100% - var(--c-size)),
+  0% calc(100% - var(--c-size))
+);
+
+//========== Hover ==========//
+$ease: cubic-bezier(0.23, 1, 0.32, 1);
+$ease-return: cubic-bezier(0.445, 0.05, 0.55, 0.95);
+$ease-slide: cubic-bezier(0.4, 0.1, 0.7, 0.95);
+$skew-right: skewX(12deg) translateX(1px);
+$skew-left: skewX(-12deg) translateX(-1px);
+
+
+//========== custome classes ==========//
+.clr_primary {background-color: var(--primary) !important}
+.clr_secondary {background-color: var(--secondary) !important}
+.clr_accent {background-color: var(--accent) !important}
+//
+.text {color: var(--text) !important}
+.clr_btn {background-color: var(--btn) !important}
+.clr_btn_pressed {background-color: var(--btn-pressed) !important}
+.clr_btn_inactive {background-color: var(--btn-inactive) !important}
+.clr_text_btn {color: var(--text-btn) !important}
+.clr_card {background-color: var(--card) !important}
+.clr_svg {fill: var(--text) !important}
+.flr {filter: invert(100%) !important}
+.flr_inv {filter: invert(0%) !important}
+.gradient {background: var(--gradient) !important}
+.clr_card_2 {background-color: var(--card-2) !important}
+
+//========== custome mixins ==========//
+
+//========== other global vars ==========//
+

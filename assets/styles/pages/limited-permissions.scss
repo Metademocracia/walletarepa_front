@@ -1,0 +1,75 @@
+#limited-permissions {
+  @include parent;
+  padding-inline: var(--margin-global);
+
+
+  h5 {
+    --fw: 700;
+    --fs: 10px;
+    color: #000;
+    font-family: var(--font2);
+    line-height: normal;
+    text-transform: none;
+
+    &::first-letter { text-transform: none !important }
+  }
+
+
+  ul {
+    --h-check: 40px;
+    padding-left: calc(40px + 8px);
+
+    li {
+      position: relative;
+
+      span {
+        font-weight: 500 !important;
+        color: #333;
+        font-family: var(--font2) !important;
+        font-size: 10px;
+        line-height: normal;
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+      }
+      list-style-image: url(../../sources/icons/checked.svg);
+
+      &.unchecked {
+        span { color: #8C8C8C !important }
+        list-style-image: url(../../sources/icons/unchecked.svg);
+      }
+    }
+  }
+
+
+  .v-card {
+    --br: 20px;
+    --bg: var(--secondary);
+    --b-color: #D1C4E8;
+    padding: 5px 24px;
+    display: flex;
+
+    a {
+      --tt: lowercase;
+      --fw: 700;
+      font-size: 12px;
+      line-height: normal;
+    }
+
+    p {
+      --tt: none;
+      --fs: 10px;
+    }
+
+    label {
+      --fw: 700;
+      --fs: 12px;
+      --tt: uppercase;
+      font-family: var(--font2);
+      line-height: normal;
+    }
+  }
+
+  > aside .v-btn { max-width: 153px }
+}

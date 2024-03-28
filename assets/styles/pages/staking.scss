@@ -1,0 +1,86 @@
+#staking {
+  @include parent;
+  padding-inline: var(--margin-global);
+
+
+  &-header {
+
+    .v-card {
+      --br: 20px;
+      padding: 22px;
+
+      span {
+        --fw: 400;
+        --fs: 10px;
+        color: #333;
+        font-family: var(--font2);
+        letter-spacing: normal !important;
+        line-height: normal;
+        text-transform: none;
+      }
+    }
+  }
+
+
+  &-tokens {
+    margin-block: 34px;
+    gap: 18px;
+
+    .token-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      h5 {
+        --fw: 700;
+        --fs: 12px;
+        color: #333;
+        font-family: var(--font2);
+        line-height: normal;
+        text-transform: uppercase;
+        max-width: 100px;
+        display: flex;
+        align-items: center;
+      }
+
+      span { font-family: var(--font2) }
+
+      span:first-child {
+        --fw: 700;
+        --fs: 12px;
+        color: var(--primary);
+        text-align: right;
+        line-height: normal;
+
+        + span {
+          --fw: 500;
+          --fs: 10px;
+          color: #333;
+          text-align: right;
+          line-height: normal;
+        }
+      }
+    }
+  }
+
+
+  &-stake {
+    --br: 20px;
+    align-items: center;
+    justify-content: center;
+    min-height: 107px;
+    padding: 29px 20px 20px;
+    background-color: var(--secondary) !important;
+
+    p {
+      --fw: 500;
+      --fs: 10px;
+      color: #333;
+      font-family: var(--font2);
+      text-align: center;
+      line-height: normal;
+    }
+
+    .v-btn { background-color: var(--secondary) !important }
+  }
+}

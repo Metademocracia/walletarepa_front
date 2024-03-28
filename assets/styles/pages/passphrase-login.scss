@@ -1,0 +1,21 @@
+#passphrase-login {
+  @include parent;
+  padding-inline: var(--margin-global);
+  margin-bottom: var(--margin-footer);
+
+  &-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .container-words {
+      height: 495px;
+      overflow: auto;
+      margin-block: 20px;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+  }
+}

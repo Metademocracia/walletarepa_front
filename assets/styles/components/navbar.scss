@@ -1,0 +1,26 @@
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // /
+// // // navbar // // // 
+// // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // /
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+
+  .container-btns {
+    display: flex;
+    gap: 15px;
+
+    [data-avatar] {
+      --size: 31px;
+      --bg: transparent;
+      border: 1px solid var(--primary);
+      overflow: hidden;
+
+      img {
+        --w: 100%;
+        object-fit: cover;
+      }
+    }
+  }
+}

@@ -1,0 +1,52 @@
+#passphrase {
+  @include parent;
+  padding-inline: var(--margin-global);
+  margin-bottom: var(--margin-footer);
+
+  &-content {
+    width: 100%;
+
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 25px;
+      margin-top: 20px;
+      margin-bottom: 30px;
+      counter-reset: section;
+    }
+
+    .btn-outlined {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      min-width: 123px;
+      position: relative;
+
+      &::before {
+        --size: 27px;
+        --distance: -8px;
+        
+        counter-increment: section;
+        content: counter(section);
+        position: absolute;
+        top: var(--distance);
+        left: var(--distance);
+        width: var(--size);
+        height: var(--size);
+        border-radius: 50%;
+        background-color: var(--card);
+        border: 1px solid var(--text);
+        color: var(--primary);
+        text-align: center;
+        font-family: var(--font1);
+        font-size: 16px;
+        font-weight: 700 !important;
+      }
+    }
+  }
+
+  &-footer-content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+}

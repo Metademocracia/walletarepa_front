@@ -1,0 +1,96 @@
+#approve-transaction {
+  @include parent;
+  padding-inline: var(--margin-global);
+
+
+  h5 {
+    --fw: 700;
+    --fs: 10px;
+    color: #000;
+    font-family: var(--font2);
+    line-height: normal;
+    text-transform: none;
+
+    &::first-letter { text-transform: none !important }
+  }
+  
+
+  h2 {
+    --fw: 700;
+    --fs: 48px;
+    color: #000;
+    text-align: center;
+    line-height: 1.15ch;
+    display: flex;
+    flex-direction: column;
+
+
+    span {
+      --fw: 700;
+      font-size: 16px !important;
+      color: #000;
+      text-align: center;
+      line-height: normal;
+      letter-spacing: 1.76px !important;
+      text-transform: uppercase;
+    }
+
+    + span {
+      --fw: 700 !important;
+      color: #333 !important;
+      text-align: center;
+      font-family: var(--font2);
+      font-size: 12px !important;
+      line-height: normal;
+    }
+  }
+
+
+  .v-card {
+    --br: 20px;
+    --bg: var(--secondary);
+    --b-color: #D1C4E8;
+    padding: 5px 20px 5px 24px;
+    display: flex;
+    gap: 10px;
+
+    span {
+      font-size: 12px;
+      --ls: normal;
+      --tt: none;
+    }
+
+    label {
+      --fw: 700;
+      --fs: 12px;
+      --tt: uppercase;
+      font-family: var(--font2);
+      line-height: normal;
+    }
+  }
+
+  > aside .v-btn { max-width: 153px }
+}
+
+
+.approve-transaction-info-modal {
+  .v-select {
+    flex-grow: 0;
+
+    .v-input__slot { min-height: 40px !important }
+
+    .v-select__selection { min-width: max-content }
+
+    input { display: none }
+  }
+}
+
+.aprove-transaction-info-menu .v-list {
+  background-color: var(--card) !important;
+  border: 1px solid #000;
+
+  .v-list-item__title {
+    letter-spacing: normal;
+    font-weight: 500 !important;
+  }
+}

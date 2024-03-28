@@ -1,0 +1,64 @@
+#login-with-gmail {
+  @include parent;
+  padding-inline: var(--margin-global);
+  margin-bottom: var(--margin-footer);
+
+  &-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+
+    .account .v-btn__content {
+      justify-content: space-between;
+
+      .v-image .v-image__image { border-radius: 50% }
+
+      span {
+        font-family: var(--font2);
+ 
+        &:first-child {
+          color: #000;
+          font-size: 10px !important;
+          font-weight: 700 !important;
+          line-height: normal !important;
+          letter-spacing: 3.9px !important;
+          text-transform: uppercase;
+
+          & + span {
+            color: #7C7B7F;
+            font-size: 10px !important;
+            font-weight: 400 !important;
+            letter-spacing: normal !important;
+            line-height: normal !important;
+            text-transform: none !important;
+          }
+        }
+      }
+    }
+
+    article {
+      --br: 20px;
+      margin-top: 40px;
+      display: flex;
+      gap: 10px;
+      padding: 13px 12px;
+
+      p {
+        --text: #333;
+        --ls: normal;
+        --tt: none;
+        --fw: 400;
+        --fs: 9px;
+        --ff: var(--font2);
+        span {
+          --text: var(--primary);
+          font-family: var(--font2);
+          font-size: 9px !important;
+          font-weight: 400 !important;
+          letter-spacing: normal !important;
+        }
+      }
+    }
+  }
+}

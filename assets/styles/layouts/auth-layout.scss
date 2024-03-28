@@ -1,0 +1,68 @@
+#auth-layout {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  
+  .ball-decoration {
+    &-1 {
+      position: absolute;
+      top: 30px;
+      right: 0px;
+      width: 186px;
+      height: 186px;
+      background-color: hsl(27, 96%, 47%, .15);
+      filter: blur(8px);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    &-2 {
+      position: absolute;
+      left: -20px;
+      bottom: 50px;
+      width: 137px;
+      height: 137px;
+      background-color: hsl(27, 96%, 47%, .19);
+      filter: blur(8px);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    &-3 {
+      position: absolute;
+      right: var(--margin-global);
+      bottom: 10px;
+      width: 45px;
+      height: 45px;
+      background: var(--primary);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+  }
+
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: center no-repeat url(../../sources/images/background.png) !important;
+    background-size: cover !important;
+  }
+
+  &-background {
+    position: absolute;
+    top: calc(var(--margin-header) + 10px /* 70px <-- old */);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  //- responsive font size -//
+  & > * {
+    font-size: var(--resizer);
+  }
+  .v-main {
+    & > * {
+      @include media(max, small) {
+        font-size: var(--resizer-mobile)
+      }
+    }
+  }
+}

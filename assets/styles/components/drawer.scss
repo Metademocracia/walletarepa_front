@@ -1,0 +1,128 @@
+$dotSize: 31px;
+$iconSize: 16px;
+
+$xAxis: calc((50vw - #{$dotSize / 2}) + (min(var(--parent), 100%) / 2 - (var(--margin-global) + var(--w-scroll)) + 3px));
+$yAxis: calc(var(--margin-header) + 16px);
+
+
+#drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  isolation: isolate;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+  pointer-events: none;
+  clip-path: circle(16px at $xAxis $yAxis);
+  transition:
+    clip-path .8s cubic-bezier(0.86, 0, 0.07, 1),
+    background-color .65s cubic-bezier(0.86, 0, 0.07, 1);
+
+  &::-webkit-scrollbar { background-color: var(--secondary) }
+
+
+  &__wrapper {
+    @include parent;
+    padding-inline: var(--margin-global);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin-top: 50px;
+    padding-bottom: 20px;
+    gap: 53px;
+    opacity: 0;
+    transition: all .8s cubic-bezier(0.86, 0, 0.07, 1);
+
+
+    label {
+      --fw: 700;
+      --fs: 12px;
+      color: #333;
+      font-family: var(--font2);
+      line-height: normal;
+      text-transform: uppercase;
+    }
+
+    h5 {
+      --fw: 700;
+      --fs: 10px;
+      color: #000;
+      font-family: var(--font2);
+      line-height: normal;
+      text-transform: none !important;
+    }
+  }
+
+
+  &__ring {
+    --btn-size: 40px;
+    --rest: 15px;
+    --width: 310px;
+
+    max-width: var(--width);
+    height: 454px;
+    margin-left: auto;
+    position: relative;
+
+    .action-btn { position: absolute }
+    
+    .action-btn:first-child { top: 0; right: 0 }
+    .action-btn:last-child { bottom: 0; right: 0 }
+
+    --second-size: 3px;
+    .action-btn:nth-child(2) { top: calc(var(--btn-size) + var(--second-size)); right: 100px }
+    .action-btn:nth-last-child(2) { bottom: calc(var(--btn-size) + var(--second-size) - var(--rest)); right: 100px }
+    
+    --third-size: 70px;
+    .action-btn:nth-child(3) { top: calc(var(--btn-size) + var(--second-size) + var(--third-size)); right: 170px }
+    .action-btn:nth-last-child(3) { bottom: calc(var(--btn-size) + var(--second-size) + var(--third-size) - var(--rest)); right: 170px }
+
+    .action-btn:nth-child(4) { top: calc(50% - var(--btn-size) / 2); right: 195px }
+  }
+
+
+  
+  &::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: center no-repeat url(../../sources/images/background.png);
+    background-size: cover;
+    opacity: 0;
+    z-index: -2;
+    pointer-events: none;
+    transition: all .8s cubic-bezier(0.86, 0, 0.07, 1);
+  }
+
+
+  &-background {
+    position: absolute;
+    top: -83px;
+    left: 50%;
+    transform: translateX(-29%);
+    width: 736px;
+    pointer-events: none;
+    z-index: -1;
+
+    opacity: 0;
+    transition: all .8s cubic-bezier(0.86, 0, 0.07, 1);
+  }
+
+
+  &.opened {
+    background-color: var(--bg-app);
+    clip-path: circle(75% at 50vw 50vh);
+    pointer-events: all;
+
+    > * { opacity: 1 }
+
+    &::after { opacity: 0.5 }
+
+    #drawer__wrapper {
+      animation: movedown .4s ease;
+      animation-delay: 100ms;
+    }
+  }
+}

@@ -1,0 +1,150 @@
+// @forward "base";
+// @forward "default-settings";
+// @forward "mixins";
+// @forward "personal-classes";
+// @forward "responsive";
+// @forward "variables";
+// @use "mixins" as *;
+// @use "variables" as *;
+@import "default-settings";
+@import "vuetify-settings";
+@import "mixins";
+@import "custom-mixins";
+@import "personal-classes";
+@import "responsive";
+@import "variables";
+@import "fonts";
+@import "typography";
+
+
+
+//===================================== global ======================================//
+
+.ellipsis-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all !important;
+}
+.ellipsis-box {
+  --lines: initial;
+
+  display: -webkit-box;
+  -webkit-line-clamp: var(--lines);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+//- menu select (desplegable menu) -//
+.v-menu__content {
+  overscroll-behavior: contain;
+
+  .v-list-item {
+    &__title {
+      color: #000 !important;
+      font-family: var(--font2);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: normal;
+      letter-spacing: 3.9px;
+      text-transform: uppercase;
+    }
+
+    &--active {
+      
+      .v-list-item__title { color: #fff !important }
+      background-color: var(--primary) !important;
+    }
+  }
+}
+
+.btn-icon {
+  --size: 31px;
+  --c: #fff !important;
+
+  background-color: var(--bg, var(--primary)) !important;
+  border-radius: var(--br, 50%) !important;
+  min-width: var(--size) !important;
+  width: var(--size) !important;
+  min-height: var(--size) !important;
+  height: var(--size) !important;
+  padding: var(--p, 0) !important;
+  border: var(--b, none);
+}
+
+.btn-icon-shadow {
+  --size: 31px;
+  --c: #fff !important;
+
+  background-color: var(--bg, var(--primary)) !important;
+  border-radius: var(--br, 50%) !important;
+  min-width: var(--size) !important;
+  width: var(--size) !important;
+  min-height: var(--size) !important;
+  height: var(--size) !important;
+  padding: var(--p, 0) !important;
+  border: var(--b, none);
+  filter: var(--f, drop-shadow(0px 4px 1px rgba(0, 0, 0, 0.25))) !important;
+}
+
+.btn {
+  --h: 45px;
+  --fw: 700;
+  --tt: uppercase;
+
+  min-height: var(--h);
+  background: var(--bg, #ED6D05) !important;
+  border-radius: var(--br, 40px) !important;
+  filter: drop-shadow(0px 6px 1px rgba(0, 0, 0, 0.2)) !important;
+  span {
+    color: #fff !important;
+    font-family: var(--font2) !important;
+    font-weight: var(--fw) !important;
+    font-size: var(--fs, 10px);
+    line-height: 1 !important;
+    letter-spacing: 3.9px !important;
+    text-transform: var(--tt, uppercase);
+  }
+}
+
+.btn-outlined {
+  --h: 45px;
+  --fw: 700;
+  --tt: uppercase;
+
+  min-height: var(--h);
+  background: var(--bg, var(--card)) !important;
+  border-radius: var(--br, 40px) !important;
+  border: 1px solid var(--b-color, var(--text)) !important;
+  span {
+    color: var(--c, var(--text)) !important;
+    font-family: var(--font2) !important;
+    font-weight: var(--fw) !important;
+    font-size: var(--fs, 10px);
+    line-height: 1 !important;
+    letter-spacing: var(--ls, 3.9px) !important;
+    text-transform: var(--tt, uppercase);
+  }
+}
+
+
+.btn-outlined-2 {
+  --h: 45px;
+  --fw: 700;
+  --tt: uppercase;
+
+  min-height: var(--h);
+  background: var(--bg, var(--card-2)) !important;
+  border-radius: var(--br, 40px) !important;
+  border: 1px solid var(--b-color, var(--text)) !important;
+  span {
+    color: var(--c, var(--text)) !important;
+    font-family: var(--font2) !important;
+    font-weight: var(--fw) !important;
+    font-size: var(--fs, 10px);
+    line-height: 1 !important;
+    letter-spacing: var(--ls, 3.9px) !important;
+    text-transform: var(--tt, uppercase);
+  }
+}
+
