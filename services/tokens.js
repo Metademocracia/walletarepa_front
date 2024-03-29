@@ -263,4 +263,5 @@ export default {
   getTokenMetadata,
   getListTokensBalance,
   getInventoryUser,
+  getBalanceInitNear
 }
