@@ -206,7 +206,7 @@ import * as nearAPI from "near-api-js";
 import VueQr from 'vue-qr'
 import moment from 'moment';
 import logoWallet from "~/assets/sources/logos/logo.svg";
-// import tokens from '@/services/tokens';
+import tokens from '@/services/tokens';
 // import { configNear } from "@/services/nearConfig";
 import walletUtils from '@/services/wallet';
 const { utils } = nearAPI;
