@@ -15,20 +15,22 @@
         class="d-flex flex-column align-center"
         style="gap: 17px;"
       >
-        <v-img-ring
-          :src="item.img"
-          :alt="`${item.name}'s project`"
-          :color="item.color"
-          sizes="69px"
-        />
+        <a :href="item.url" target="_blank">
+          <v-img-ring
+            :src="item.img"
+            :alt="`${item.name}'s project`"
+            :color="item.color"
+            sizes="69px"
+          />
 
-        <span>{{ item.name }}</span>
+          <span>{{ item.name }}</span>
+        </a>
       </div>
     </section>
 
 
     <!-- explore__actions -->
-    <aside id="explore__actions" class="d-flex flex-column" style="gap: 15px; margin-block: 23px">
+    <!-- <aside id="explore__actions" class="d-flex flex-column" style="gap: 15px; margin-block: 23px">
       <v-btn class="btn">
         RECARGA TU BILLETERA
       </v-btn>
@@ -46,11 +48,11 @@
           TODOS
         </v-btn>
       </div>
-    </aside>
+    </aside> -->
 
 
     <!-- explore__cards -->
-    <section id="explore__cards">
+    <!-- <section id="explore__cards">
       <v-card
         v-for="(item, i) in dataCards" :key="i"
         class="explore-card"
@@ -68,7 +70,7 @@
 
         <p class="mb-0">{{ item.description }}</p>
       </v-card>
-    </section>
+    </section> -->
   </div>
 </template>
 
@@ -87,38 +89,33 @@ export default {
         {
           img: require("@/assets/sources/logos/metademocracia.svg"),
           name: "METADEMOCRACIA",
-          color: "#ffff"
+          color: "#ffff",
+          url: "https://dao.metademocracia.social/"
         },
         {
           img: require("@/assets/sources/logos/ref-finance.svg"),
           name: "REF FINANCE",
-          color: "#000"
+          color: "#000",
+          url: "https://app.ref.finance/"
         },
         {
           img: require("@/assets/sources/logos/paras.svg"),
           name: "PARAS",
-          color: "#0100BE"
+          color: "#0100BE",
+          url: "https://paras.id/"
         },
         {
           img: require("@/assets/sources/logos/burrow.svg"),
           name: "BURROW",
-          color: "#594A42"
+          color: "#594A42",
+          url: "https://burrow.finance/"
         },
         {
           img: require("@/assets/sources/logos/meta-pool.svg"),
           name: "META POOL",
-          color: "#745DE9"
-        },
-        {
-          img: require("@/assets/sources/logos/astro-dao.svg"),
-          name: "ASTRO DAO",
-          color: "#5F3BC8"
-        },
-        {
-          img: require("@/assets/sources/logos/rainbow-bridge.svg"),
-          name: "RAINBOW BRIDGE",
-          color: "#fff"
-        },
+          color: "#745DE9",
+          url: "https://metapool.app/"
+        }
       ],
       dataCards: [
         {
