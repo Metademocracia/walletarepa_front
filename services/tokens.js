@@ -84,6 +84,11 @@ window.addEventListener("beforeunload", () => {
   sessionStorage.clear();
 });
 
+async function getBalanceInitNear(_address) {
+  const balanceNear = await walletUtils.getBalance();
+  return balanceNear.near ? String((balanceNear.near * balanceNear.price).toFixed(2)) : 0;
+}
+
 /**
  * Retrieves a list of token balances for a given user's address.
  * @returns {Promise<Object>} The list of token balances, categorized as fungible tokens (fts) and non-fungible tokens (nfts).

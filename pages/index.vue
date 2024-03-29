@@ -315,7 +315,7 @@ export default {
     /**
      * Loads tokens and balance data from session storage.
      */
-     loadTokens() {
+    async loadTokens() {
         // console.log('Loading data...');
 
         // condition one get from session storage allTokenBalances
@@ -352,6 +352,9 @@ export default {
           // console.log('Loaded balance from session storage:', this.balance);
         } 
 
+        // Run this line only once
+        this.balance = '0...';
+        this.balance = await tokens.getBalanceInitNear(this.address);
         // Set an interval to keep checking for a balance in session storage every 5 seconds
         const intervalIdTwo = setInterval(() => {
           // console.log('Checking for balance in session storage...');
