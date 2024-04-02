@@ -81,6 +81,7 @@
 
 <script>
 import * as nearAPI from "near-api-js";
+// import tokens from '@/services/tokens';
 import { configNear } from "@/services/nearConfig";
 // import { configNear } from "@/services/nearConfig";
 import walletUtils from '@/services/wallet';
@@ -206,13 +207,37 @@ export default {
         this.envioLoading = true;
 
         if(this.tokenSymbol === "NEAR"){
-          await this.sendNear();
+          let err = false;
+          await this.sendNear().catch(error => {
+            this.$alert("error",{ desc: error })
+            err = true
+          });
+
+          if(err) {
+            this.envioLoading = false;
+            return
+          }
         } else {
-          await this.sendToken();
+          let err = false;
+          await this.sendToken().catch(error => {
+            this.$alert("error",{ desc: error })
+            err = true;
+          });
+          if(err) {
+            this.envioLoading = false;
+            return
+          }
         }
 
         this.$refs.formEnvio.reset();
+
+        sessionStorage.removeItem('allTokenBalances')
+        
+        
+
         this.envioLoading = false;
+
+        
 
         this.$router.push({ path: "/" });
       }
@@ -237,6 +262,7 @@ export default {
     },
 
     async sendNear() {
+      try {
         const account = await walletUtils.nearConnection();
         const result = await account.sendMoney(
           this.accountNear, // receiver account
@@ -251,50 +277,57 @@ export default {
 
         sessionStorage.setItem("send-result", sendResult)
         this.addRecentBaneficiary(this.accountNear)
+      } catch (error) {
+        throw new Error(error)
+      }
     },
 
     async sendToken() {
-      const account = await walletUtils.nearConnection();
-      const isActiveToken = await account.viewFunctionV1(
-        this.dataToken.contract,
-        "storage_balance_of",
-        { account_id: this.accountNear }
-      );
+      try {
+        const account = await walletUtils.nearConnection();
+        const isActiveToken = await account.viewFunctionV1(
+          this.dataToken.contract,
+          "storage_balance_of",
+          { account_id: this.accountNear }
+        );
 
-      if(!isActiveToken) {
-        const storageDepositResult = await account.functionCall({
-          contractId: this.dataToken.contract,
-          methodName: "storage_deposit",
-          args: { account_id: this.accountNear },
-          attachedDeposit: "30000000000000000"
-        });
-        
-        if(!storageDepositResult || !storageDepositResult.status?.SuccessValue) {
-          console.log("error al activar token");
-          return
+        if(!isActiveToken) {
+          const storageDepositResult = await account.functionCall({
+            contractId: this.dataToken.contract,
+            methodName: "storage_deposit",
+            args: { account_id: this.accountNear },
+            attachedDeposit: "30000000000000000"
+          });
+          
+          if(!storageDepositResult || !storageDepositResult.status?.SuccessValue) {
+            console.log("error al activar token");
+            return
+          }
         }
+
+        const result = await account.functionCall({
+          contractId: this.dataToken.contract,
+          methodName: "ft_transfer",
+          args: { 
+            receiver_id: this.accountNear,
+            amount: walletUtils.parseTokenAmount(this.amount, this.dataToken.decimals)
+          },
+          attachedDeposit: "1"
+        });
+
+        const hash = !result?.transaction.hash ? result : result?.transaction.hash;
+        const sendResult = JSON.stringify({
+          hash,
+          hashUrl: process.env.ROUTER_EXPLORER_NEAR + 'es/txns/' + hash,
+          alertType: result?.status?.SuccessValue === "" ? "success" : "error",
+        })
+
+        sessionStorage.setItem("send-result", sendResult)
+
+        this.addRecentBaneficiary(this.accountNear)
+      } catch (error) {
+        throw new Error(error)
       }
-
-      const result = await account.functionCall({
-        contractId: this.dataToken.contract,
-        methodName: "ft_transfer",
-        args: { 
-          receiver_id: this.accountNear,
-          amount: walletUtils.parseTokenAmount(this.amount, this.dataToken.decimals)
-        },
-        attachedDeposit: "1"
-      });
-
-      const hash = !result?.transaction.hash ? result : result?.transaction.hash;
-      const sendResult = JSON.stringify({
-        hash,
-        hashUrl: process.env.ROUTER_EXPLORER_NEAR + 'es/txns/' + hash,
-        alertType: result?.status?.SuccessValue === "" ? "success" : "error",
-      })
-
-      sessionStorage.setItem("send-result", sendResult)
-
-      this.addRecentBaneficiary(this.accountNear)
     },
 
 

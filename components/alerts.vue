@@ -41,7 +41,7 @@ export default {
       key, title,
       desc = `text${key.toCapitalize()}`,
       color = key === ALERT_TYPE.SUCCESS ? 'green' : key === ALERT_TYPE.ERROR ? 'rgb(200, 0, 0)' : 'yellow',
-      timeout = 5000, centered = true, top = true, bottom, left, right
+      timeout = 500000, centered = true, top = true, bottom, left, right
     ) {
       // // create alert
       const alert = {
@@ -51,7 +51,7 @@ export default {
       if (alert.bottom) {alert.top = false}
       this.dataAlerts.push(alert)
       // clear alerts
-      setTimeout(() => this.dataAlerts.shift(), timeout);
+      // setTimeout(() => this.dataAlerts.shift(), timeout);
     },
   }
 };

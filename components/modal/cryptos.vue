@@ -181,7 +181,7 @@ export default {
         // console.log('Loaded data from session storage:', inventory);
       } else {
         // Otherwise, fetch the inventory from the API
-        inventory = await tokens.getListTokensBalance();
+        inventory = await tokens.updateBalanceLocalStorage(); // await tokens.getListTokensBalance();
         // console.log('Fetched data from API:', inventory);
       }
 
@@ -191,23 +191,25 @@ export default {
       }
 
       // Sort the inventory array based on token values from more to less
-      inventory.fts.sort((a, b) => {
+      /* inventory.fts.sort((a, b) => {
         // Compare the balance_usd property of each token object
         return b.balance_usd - a.balance_usd;
-      });
+      }); */
 
       this.tokensData = inventory.fts;
+
+      
       // console.log('Sorted data:', this.tokensData);
 
       // Sum all balances
-      let totalBalance = 0;
+      /* let totalBalance = 0;
       for (const token of this.tokensData) {
         totalBalance += Number(token.balance_usd);
-      }
+      } */
       // console.log('Total balance:', totalBalance);
 
       // Store the total balance in session storage
-      sessionStorage.setItem('balance', totalBalance.toFixed(2));
+      // sessionStorage.setItem('balance', totalBalance.toFixed(2));
       // console.log('Stored total balance in session storage:', totalBalance);
 
       this.loading = false;
