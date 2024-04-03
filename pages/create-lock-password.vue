@@ -126,7 +126,7 @@ export default {
       try {
         const account = localStorageUser.getAccount(address)
 
-        if (!account.privateKey.startsWith('ed25519:')) {
+        if (!account.publicKey.startsWith('ed25519:')) {
           return this.$router.push("/")
         }
       } catch (error) {

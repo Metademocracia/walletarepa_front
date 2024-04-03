@@ -98,7 +98,7 @@ export default {
 
         if (!privateKey || !publicKey) return this.$alert('error', {desc: "La contraseña no coincide"})
 
-        if (!privateKey.startsWith('ed25519:') || !publicKey.startsWith('ed25519:')) {
+        if (!publicKey.startsWith('ed25519:') || !publicKey.startsWith('ed25519:')) {
           return this.$alert('error', {desc: "La contraseña no coincide"})
         }
 
