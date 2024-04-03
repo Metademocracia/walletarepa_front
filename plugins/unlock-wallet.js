@@ -12,7 +12,7 @@ export default function ({ redirect, route }) {
     try {
         const account = localStorageUser.getAccount(address);
 
-        if (account.publicKey.startsWith("ed25519:") && account.privateKey.length > 100) {
+        if (account.publicKey.startsWith("ed25519:") && account.privateKey.length < 100) {
             localStorage.setItem("privateKey", account.privateKey);
             localStorage.setItem("publicKey", account.publicKey);
         } else {
