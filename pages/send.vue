@@ -6,10 +6,13 @@
         @on-selected-coin="coin => selectToken(coin)"
       ></ModalCryptos>
 
-      <Header
-        :show-prepend="false"
-        show-append
-      ></Header>
+      <Header show-append>
+      <template #prepend>
+        <nuxt-link :to="localePath('/')">
+          <img src="@/assets/sources/logos/logo.svg" alt="logo" style="--w: 34px">
+        </nuxt-link>
+      </template>
+    </Header>
 
       <!--<aside class="d-flex" style="gap: 12px; margin-top: 26px;">
         <v-btn class="btn-outlined flex-grow-1" style="--bg: var(--secondary);">
@@ -81,6 +84,8 @@
           </v-btn>
         </aside>
       </section>
+      
+      <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto mt-16 mb-8" style="width: 200px">
     </div>
   </v-form>
 </template>

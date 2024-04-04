@@ -17,7 +17,7 @@
       <a :href="hashUrl" target="_blank">{{ hash }}</a>
     </v-alert> -->
 
-    <Header show-append>
+    <Header show-append show-logotype>
       <template #prepend>
         <nuxt-link :to="localePath('/')">
           <img src="@/assets/sources/logos/logo.svg" alt="logo" style="--w: 34px">
@@ -74,7 +74,7 @@
           class="btn-outlined"
           @click="openExplorer()"
         >
-        explorar <span data-inner>near</span>
+        IR A <span data-inner>AREPADAO</span>
         </v-btn>
 
         <v-btn
@@ -85,10 +85,10 @@
         </v-btn>
 
         <article class="btn-outlined">
-          ¡Gana, acuña y juega! Descubre el ecosistema de aplicaciones NEAR
+          ¡Un ciudadano!<br>¡Una voz!<br>¡Un voto!
         </article>
 
-        <img src="@/assets/sources/images/background-explore.svg" alt="explore background">
+        <img src="@/assets/sources/images/background-explore-arepa.svg" alt="explore arepa background">
       </div>
     </section>
 

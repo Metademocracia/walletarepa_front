@@ -60,9 +60,7 @@
     </section>
 
     <Footer ref="footer">
-      <span class="text" style="--text: var(--text2)">¿NECESITAS AYUDA?
-        <a style="--fw: 700" href="#" target="_blank">SOPORTE</a>
-      </span>
+      <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto" style="width: 200px">
     </Footer>
 
   </div>

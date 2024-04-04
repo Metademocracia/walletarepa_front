@@ -1,5 +1,5 @@
 <template>
-  <div id="security">
+  <div id="security" class="d-flex flex-column">
     <Header
       show-append
       :top-text="`SEGURIDAD &`"
@@ -73,7 +73,7 @@
     <v-card
       v-for="(item, i) in options" :key="i"
       class="btn-outlined d-flex align-center justify-space-between"
-      style="--br: 20px; padding: 22px 17px; gap: 19px; background-color: var(--secondary) !important; margin-bottom: 27px;"
+      style="--br: 20px; padding: 22px 17px; gap: 19px; background-color: var(--secondary) !important"
     >
       <div class="d-flex" style="gap: 5px;">
         <div class="d-flex flex-column" style="max-width: 126px;">
@@ -118,6 +118,8 @@
         eliminar cuenta
       </v-btn>
     </div>
+
+    <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto mt-16 mb-8" style="width: 200px">
   </div>
 </template>
 

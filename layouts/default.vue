@@ -8,8 +8,10 @@
       id="default-layout-background"
       :src="
         require(`~/assets/sources/images/circle${
-          $route.path === '/document-transfer' ? '-bubbles' : ''
+          bgLogo.includes($route.path) ? '-logo'
+          : bgBubbles.includes($route.path) ? '-bubbles' : ''
         }.svg`)"
+      :class="{ opacity: bgOpacity.includes($route.path) }"
       alt="background"
     >
 
@@ -34,6 +36,15 @@ export default {
   middleware: ['lock-password'],
   data() {
     return {
+      bgOpacity: [
+        '/account-details'
+      ],
+      bgLogo: [
+        '/account-details'
+      ],
+      bgBubbles: [
+        '/document-transfer'
+      ],
     }
   },
   created() {

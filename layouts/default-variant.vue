@@ -6,7 +6,10 @@
 
     <img
       id="default-layout-variant-background"
-      :src="require(`~/assets/sources/images/circle${excludedBgRoutes.includes(route) ? '-main' : ''}.svg`)"
+      :src="require(`~/assets/sources/images/circle${
+        bgLogo.includes($route.path) ? '-logotype'
+        : excludedBgRoutes.includes(route) ? '-main' : ''
+      }.svg`)"
       alt="background"
       :style="`--w: 634px; --top: ${ excludedTopRoutes.includes(route) ? '10px' : '70px'}`"
     >
@@ -30,6 +33,9 @@ export default {
   middleware: ['lock-password'],
   data() {
     return {
+      bgLogo: [
+        '/documents'
+      ],
       excludedFooterRoutes: [
         '/create-lock-password',
         '/unlock-wallet'

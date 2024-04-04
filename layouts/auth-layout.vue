@@ -8,11 +8,13 @@
       id="auth-layout-background"
       :src="
         require(`~/assets/sources/images/circle${
-          route === '/create-import' || route === '/import-wallet' || route === '/create-wallet' ? '-main'
-          : route === '/verification' || route === '/verification-login-email'  ? '-person'
+          bgMain.includes(route) ? '-main'
+          : bgLogo.includes(route) ? '-logo'
+          : bgPerson.includes(route) ? '-person'
           : ''
         }.svg`)
       "
+      :class="{ toTop: bgToTop.includes(route) }"
       alt="background"
       :style="`--w: ${excludedRoutes.includes(route) ? 452 : 634}px`"
     >
@@ -28,6 +30,21 @@ export default {
   name: "AuthLayout",
   data() {
     return {
+      bgToTop: [
+        '/swap'
+      ],
+      bgMain: [
+        '/create-import',
+        '/import-wallet',
+        '/create-wallet',
+      ],
+      bgLogo: [
+        '/create-wallet-verification'
+      ],
+      bgPerson: [
+        '/verification',
+        '/verification-login-email'
+      ],
       excludedRoutes: [
         "/login",
         "/verification",

@@ -5,10 +5,13 @@
     <Header
       ref="header"
       :show-back-btn="false"
-      top-text="INICIAR LA AVENTURA"
       description="INICIAR SESIÓN O REGÍSTRESE PARA UNIRTE A LA DIVERSIÓN"
       max-width="251px"
-    ></Header>
+    >
+      <template #top-text>
+        <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto" style="width: 200px;">
+      </template>
+    </Header>
 
 
     <section id="login-content">

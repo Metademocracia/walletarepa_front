@@ -9,6 +9,8 @@
         </v-btn>
       </slot>
 
+      <img v-if="showLogotype" src="@/assets/sources/logos/logotype.svg" alt="logo icon" style="width: min(100%, 170px);">
+
       <aside v-if="showAppend" class="container-btns">
         <v-btn v-if="!hideProfile" data-avatar class="btn-icon" to="/account-details">
           <img src="@/assets/sources/avatars/person.png" alt="avatar">
@@ -26,6 +28,10 @@
 export default {
   name: "NavbarComponent",
   props: {
+    showLogotype: {
+      type: Boolean,
+      dafult: false,
+    },
     hideProfile: {
       type: Boolean,
       default: false,

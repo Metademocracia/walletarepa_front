@@ -20,6 +20,7 @@
     left: 50%;
     transform: translateX(-50%);
     width: 634px !important;
+    &.opacity { opacity: .5 }
   }
 
   //- responsive font size -//

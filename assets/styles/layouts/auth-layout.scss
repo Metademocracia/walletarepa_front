@@ -50,6 +50,7 @@
   &-background {
     position: absolute;
     top: calc(var(--margin-header) + 10px /* 70px <-- old */);
+    &.toTop{ top: -65px }
     left: 50%;
     transform: translateX(-50%);
   }

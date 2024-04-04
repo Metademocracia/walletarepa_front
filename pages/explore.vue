@@ -1,5 +1,5 @@
 <template>
-  <div id="explore">
+  <div id="explore" class="d-flex flex-column">
     <Header
       show-append
       top-text="EXPLORAR"
@@ -71,6 +71,8 @@
         <p class="mb-0">{{ item.description }}</p>
       </v-card>
     </section> -->
+    
+    <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto mb-8" style="width: 200px; margin-top: 90px;">
   </div>
 </template>
 

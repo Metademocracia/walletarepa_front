@@ -1,6 +1,7 @@
 <template>
   <div class="header">
     <Navbar
+      :show-logotype="showLogotype"
       :show-append="showAppend"
       :show-prepend="showPrepend"
       :hide-profile="hideProfile"
@@ -16,21 +17,29 @@
       class="header-content"
       :style="`--max-width: ${maxWidth}; --margin-left: ${marginLeftContent}; --margin-right: ${marginRightContent}`"
     >
-      <h1
-        v-if="topText"
-        :class="{p: bottomText, tcenter: topTextCenter}"
-        :style="`--dir: ${topTextDir}; --indent: ${topTextIndent}`"
-      >{{topText}}</h1>
-      <h1
-        v-if="middleText"
-        :class="{p: bottomText, tcenter: middleTextCenter}"
-        :style="`--dir: ${middleTextDir}; --indent: ${middleTextIndent}`"
-      >{{middleText}}</h1>
-      <h1
-        v-if="bottomText"
-        :class="{tcenter: bottomTextCenter}"
-        :style="`--dir: ${bottomTextDir}; --indent: ${bottomTextIndent}`"
-      >{{bottomText}}</h1>
+      <slot name="topText">
+        <h1
+          v-if="topText"
+          :class="{p: bottomText, tcenter: topTextCenter}"
+          :style="`--dir: ${topTextDir}; --indent: ${topTextIndent}`"
+        >{{topText}}</h1>
+      </slot>
+
+      <slot name="middleText">
+        <h1
+          v-if="middleText"
+          :class="{p: bottomText, tcenter: middleTextCenter}"
+          :style="`--dir: ${middleTextDir}; --indent: ${middleTextIndent}`"
+        >{{middleText}}</h1>
+      </slot>
+      
+      <slot name="bottomText">
+        <h1
+          v-if="bottomText"
+          :class="{tcenter: bottomTextCenter}"
+          :style="`--dir: ${bottomTextDir}; --indent: ${bottomTextIndent}`"
+        >{{bottomText}}</h1>
+      </slot>
       <p
         v-if="description"
         :style="`--align: ${descriptionAlign}`"
@@ -43,6 +52,10 @@
 export default {
   name: "HeaderComponent",
   props: {
+    showLogotype: {
+      type: Boolean,
+      dafult: false,
+    },
     hideProfile: {
       type: Boolean,
       default: false,

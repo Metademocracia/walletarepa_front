@@ -2,6 +2,7 @@
   <div id="account-details">
     <Header
       show-append
+      show-logotype
       top-text="DETALLES DE"
       bottom-text="LA CUENTA"
     ></Header>
@@ -37,7 +38,7 @@
         </div>
       </div>
 
-      <v-card class="btn-outlined">
+      <v-card class="btn-outlined" style="--bg: hsl(0, 5%, 96%, .8)">
         <aside v-for="(value, key, i) in details" :key="i" class="space">
           <div class="center">
             <h5 class="mb-0 min-width-span">{{ key }}</h5>
