@@ -74,7 +74,7 @@
           class="btn-outlined"
           @click="openExplorer()"
         >
-        IR A <span data-inner>AREPADAO</span>
+        IR A <span data-inner>AREPA DAO</span>
         </v-btn>
 
         <v-btn
