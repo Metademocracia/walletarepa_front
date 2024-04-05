@@ -36,12 +36,6 @@ export default {
   middleware: ['lock-password'],
   data() {
     return {
-      bgOpacity: [
-        '/account-details'
-      ],
-      bgLogo: [
-        '/account-details'
-      ],
       bgBubbles: [
         '/document-transfer'
       ],

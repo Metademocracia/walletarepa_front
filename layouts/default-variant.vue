@@ -33,9 +33,6 @@ export default {
   middleware: ['lock-password'],
   data() {
     return {
-      bgLogo: [
-        '/documents'
-      ],
       excludedFooterRoutes: [
         '/create-lock-password',
         '/unlock-wallet'
