@@ -143,10 +143,10 @@ async function getListTokensBalance() {
        * @type {Promise<Array<Object>>}
        */
       const tokenBalancesPromises = listContract.map(async (contract) => {
-        let tokenBalanceData = sessionStorage.getItem(contract);
+        /* let tokenBalanceData = sessionStorage.getItem(contract);
         if (tokenBalanceData) {
           return JSON.parse(tokenBalanceData);
-        } else {
+        } else { */
           try {
             const metadata = await getTokenMetadata(contract);
             let { balance, price } = { balance: 0, price: 0 };
@@ -168,7 +168,7 @@ async function getListTokensBalance() {
                 }
               }
 
-              tokenBalanceData = {
+              const tokenBalanceData = {
                 contract,
                 balance: walletUtils.formatTokenAmount(balance, metadata.decimals, 5),
                 balanceTotal: String(balanceofi),
@@ -183,14 +183,14 @@ async function getListTokensBalance() {
                 balance_usd: isNaN(balanceUsd) ? 0.00 : balanceUsd,
                 price
               };
-              sessionStorage.setItem(contract, JSON.stringify(tokenBalanceData));
+              // sessionStorage.setItem(contract, JSON.stringify(tokenBalanceData));
               allTokenBalances.push(tokenBalanceData);
               return tokenBalanceData;
             }
           } catch (error) {
             // Handle errors if needed
           }
-        }
+        // }
       });
 
       const [nearBalance, ...tokenBalances] = await Promise.all([nearBalancePromise(), ...tokenBalancesPromises]);

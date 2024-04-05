@@ -83,7 +83,7 @@ export default {
       this.loading = true;
       
       if(this.$refs.form.validate()) {
-        const { secretKey } = await parseSeedPhrase(this.words.map((item) => { return item.model}).join(' '));
+        const { secretKey } = await parseSeedPhrase(this.words.map((item) => { return item.model.toLowerCase()}).join(' '));
         const keyPairNew = KeyPair.fromString(secretKey);
         const publicKey = keyPairNew.getPublicKey().toString(); // keyPairNew.publicKey.toString();
         let address = Buffer.from(keyPairNew.getPublicKey().data).toString("hex");

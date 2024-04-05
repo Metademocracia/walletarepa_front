@@ -22,6 +22,9 @@
         :suffix="dominioNear"
         :rules="required"
         @keyup="verificarAccount(accountNear)"
+        @keydown="evt => {
+          (['ArrowLeft', 'ArrowRight', 'Backspace', 'Delete'].includes(evt.key) ? false : !(/^[a-z0-9_-]+$/.test(evt.key)) ) && evt.preventDefault()
+        }"
       ></v-text-field>
       <!--<p>The following wallet </p>
       <p> 
@@ -92,9 +95,13 @@ export default {
       title,
     }
   },
+  
+
   created() {
     this.$store.commit('validSession');
   },
+
+  
   mounted() {
     // this.$store.commit('validSession')
     this.address = localStorageUser.getCurrentAccount().address; // this.$auth.$storage.getState("address") ?? " ";

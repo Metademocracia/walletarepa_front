@@ -380,13 +380,13 @@ export default {
 
         // this.alert = true;
 
-        this.$alert(resultSend.alertType,{ desc: `<a href="${resultSend.hashUrl} targe="_blank">${resultSend.hash}</a>` })
+        this.$alert(resultSend.alertType,{ desc: `<a href="${resultSend.hashUrl}" target="_blank">${resultSend.hash}</a>` })
 
         sessionStorage.removeItem("send-result");
       }
     },
     openExplorer() {
-      window.open(process.env.ROUTER_EXPLORER_NEAR, 'self')
+      window.open("https://dao.metademocracia.social/Proposals?dao=arepa-digital.organizacion.near", 'self')
     },
 
     fnCopie(copy) {

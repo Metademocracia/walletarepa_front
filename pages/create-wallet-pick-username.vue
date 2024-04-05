@@ -22,10 +22,9 @@
         :suffix="dominioNearInput"
         :rules="required"
         @keyup="verificarAccount(accountNear)"
-        @keydown="evt => {
-                  (['ArrowLeft', 'ArrowRight', 'Backspace', 'Delete'].includes(evt.key) ? false : !(/^[a-z0-9_-]+$/.test(evt.key)) ) && evt.preventDefault()
-                }"
+        
       ></v-text-field>
+      <h7 class="mb-4"><strong>Nota:</strong> los unicos caracteres especiales permitidos son guion (-) y guion bajo (_)</h7>
       <!--<p>The following wallet </p>
       <p> 
         <strong>{{ address.substring(0, 20) }} ... {{ address.substring(20, 37) }}</strong> 
@@ -102,6 +101,13 @@ export default {
       title,
     }
   },
+
+  watch: {
+    accountNear(val) {
+      this.accountNear = val.toLowerCase();
+    }
+  },
+
   created() {
     // this.$store.commit('validSession');
   },
@@ -127,28 +133,40 @@ export default {
       this.$router.push(this.localePath(utils.routeLogin(this.$route.query.action)));
     },
     async verificarAccount(value) {
-      const accountInput = value +  this.dominioNear;
-      
 
-      const keyStore = new keyStores.InMemoryKeyStore()
-      const near = new Near(configNear(keyStore))
-      const account = new Account(near.connection, accountInput)
+      if(!value) {
+        this.successAccount = null
+        this.errorAccount = null
+        return false
+      }
       
-      let response = null
-      await account.state()
-          .then(() => {
-            response = true
-            this.successAccount = null
-            this.errorAccount = "Account already exists"
-          }).catch(() => {
-            response = false
-            this.successAccount = "This account is valid"
-            this.errorAccount = null
-          })
-      
-      return response
-      // console.log(response)
-      // console.log(this.errorAccount)
+      const accountInput = value + this.dominioNear;
+
+      if((/^[a-z0-9_-]+$/.test(value))) {
+
+        const keyStore = new keyStores.InMemoryKeyStore()
+        const near = new Near(configNear(keyStore))
+        const account = new Account(near.connection, accountInput)
+        
+        let response = null
+        await account.state()
+            .then(() => {
+              response = true
+              this.successAccount = null
+              this.errorAccount = "Account already exists"
+            }).catch(() => {
+              response = false
+              this.successAccount = "This account is valid"
+              this.errorAccount = null
+            })
+        
+        return response
+        // console.log(response)
+        // console.log(this.errorAccount)
+      } else {
+        this.errorAccount = "Valores no permitidos"
+        return false
+      }
     
     },
 

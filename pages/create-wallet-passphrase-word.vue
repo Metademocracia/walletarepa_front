@@ -60,6 +60,13 @@ export default {
       title,
     }
   },
+
+  watch: {
+    seedPhraseWord(val) {
+      this.seedPhraseWord = val.toLowerCase();
+    }
+  },
+
   mounted() {
     this.phraseNumber = Math.floor(Math.random() * 12)
     if(localStorage.getItem("seedPhraseLoginNew") !== undefined && localStorage.getItem("seedPhraseLoginNew") !== null) {
