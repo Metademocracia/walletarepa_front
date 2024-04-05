@@ -296,7 +296,7 @@ export default {
             contractId: this.dataToken.contract,
             methodName: "storage_deposit",
             args: { account_id: this.accountNear },
-            attachedDeposit: "30000000000000000"
+            attachedDeposit: "1250000000000000000000"
           });
           
           if(!storageDepositResult || !storageDepositResult.status?.SuccessValue) {
