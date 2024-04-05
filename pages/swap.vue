@@ -97,6 +97,13 @@
         <span style="--fs: 12px; --ls: normal">{{ fromToken.balance }} {{fromToken.symbol}}</span>
       </v-card>
 
+      <v-btn
+        class="btn-icon mx-auto"
+        style="translate: 0 -10px; --bg: #DEE6EA; box-shadow: none; --b: 1px solid var(--primary); --br: 13px"
+      >
+        <img src="@/assets/sources/icons/swap-vertical.svg" alt="swap icon">
+      </v-btn>
+
       
       <v-card
         class="btn-outlined space"
