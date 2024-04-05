@@ -39,6 +39,8 @@ export default {
       bgBubbles: [
         '/document-transfer'
       ],
+      bgOpacity: [],
+      bgLogo: [],
     }
   },
   created() {
