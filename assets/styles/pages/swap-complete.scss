@@ -1,4 +1,4 @@
-#swap-complete {
+#swap-complete, #swap-error {
   @include parent;
   padding-inline: var(--margin-global);
   display: flex;
