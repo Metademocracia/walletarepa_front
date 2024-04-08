@@ -100,6 +100,7 @@
       <v-btn
         class="btn-icon mx-auto"
         style="translate: 0 -10px; --bg: #DEE6EA; box-shadow: none; --b: 1px solid var(--primary); --br: 13px"
+        @click="changeSwap()"
       >
         <img src="@/assets/sources/icons/swap-vertical.svg" alt="swap icon">
       </v-btn>
@@ -258,6 +259,15 @@ export default {
   },
 
   methods: {
+    changeSwap() {
+      const fromTokenOld = this.fromToken
+      const toTokenOld = this.toToken
+
+      this.fromToken = toTokenOld
+      this.toToken = fromTokenOld
+
+      this.debouncePreviewSwap()
+    },
     maximo() {
       if (this.fromToken.contract === "near") {
         if (this.fromToken.balanceTotal > 0.2) {
@@ -331,10 +341,12 @@ export default {
       this.btnLoading = true
       // console.log(this.amount, this.fromToken?.contract, this.toToken?.contract)
       if (!this.amount || this.amount <= 0 || !this.fromToken?.contract || !this.toToken?.contract || !localStorage.getItem('address')) {
+        this.btnLoading = false
         return
       }
 
       if (!this.$refs.form.validate()) {
+        this.btnLoading = false
         return
       }
 
