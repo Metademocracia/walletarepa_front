@@ -396,63 +396,89 @@ export default {
         if (this.fromToken.contract === "near" && this.toToken.contract === "wrap.near") {
           // console.log("deposit", this.amount)
           // console.log(utils.format.parseNearAmount(String(this.amount)))
-          const result = await account.functionCall({
-            contractId: "wrap.near",
-            methodName: "near_deposit",
-            args: {},
-            gas: "300000000000000",
-            attachedDeposit: utils.format.parseNearAmount(String(this.amount))
-          });
+          try {
+            const result = await account.functionCall({
+              contractId: "wrap.near",
+              methodName: "near_deposit",
+              args: {},
+              gas: "300000000000000",
+              attachedDeposit: utils.format.parseNearAmount(String(this.amount))
+            });
 
-          const hash = !result?.transaction.hash ? result : result?.transaction.hash;
+            const hash = !result?.transaction.hash ? result : result?.transaction.hash;
 
-          const item = {
-            hash,
-            method: "near_deposit"
+            if (!hash) {
+              this.$router.push({ path: '/swap-error'})
+            }
+
+            const item = {
+              hash,
+              method: "near_deposit"
+            }
+
+            hashes.push(item)
+          } catch (error) {
+            this.$router.push({ path: '/swap-error'})
           }
-
-          hashes.push(item)
+          
         } else if (this.fromToken.contract === "wrap.near" && this.toToken.contract === "near") {
           // console.log("withdraw", this.amount)
+          try {
+            const result = await account.functionCall({
+              contractId: "wrap.near",
+              methodName: "near_withdraw",
+              args: {
+                amount: utils.format.parseNearAmount(String(this.amount))
+              },
+              gas: "300000000000000",
+              attachedDeposit: "1"
+            });
 
-          const result = await account.functionCall({
-            contractId: "wrap.near",
-            methodName: "near_withdraw",
-            args: {
-              amount: utils.format.parseNearAmount(String(this.amount))
-            },
-            gas: "300000000000000",
-            attachedDeposit: "1"
-          });
+            const hash = !result?.transaction.hash ? result : result?.transaction.hash;
 
-          const hash = !result?.transaction.hash ? result : result?.transaction.hash;
+            if (!hash) {
+              this.$router.push({ path: '/swap-error'})
+            }
 
-          const item = {
-            hash,
-            method: "near_withdraw"
+            const item = {
+              hash,
+              method: "near_withdraw"
+            }
+
+            hashes.push(item)
+          } catch (error) {
+            this.$router.push({ path: '/swap-error'})
           }
 
-          hashes.push(item)
+          
         } else {
-          for (const tx of this.priceRoute) {
-            for (const functionCall of tx.functionCalls) {
-              const result = await account.functionCall({
-                contractId: tx.receiverId,
-                methodName: functionCall.methodName,
-                args: functionCall.args,
-                gas: functionCall.gas,
-                attachedDeposit: functionCall.amount
-              });
+          try {
+            for (const tx of this.priceRoute) {
+              for (const functionCall of tx.functionCalls) {
+                const result = await account.functionCall({
+                  contractId: tx.receiverId,
+                  methodName: functionCall.methodName,
+                  args: functionCall.args,
+                  gas: functionCall.gas,
+                  attachedDeposit: functionCall.amount
+                });
 
-              const hash = !result?.transaction.hash ? result : result?.transaction.hash;
+                const hash = !result?.transaction.hash ? result : result?.transaction.hash;
 
-              const item = {
-                hash,
-                method: functionCall.methodName
+                if (!hash) {
+                  this.$router.push({ path: '/swap-error'})
+                }
+
+                const item = {
+                  hash,
+                  method: functionCall.methodName
+                }
+
+                hashes.push(item)
               }
-
-              hashes.push(item)
             }
+          } catch (error) {
+            this.$router.push({ path: '/swap-error'})
           }
         }
 

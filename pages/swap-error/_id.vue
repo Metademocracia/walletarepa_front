@@ -23,7 +23,7 @@
       <v-card class="btn-outlined">
         <h6 class="mb-0">INFO</h6>
         
-        <aside
+        <!-- <aside
           class="d-flex align-center justify-space-between mt-3"
           style="gap: 10px;"
         >
@@ -42,9 +42,9 @@
               <img v-if="!copie" src="@/assets/sources/icons/copy.svg" alt="copy to clipboard" style="--w: 15px">
             </v-btn>
           </div>
-        </aside>
+        </aside> -->
 
-        <p class="mt-4">Slippage bla bla bla</p>
+        <p class="mt-4">Error al ejecutar el swap.</p>
 
         <p class="mb-0 mt-6">
           <strong class="bold mr-2">Sugerencia:</strong>
