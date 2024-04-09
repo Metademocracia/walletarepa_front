@@ -44,6 +44,7 @@ export default {
       excludedBgRoutes: [
         '/unlock-wallet',
       ],
+      bgLogo: [],
     }
   },
   computed: {
