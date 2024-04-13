@@ -36,14 +36,5 @@
     flex-grow: 0;
 
     &__slot::before { display: none }
-
-    input {
-      --fw: 700;
-      font-size: 48px;
-      color: #000;
-      text-align: center;
-      line-height: 1.15ch;
-      min-height: 50px;
-    }
   }
 }

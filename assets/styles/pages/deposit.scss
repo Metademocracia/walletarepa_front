@@ -1,0 +1,61 @@
+#deposit, #withdraw {
+  @include parent;
+  padding-inline: var(--margin-global);
+
+
+  h5 {
+    --fw: 700;
+    --fs: 12px;
+    color: #333;
+    font-family: var(--font2);
+    line-height: normal;
+    text-transform: uppercase;
+  }
+
+  .v-input {
+    margin-block: 64px 8px;
+    padding-top: 0;
+    flex-grow: 0;
+
+    &__slot::before { display: none }
+
+    input {
+      --fw: 700;
+      font-size: 48px;
+      color: #000;
+      text-align: center;
+      line-height: 1.15ch;
+      min-height: 50px;
+    }
+  }
+
+
+  .v-list {
+    background-color: transparent;
+    padding-block: 0;
+
+    &-item {
+      border-radius: 40px;
+      justify-content: space-between;
+      align-items: center;
+      overflow: hidden;
+
+      font-family: var(--font2);
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      line-height: 24px !important;
+
+      &:after { display: none }
+    }
+
+    img {
+      width: 24px;
+      height: 24px;
+
+      &[alt="circle icon"] {
+        width: 22px;
+        height: 22px;
+      }
+    }
+  }
+}

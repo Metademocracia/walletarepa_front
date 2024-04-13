@@ -1,6 +1,7 @@
 <template>
   <div class="header">
     <Navbar
+      v-if="!hideNavbar"
       :show-logotype="showLogotype"
       :show-append="showAppend"
       :show-prepend="showPrepend"
@@ -52,6 +53,10 @@
 export default {
   name: "HeaderComponent",
   props: {
+    hideNavbar: {
+      type: Boolean,
+      default: false,
+    },
     showLogotype: {
       type: Boolean,
       dafult: false,

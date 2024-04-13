@@ -1,0 +1,30 @@
+#trades-pending {
+  @include parent;
+  padding-inline: var(--margin-global);
+  padding-bottom: calc(var(--margin-footer-min) + 30px);
+
+  .card.clock {
+    position: relative;
+    display: grid;
+    place-content: center;
+    place-items: center;
+
+    font-family: var(--font3) !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    line-height: 12px !important;
+    text-align: center !important;
+    color: var(--primary) !important;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: 60px;
+      height: 60px;
+      background: center no-repeat url(../../sources/images/bg-clock.svg);
+      background-size: cover;
+    }
+  }
+}

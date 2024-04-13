@@ -1,60 +1,21 @@
 <template>
-  <v-form id="swap" ref="form" v-model="validForm" class="d-flex flex-column">
-    <modalWarning
-      ref="modalWarning"
-      :text="'USTED ESTA A PUNTO DE INTERCAMBIAR ' + amount + ' ' + fromToken.coin + ' POR UN APROXIMADO DE ' + amountReceive + ' ' + toToken.coin"
-      @click="sendSwap"
-    ></modalWarning>
+  <v-form id="deposit" ref="form" v-model="validForm" class="d-flex flex-column">
+    <ModalCryptos
+      ref="cryptos"
+      @on-selected-coin="coin => selectToken(coin)"
+    ></ModalCryptos>
 
-    <v-dialog
-      v-model="model"
-      max-width="max-content"
-      :overlay-opacity=".9"
-      content-class="modal-cryptos"
-    >
-      <aside class="d-flex justify-end mb-5">
-        <v-text-field
-          v-model="search"
-          hide-details solo
-        >
-          <template #append>
-            <img src="@/assets/sources/icons/magnify.svg" alt="search icon">
-          </template>
-        </v-text-field>
-      </aside>
+    <ModalPayments
+      ref="payments"
+      @on-selected-coin="coin => selectToken(coin)"
+    ></ModalPayments>
 
-
-      <v-card class="cryptos-card">
-        <div class="cryptos-card__wrapper">
-          <v-card
-            v-for="(item, i) in dataTokens" :key="i"
-            color="transparent"
-            class="cryptos-card-coin space"
-            @click="onSelected(item)"
-          >
-            <div class="center" style="gap: 14px;">
-              <v-img-load
-                :src="item.icon"
-                :alt="`${item.name}s' coin`"
-                sizes="29px"
-                cover
-              />
-
-              <h5 class="mb-0">{{ item.name }}</h5>
-            </div>
-
-            <div class="d-flex flex-column">
-              <span>{{ item.balance }} {{ item.coin }}</span>
-              <span>${{ item.balance_usd }}</span>
-            </div>
-          </v-card>
-        </div>
-      </v-card>
-    </v-dialog>
-
-    <Header show-append></Header>
-
-    <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto mt-1" style="width: 290px">
+    <Header
+      hide-navbar
+      top-text="DEPOSITAR"
+      bottom-text="FONDOS"
+      description="MONTO QUE DESEAS RECARGAR EN LA BILLETERA"
+    ></Header>
 
     <section class="d-flex flex-column" style="height: 208px; translate: 0 -30px">
       <v-text-field
@@ -62,22 +23,22 @@
         placeholder="0.0"
         type="number"
         :rules="required"
-        @input="debouncePreviewSwap()"
+        @input="debouncePreviewDeposit()"
       ></v-text-field>
 
       <v-btn
         class="btn-outlined mx-auto"
         style="--bg: var(--secondary); --b-color: var(--primary); --c: var(--primary); --fs: 12px; --fw: 700; --ls: 0.36px; --h: 34px; width: 121px;"
         @click="maximo()"
-      >MÁXIMO</v-btn>
+      >USE MAX</v-btn>
     </section>
 
 
-    <section class="d-flex flex-column" style="gap: 14px;">
+    <section class="d-flex flex-column mb-auto" style="gap: 14px;">
       <v-card
         class="btn-outlined space"
         style="--bg: var(--secondary); --b-color: #D1C4E8; padding: 0 23px;"
-        @click="openFromToken()"
+        @click="$refs.cryptos.model = true"
       >
         <h5 class="mb-0">TOKEN A VENDER</h5>
         
@@ -88,66 +49,58 @@
         </div>
       </v-card>
 
-      <v-card
-        class="btn-outlined space mb-6"
-        style="--bg: var(--secondary); --b-color: #D1C4E8; padding: 0 23px;"
-      >
-        <h5 class="mb-0">SALDO DISPONIBLE</h5>
-        
-        <span style="--fs: 12px; --ls: normal">{{ fromToken.balance }} {{fromToken.symbol}}</span>
-      </v-card>
+      <v-list>
+        <v-list-item
+          v-for="(payment, i) in payments" :key="i"
+          @click="selectedPayment = payment"
+        >
+          {{ payment }}
+          <img v-if="selectedPayment == payment" src="@/assets/sources/icons/checked.svg" alt="checked icon">
+          <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon">
+        </v-list-item>
+      </v-list>
 
-      <v-btn
-        class="btn-icon mx-auto"
-        style="translate: 0 -10px; --bg: #DEE6EA; box-shadow: none; --b: 1px solid var(--primary); --br: 13px"
-        @click="changeSwap()"
-      >
-        <img src="@/assets/sources/icons/swap-vertical.svg" alt="swap icon">
-      </v-btn>
-
-      
       <v-card
         class="btn-outlined space"
         style="--bg: var(--secondary); --b-color: #D1C4E8; padding: 0 23px;"
-        @click="openToToken()"
+        @click="$refs.payments.model = true"
       >
-        <h5 class="mb-0">TOKEN A COMPRAR</h5>
+        <h5 class="mb-0">BUSCAR OTRO MÉTODO</h5>
         
         <div class="center" style="gap: 6px;">
-          <img :src="toToken.icon" alt="near icon" style="width: 29px;">
-          <span style="--fs: 12px; --c: var(--primary); --ls: normal">{{ toToken.coin }}</span>
+          <v-btn class="btn-icon" style="--b: 1px solid var(--primary)">
+            <img src="@/assets/sources/icons/magnify.svg" alt="search icon">
+          </v-btn>
           <img src="@/assets/sources/icons/double-chevron-right.svg" alt="arrow right">
         </div>
       </v-card>
 
-      <v-card
-        class="btn-outlined space mb-3"
-        style="--bg: var(--secondary); --b-color: #D1C4E8; padding: 0 23px;"
-      >
-        <h5 class="mb-0 d-flex align-center" style="gap: 5px">
-          FEE ESTIMADO
-          <img src="@/assets/sources/icons/warning-orange.svg" alt="info">
-        </h5>
-        
-        <div class="d-flex flex-column align-end">
-          <span style="--fs: 12px; --ls: normal; --fw: 400;">&lt; 0.0001 NEAR</span>
-          <span style="--fs: 12px; --ls: normal; --fw: 400;">&lt; $0.01</span>
-        </div>
-      </v-card>
-      
-      <v-card
-        class="btn-outlined space"
-        style="--bg: var(--secondary); --b-color: #D1C4E8; padding: 0 23px;"
-      >
-        <h5 class="mb-0">MONTO A RECIBIR (APROX.)</h5>
-        
-        <span style="--fs: 12px; --ls: normal">{{ amountReceive }} {{toToken.coin}}</span>
-      </v-card>
 
-      <v-btn class="btn flex-grow-1" :loading="btnLoading" :disabled="amountReceive == 0" @click="$refs.modalWarning.model = true">
-        CONTINUAR
-      </v-btn>
+      <div class="d-flex mt-4" style="gap: 10px">
+        <v-btn class="btn-outlined flex-grow-1" style="--bg: var(--card-2)" @click="$router.back()">
+          CANCELAR
+        </v-btn>
+
+        <v-btn class="btn flex-grow-1" :loading="btnLoading" :disabled="amountReceive == 0" @click="sendDeposit">
+          CONTINUAR
+        </v-btn>
+      </div>
+
+
+      <h6 style="font-size: 9px !important; --ff: var(--font2); --fw: 600; --fs: 10px; --lh: 1ch">
+        LOS USUARIOS DEBEN DEPOSITAR DESDE CUENTAS PROPIAS
+
+        <img src="@/assets/sources/icons/warning-orange.svg" alt="info icon" class="ml-1" style="translate: 0 5px">
+      </h6>
     </section>
+
+
+    <Footer ref="footer">
+      <span class="text tcenter" style="--text: var(--text2); font-size: 10px !important;">© 2023 Near p2p LLC. reservados todos los derechos.</span>
+      <a class="text" style="font-size: 10px !important; --fw: 700; color: var(--primary) !important" href="#" target="_blank">
+        Términos de política y privacidad del servicio
+      </a>
+    </Footer>
   </v-form>
 </template>
 
@@ -159,12 +112,18 @@ import { utils } from "near-api-js";
 import walletUtils from '@/services/wallet';
 
 export default {
-  name: "SendPage",
+  name: "DepositPage",
   data() {
     return {
+      selectedPayment: "Pago Móvil",
+      payments: [
+        "Pago Móvil",
+        "Zelle",
+        "Paypal",
+      ],
       required: [(v) => !!v || "Campo requerido", (v) => Number(v) <= Number(this.fromToken.balanceTotal) || "Saldo insuficiente" ],
       tokenSelected: null,
-      dataSwap: {},
+      dataDeposit: {},
       priceRoute: null,
       amountReceive: 0,
       model: false,
@@ -249,7 +208,7 @@ export default {
     }
   },
   head() {
-    const title = 'Swap';
+    const title = 'Deposit';
     return {
       title,
     }
@@ -259,15 +218,6 @@ export default {
   },
 
   methods: {
-    changeSwap() {
-      const fromTokenOld = this.fromToken
-      const toTokenOld = this.toToken
-
-      this.fromToken = toTokenOld
-      this.toToken = fromTokenOld
-
-      this.debouncePreviewSwap()
-    },
     maximo() {
       if (this.fromToken.contract === "near") {
         if (this.fromToken.balanceTotal > 0.2) {
@@ -279,31 +229,7 @@ export default {
         this.amount = this.fromToken.balanceTotal
       }
 
-      this.debouncePreviewSwap()
-    },
-    onSelected(item) {
-      this.amountReceive = 0
-      if (this.tokenSelected === "from") {
-        this.fromToken = item
-      } else if (this.tokenSelected === "to") {
-        this.toToken = item
-      }
-
-      this.$refs.form.validate()
-
-      this.previewSwap()
-      
-      this.model = false
-    },
-    openFromToken() {
-      this.dataTokens = this.listToken.filter((token) => (token.contract !== this.fromToken.contract && token.contract !== this.toToken.contract))
-      this.tokenSelected = "from"
-      this.model = true
-    },
-    openToToken() {
-      this.dataTokens = this.listToken.filter((token) => (token.contract !== this.fromToken.contract && token.contract !== this.toToken.contract))
-      this.tokenSelected = "to"
-      this.model = true
+      this.debouncePreviewDeposit()
     },
     loadTokens() {
       // const inventory = await tokens.getInventoryUser();
@@ -332,11 +258,11 @@ export default {
         }
       }
     },
-    debouncePreviewSwap () {
+    debouncePreviewDeposit () {
       clearTimeout(this.timer)
-      this.timer = setTimeout(this.previewSwap, 1000)
+      this.timer = setTimeout(this.previewDeposit, 1000)
     },
-    async previewSwap() {
+    async previewDeposit() {
       this.amountReceive = 0
       this.btnLoading = true
       // console.log(this.amount, this.fromToken?.contract, this.toToken?.contract)
@@ -363,15 +289,15 @@ export default {
         amount: this.amount
       }
 
-      await axios.post(process.env.URL_BACKEND_SWAP +'/preview-swap', item)
-      // await axios.post("http://localhost:3000/api" +'/preview-swap', item)
+      await axios.post(process.env.URL_BACKEND_SWAP +'/preview-deposit', item)
+      // await axios.post("http://localhost:3000/api" +'/preview-deposit', item)
         .then((response) => {
          //  console.log(response.data)
           if (response.data) {
             this.priceRoute = response.data.priceRoute
-            this.dataSwap = response.data.dataSwap
+            this.dataDeposit = response.data.dataDeposit
 
-            this.amountReceive = this.dataSwap.toAmount / Math.pow(10, this.dataSwap.toDecimals)
+            this.amountReceive = this.dataDeposit.toAmount / Math.pow(10, this.dataDeposit.toDecimals)
 
             // console.log("DATA",this.priceRoute)
           }
@@ -384,7 +310,7 @@ export default {
           throw new Error ("Failed to get data price route")
         })
     },
-    async sendSwap() {
+    async sendDeposit() {
       try {
         const account = await walletUtils.nearConnection();
 
@@ -408,7 +334,7 @@ export default {
             const hash = !result?.transaction.hash ? result : result?.transaction.hash;
 
             if (!hash) {
-              this.$router.push({ path: '/swap-error'})
+              this.$router.push({ path: '/deposit-error'})
             }
 
             const item = {
@@ -418,7 +344,7 @@ export default {
 
             hashes.push(item)
           } catch (error) {
-            this.$router.push({ path: '/swap-error'})
+            this.$router.push({ path: '/deposit-error'})
           }
           
         } else if (this.fromToken.contract === "wrap.near" && this.toToken.contract === "near") {
@@ -437,7 +363,7 @@ export default {
             const hash = !result?.transaction.hash ? result : result?.transaction.hash;
 
             if (!hash) {
-              this.$router.push({ path: '/swap-error'})
+              this.$router.push({ path: '/deposit-error'})
             }
 
             const item = {
@@ -447,7 +373,7 @@ export default {
 
             hashes.push(item)
           } catch (error) {
-            this.$router.push({ path: '/swap-error'})
+            this.$router.push({ path: '/deposit-error'})
           }
 
           
@@ -466,7 +392,7 @@ export default {
                 const hash = !result?.transaction.hash ? result : result?.transaction.hash;
 
                 if (!hash) {
-                  this.$router.push({ path: '/swap-error'})
+                  this.$router.push({ path: '/deposit-error'})
                 }
 
                 const item = {
@@ -478,7 +404,7 @@ export default {
               }
             }
           } catch (error) {
-            this.$router.push({ path: '/swap-error'})
+            this.$router.push({ path: '/deposit-error'})
           }
         }
 
@@ -494,21 +420,10 @@ export default {
 
         const data = this.encrypt(JSON.stringify(dataItem), "123456")
 
-        this.$router.push({ path: '/swap-complete', query: { data }})
+        this.$router.push({ path: '/deposit-complete', query: { data }})
       } catch (error) {
         console.error(error)
       }
-    },
-    limitStr(item, num) {
-      if (item) {
-        if (item.length > num) {
-          return item.substring(0, num) + "..."
-        }
-      }
-      return item
-    },
-    next() {
-      this.$router.push({ path: '/swap-complete', query: { hash: "asdasdasd" }})
     },
     encrypt(text, secret) {
       const ciphertext = cryptoJS.AES.encrypt(JSON.stringify({ text }), secret).toString();
@@ -518,4 +433,4 @@ export default {
 }
 </script>
 
-<style src="@/assets/styles/pages/swap.scss" lang="scss"></style>
+<style src="@/assets/styles/pages/deposit.scss" lang="scss"></style>

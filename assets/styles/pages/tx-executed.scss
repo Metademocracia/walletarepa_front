@@ -1,0 +1,33 @@
+#tx-executed {
+  @include parent;
+  padding-inline: var(--margin-global);
+
+  &__bg-image {
+    pointer-events: none;
+    position: absolute !important;
+    display: grid;
+    place-items: center;
+    top: -40px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 1;
+  
+    img[alt="bg-image"] { translate: 6px 0 !important }
+
+    ~ * { z-index: 2 }
+  }
+
+  .big-title {
+    --fs: 60px;
+    --ls: .39em
+  }
+
+  h3 {
+    --ff: var(--font4);
+    --fs: 38px !important;
+    --fw: 400 !important;
+    --lh: 48px !important;
+    --ls: 0.11em !important;
+    text-align: center;
+  }
+}

@@ -1,30 +1,18 @@
 <template>
-  <v-app id="default-layout">
+  <v-app id="default-layout-variant-2">
     <Alerts ref="alerts" />
     <!-- <ModalConfirmMsg ref="confirmMsg" />
     <ModalConnect ref="connect" /> -->
 
     <img
       id="default-layout-background"
-      :src="
-        require(`~/assets/sources/images/circle${
-          bgLogo.includes($route.path) ? '-logo'
-          : bgBubbles.includes($route.path) ? '-bubbles' : ''
-        }.svg`)"
-      :class="{ opacity: bgOpacity.includes($route.path) }"
+      :src="require(`~/assets/sources/images/circle-v2.svg`)"
       alt="background"
     >
 
     <v-main class="parent">
       <nuxt-child data-nuxt="childs" />
     </v-main>
-
-    <Footer v-if="!withoutFooter.includes($route.path)" ref="footer">
-      <span class="text tcenter" style="--text: var(--text2)">© 2023 Near p2p LLC. reservados todos los derechos.</span>
-      <a class="text" style="--fw: 700; color: var(--primary) !important" href="#" target="_blank">
-        Términos de política y privacidad del servicio
-      </a>
-    </Footer>
   </v-app>
 </template>
 
@@ -32,19 +20,10 @@
 import localStorageUser from '@/services/local-storage-user';
 
 export default {
-  name: "DefaultLayout",
+  name: "DefaultLayoutVariant2",
   middleware: ['lock-password'],
   data() {
     return {
-      bgBubbles: [
-        '/document-transfer'
-      ],
-      bgOpacity: [],
-      bgLogo: [],
-      withoutFooter: [
-        "/trades-pending",
-        "/trades-chat"
-      ]
     }
   },
   created() {
@@ -129,4 +108,4 @@ export default {
 }
 </script>
 
-<style src="~/assets/styles/layouts/default-layout.scss" lang="scss" />
+<style src="~/assets/styles/layouts/default-layout-variant-2.scss" lang="scss" />

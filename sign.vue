@@ -104,7 +104,7 @@
     >
       <div class="acenter" style="gap: 8px;">
         <label>TARIFA ESTIMADA</label>
-        <img src="@/assets/sources/icons/warning-blue.svg" alt="info icon">
+        <img src="@/assets/sources/icons/warning-orange.svg" alt="info icon">
       </div>
 
       <div class="d-flex flex-column tend ml-auto" style="--fw: 400">

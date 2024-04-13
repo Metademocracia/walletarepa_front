@@ -31,7 +31,8 @@ export default {
   data() {
     return {
       bgToTop: [
-        '/swap'
+        '/swap',
+        '/deposit'
       ],
       bgMain: [
         '/create-import',

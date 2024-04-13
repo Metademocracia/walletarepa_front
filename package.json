@@ -21,6 +21,7 @@
     "bn.js": "^5.2.1",
     "core-js": "^3.19.3",
     "crypto-js": "^4.2.0",
+    "firebase": "^10.11.0",
     "html2canvas": "^1.4.1",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",

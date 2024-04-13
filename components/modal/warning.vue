@@ -20,9 +20,11 @@
         <p class="mb-0">{{ text }}</p>
         <slot />
 
-        <v-btn class="btn-outlined-2 mt-6" :loading="btnLoading" @click="$emit('click'); btnLoading = true">
-          ACEPTAR
-        </v-btn>
+        <slot name="action">
+          <v-btn class="btn-outlined-2 mt-6" :loading="btnLoading" @click="$emit('click'); btnLoading = true">
+            ACEPTAR
+          </v-btn>
+        </slot>
       </v-card-text>
     </v-card>
   </v-dialog>

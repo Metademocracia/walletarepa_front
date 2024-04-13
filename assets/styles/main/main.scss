@@ -58,6 +58,12 @@
   }
 }
 
+.big-title {
+  font-family: var(--font5) !important;
+  font-size: var(--fs, 100px) !important;
+  letter-spacing: var(--ls, 3.9px) !important;
+}
+
 .btn-icon {
   --size: 31px;
   --c: #fff !important;
@@ -95,7 +101,7 @@
   min-height: var(--h);
   background: var(--bg, #ED6D05) !important;
   border-radius: var(--br, 40px) !important;
-  filter: drop-shadow(0px 6px 1px rgba(0, 0, 0, 0.2)) !important;
+  filter: var(--f, drop-shadow(0px 6px 1px rgba(0, 0, 0, 0.2))) !important;
   span {
     color: #fff !important;
     font-family: var(--font2) !important;
@@ -148,3 +154,72 @@
   }
 }
 
+
+.card, .v-card.card {
+  background: var(--bg, var(--primary)) !important;
+  border: var(--b, none) !important;
+  border-radius: var(--br, 10px) !important;
+}
+
+.card-outline, .v-card.card-outline {
+  background: var(--bg, var(--card-2)) !important;
+  border-radius: var(--br, 20px) !important;
+  border: var(--b, 1px solid #333333) !important;
+}
+
+.custom-card {
+  span {
+    font-size: 10px !important;
+    font-weight: 400 !important;
+    line-height: 10.89px !important;
+    letter-spacing: -0.01em !important;
+
+    strong { font-weight: 600 !important }
+  }
+
+  h6 {
+    --ff: var(--font3);
+    --fs: 11px;
+    --ls: 0.03em;
+    margin-bottom: 0;
+  }
+
+  h5 {
+    --ff: var(--font3);
+    --fs: 16px;
+    --lh: 16px;
+    margin-bottom: 0;
+  }
+}
+
+.tooltip {
+  background-color: var(--color, #BFFBFA) !important;
+  border-radius: 10px !important;
+  min-height: 41.66px !important;
+  display: flex !important;
+  align-items: center !important;
+  position: relative;
+
+  font-family: var(--font4) !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  line-height: 9.35px !important;
+  box-shadow: 0px 1px 4px 0px #00000040;
+
+  &:after {
+    --size: 8px;
+    content: "";
+    position: absolute;
+    bottom: calc(var(--size) * -1);
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+
+    width: 0;
+    height: 0;
+    border-left: calc(var(--size) / 1) solid transparent;
+    border-right: calc(var(--size) / 1) solid transparent;
+    border-top: var(--size) solid var(--color, #BFFBFA);
+    filter: drop-shadow(0px 4px 4px #00000040);
+  }
+}
