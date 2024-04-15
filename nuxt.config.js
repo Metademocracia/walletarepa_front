@@ -116,7 +116,17 @@ export default {
     '@nuxtjs/i18n',
     '@nuxtjs/auth-next',
     'nuxt-clipboard2',
+    // GraphQl Apollo Client
+    '@nuxtjs/apollo'
   ],
+
+  apollo: {
+    clientConfigs: {
+      default: {
+        httpEndpoint: process.env.GRAPH_URL,
+      }
+    }
+  },
 
   auth: {
     strategies: {

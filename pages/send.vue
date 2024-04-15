@@ -155,7 +155,7 @@ export default {
     },
 
     maxBalance() {
-      this.amount = this.balance;
+      this.amount = this.balance.toFixed(5);
     },
 
     selectToken(token) {
