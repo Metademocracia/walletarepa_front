@@ -6,10 +6,10 @@
     ></ModalCryptos>
     
 
-    <ModalPayments
-      ref="payments"
+    <ModalPaymentMethods
+      ref="paymentMethods"
       @on-selected-coin="coin => selectToken(coin)"
-    ></ModalPayments>
+    ></ModalPaymentMethods>
 
     <Header
       hide-navbar
@@ -44,8 +44,8 @@
         <h5 class="mb-0">TOKEN A VENDER</h5>
         
         <div class="center" style="gap: 6px;">
-          <img :src="fromToken.icon" alt="near icon" style="width: 29px;">
-          <span style="--fs: 12px; --c: var(--primary); --ls: normal">{{ fromToken.coin }}</span>
+          <img :src="tokenImg" alt="near icon" style="width: 29px;">
+          <span style="--fs: 12px; --c: var(--primary); --ls: normal">{{ tokenSymbol }}</span>
           <img src="@/assets/sources/icons/double-chevron-right.svg" alt="arrow right">
         </div>
       </v-card>
@@ -73,7 +73,7 @@
       <v-card
         class="btn-outlined space"
         style="--bg: var(--secondary); --b-color: #D1C4E8; padding: 0 23px;"
-        @click="$refs.payments.model = true"
+        @click="$refs.paymentMethods.model = true"
       >
         <h5 class="mb-0">BUSCAR OTRO MÉTODO</h5>
         
@@ -123,15 +123,6 @@ import * as cryptoJS from 'crypto-js';
 import gql from "graphql-tag";
 import walletUtils from '@/services/wallet';
 
-const selects = gql`
-		query MyQuery {
-			paymentmethods(orderBy: id) {
-				id
-				payment_method
-			}
-		}
-	`;
-
 export default {
   name: "DepositPage",
   data() {
@@ -176,6 +167,10 @@ export default {
   },
 
   methods: {
+    getMethods() {
+      console.log("HOLA")
+      console.log(this.$apollo)
+    },
     maxBalance() {
       this.amount = this.balance;
     },
@@ -209,6 +204,25 @@ export default {
     },
 
     selects() {
+
+      const selects = gql`
+      query MyQuery {
+          paymentmethods(orderBy: id) {
+            id
+            payment_method
+          }
+        }
+      `;
+      
+      // const selects = gql`
+      // query MyQuery {
+      //     paymentmethods(orderBy: id) {
+      //       id
+      //       payment_method
+      //     }
+      //   }
+      // `;
+
 			this.$apollo
 				.mutate({
 					mutation: selects
