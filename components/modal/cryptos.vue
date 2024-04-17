@@ -66,6 +66,10 @@ export default {
     dataTokens: {
       type: Array,
       default: undefined,
+    },
+    filter: {
+      type: Array,
+      default: undefined,
     }
   },
   data() {
@@ -198,6 +202,9 @@ export default {
 
       this.tokensData = inventory.fts;
 
+      if (this.filter) {
+        this.tokensData = this.tokensData.filter((item) => this.filter.includes(item?.symbol.toLowerCase()))
+      }
       
       // console.log('Sorted data:', this.tokensData);
 

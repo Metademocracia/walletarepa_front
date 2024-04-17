@@ -2,6 +2,7 @@
   <v-form id="withdraw" ref="form" v-model="validForm" class="d-flex flex-column">
     <ModalCryptos
         ref="cryptos"
+        :filter="filter"
         @on-selected-coin="coin => selectToken(coin)"
     ></ModalCryptos>
     
@@ -22,6 +23,8 @@
         <v-text-field
           v-model="search"
           hide-details solo
+          @input="searchPayments(search)"
+          @change="searchPayments(search)"
         >
           <template #append>
             <img src="@/assets/sources/icons/magnify.svg" alt="search icon">
@@ -32,20 +35,12 @@
 
       <v-card class="payment-card">
         <div
-          v-if="loading"
-          class="payment-card__wrapper"
-          style="text-align: center;"
-        >
-        Cargando....
-        </div>
-        <div
-          v-else
           class="payment-card__wrapper"
         >
           <v-list>
             <v-list-item
               v-for="(payment, i) in otherPayments" :key="i"
-              @click="selectPayment(payment.payment_method)"
+              @click="selectPaymentDialog(payment.payment_method)"
             >
               {{ payment.payment_method }}
               <img v-if="selectedPayment == payment.payment_method" src="@/assets/sources/icons/checked.svg" alt="checked icon">
@@ -151,7 +146,7 @@
           CANCELAR
         </v-btn>
 
-        <v-btn class="btn flex-grow-1" :loading="btnLoading" :disabled="btnContinue" >
+        <v-btn class="btn flex-grow-1" :loading="btnLoading" :disabled="btnContinue" @click="$router.push('/trades-chat')">
           CONTINUAR
         </v-btn>
       </div>
@@ -179,7 +174,8 @@ export default {
   name: "DepositPage",
   data() {
     return {
-      selectedPayment: "Pago Móvil",
+      filter: ["usdt", "near", "arp"],
+      selectedPayment: "",
       payments: [
         "Pago Móvil",
         "Zelle",
@@ -187,6 +183,7 @@ export default {
       ],
       btnContinue: true,
       otherPayments: [],
+      originalPayments: [],
       required: [(v) => !!v || "Campo requerido", (v) => Number(v) <= Number(this.balance) || "Saldo insuficiente" ],
       amountReceive: 0,
       model: false,
@@ -222,9 +219,20 @@ export default {
   },
 
   methods: {
+    searchPayments(search) {
+      this.otherPayments = this.originalPayments.filter(item => item.payment_method.toLowerCase().includes(search.toLowerCase()));
+    },
     selectPayment(payment) {
       this.selectedPayment = payment
       this.disabledContinue()
+    },
+    selectPaymentDialog(payment) {
+      this.selectedPayment = payment
+      this.payments[2] = payment
+
+      this.otherPayments = this.originalPayments.filter(item => !this.payments.includes(item.payment_method));
+      this.disabledContinue()
+      this.modelPayments = false
     },
     disabledContinue() {
       if (this.amount > 0 && this.selectedPayment && this.$refs.form.validate()) {
@@ -234,7 +242,6 @@ export default {
       }
     },
     getMethods() {
-      console.log("HOLA")
       console.log(this.$apollo)
     },
     maxBalance() {
@@ -296,11 +303,11 @@ export default {
 					mutation: selects
 				})
 				.then(response => {
-					console.log(response.data.paymentmethods)
           const paymentmethods = response.data.paymentmethods
 
           if (!paymentmethods) {return}
           this.otherPayments = paymentmethods.filter(item => !this.payments.includes(item.payment_method));
+          this.originalPayments = paymentmethods
 				})
 				.catch(err => {
 					console.log("Error", err);
