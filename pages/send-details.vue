@@ -24,6 +24,7 @@
           :rules="required"
           required
           @keyup="verificarAccount(accountNear)"
+          @change="verificarAccount(accountNear)"
         >
           <template #prepend-inner>
             <h5 class="mb-0" style="color: var(--primary)">ENVIAR A</h5>
