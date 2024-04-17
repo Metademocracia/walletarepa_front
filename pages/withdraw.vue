@@ -6,10 +6,70 @@
     ></ModalCryptos>
     
 
-    <ModalPaymentMethods
+    <!-- <ModalPaymentMethods
       ref="paymentMethods"
+      :data-payments=otherPayments
       @on-selected-coin="coin => selectToken(coin)"
-    ></ModalPaymentMethods>
+    ></ModalPaymentMethods> -->
+
+    <v-dialog
+      v-model="modelPayments"
+      max-width="max-content"
+      :overlay-opacity=".9"
+      content-class="modal-cryptos"
+    >
+      <aside class="d-flex justify-end mb-5">
+        <v-text-field
+          v-model="search"
+          hide-details solo
+        >
+          <template #append>
+            <img src="@/assets/sources/icons/magnify.svg" alt="search icon">
+          </template>
+        </v-text-field>
+      </aside>
+
+
+      <v-card class="cryptos-card">
+        <div
+          v-if="loading"
+          class="cryptos-card__wrapper"
+          style="text-align: center;"
+        >
+        Cargando....
+        </div>
+        <div
+          v-else
+          class="cryptos-card__wrapper"
+        >
+          <v-list>
+            <v-list-item
+              v-for="(payment, i) in otherPayments" :key="i"
+              @click="selectPayment(payment.payment_method)"
+            >
+              {{ payment.payment_method }}
+              <img v-if="selectedPayment == payment.payment_method" src="@/assets/sources/icons/checked.svg" alt="checked icon">
+              <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon">
+            </v-list-item>
+          </v-list>
+          <!-- <v-card
+            v-for="(item, i) in otherPayments" :key="i"
+            color="transparent"
+            class="cryptos-card-coin space"
+            @click="onSelected(item)"
+          > -->
+            <!-- <div class="center" style="gap: 14px;">
+              <h5 class="mb-0">{{ item.payment_method }}</h5>
+            </div> -->
+
+            <!-- <div class="d-flex flex-column">
+              <span>{{ item.balance }} {{ item.coin }}</span>
+              <span>${{ item.balance_usd }}</span>
+            </div> -->
+          <!-- </v-card> -->
+        </div>
+      </v-card>
+    </v-dialog>
 
     <Header
       hide-navbar
@@ -62,7 +122,7 @@
       <v-list>
         <v-list-item
           v-for="(payment, i) in payments" :key="i"
-          @click="selectedPayment = payment"
+          @click="selectPayment(payment)"
         >
           {{ payment }}
           <img v-if="selectedPayment == payment" src="@/assets/sources/icons/checked.svg" alt="checked icon">
@@ -73,7 +133,7 @@
       <v-card
         class="btn-outlined space"
         style="--bg: var(--secondary); --b-color: #D1C4E8; padding: 0 23px;"
-        @click="$refs.paymentMethods.model = true"
+        @click="modelPayments = true"
       >
         <h5 class="mb-0">BUSCAR OTRO MÉTODO</h5>
         
@@ -91,7 +151,7 @@
           CANCELAR
         </v-btn>
 
-        <v-btn class="btn flex-grow-1" :loading="btnLoading" :disabled="amountReceive == 0" >
+        <v-btn class="btn flex-grow-1" :loading="btnLoading" :disabled="btnContinue" >
           CONTINUAR
         </v-btn>
       </div>
@@ -133,9 +193,12 @@ export default {
         "Zelle",
         "Banesco",
       ],
+      btnContinue: true,
+      otherPayments: [],
       required: [(v) => !!v || "Campo requerido", (v) => Number(v) <= Number(this.balance) || "Saldo insuficiente" ],
       amountReceive: 0,
       model: false,
+      modelPayments: false,
       validForm: true,
       amount: null,
       balance: 0.00,
@@ -167,12 +230,24 @@ export default {
   },
 
   methods: {
+    selectPayment(payment) {
+      this.selectedPayment = payment
+      this.disabledContinue()
+    },
+    disabledContinue() {
+      if (this.amount > 0 && this.selectedPayment && this.$refs.form.validate()) {
+        this.btnContinue = false
+      } else {
+        this.btnContinue = true
+      }
+    },
     getMethods() {
       console.log("HOLA")
       console.log(this.$apollo)
     },
     maxBalance() {
       this.amount = this.balance;
+      this.disabledContinue()
     },
     async getBalance() {
       let balanceNear = 0.00;
@@ -195,8 +270,9 @@ export default {
     },
 
     debouncePreviewWithdraw () {
-      clearTimeout(this.timer)
-      this.timer = setTimeout(this.previewWithdraw, 1000)
+      this.disabledContinue()
+      // clearTimeout(this.timer)
+      // this.timer = setTimeout(this.previewWithdraw, 1000)
     },
     encrypt(text, secret) {
       const ciphertext = cryptoJS.AES.encrypt(JSON.stringify({ text }), secret).toString();
@@ -229,6 +305,10 @@ export default {
 				})
 				.then(response => {
 					console.log(response.data.paymentmethods)
+          const paymentmethods = response.data.paymentmethods
+
+          if (!paymentmethods) {return}
+          this.otherPayments = paymentmethods.filter(item => !this.payments.includes(item.payment_method));
 				})
 				.catch(err => {
 					console.log("Error", err);

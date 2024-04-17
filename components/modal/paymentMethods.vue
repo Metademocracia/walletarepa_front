@@ -29,23 +29,31 @@
         v-else
         class="cryptos-card__wrapper"
       >
-        <v-card
-          v-for="(item, i) in dataTokensFinal" :key="i"
+        <v-list>
+          <v-list-item
+            v-for="(payment, i) in dataPayments" :key="i"
+            @click="selectedPayment = payment.payment_method"
+          >
+            {{ payment.payment_method }}
+            <img v-if="selectedPayment == payment.payment_method" src="@/assets/sources/icons/checked.svg" alt="checked icon">
+            <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon">
+          </v-list-item>
+        </v-list>
+        <!-- <v-card
+          v-for="(item, i) in dataPayments" :key="i"
           color="transparent"
           class="cryptos-card-coin space"
           @click="onSelected(item)"
-        >
-          <div class="center" style="gap: 14px;">
-            <v-img-load
-              :src="item.icon"
-              :alt="`${item.name}s' coin`"
-              sizes="29px"
-              cover
-            />
+        > -->
+          <!-- <div class="center" style="gap: 14px;">
+            <h5 class="mb-0">{{ item.payment_method }}</h5>
+          </div> -->
 
-            <h5 class="mb-0">{{ item.name }}</h5>
-          </div>
-        </v-card>
+          <!-- <div class="d-flex flex-column">
+            <span>{{ item.balance }} {{ item.coin }}</span>
+            <span>${{ item.balance_usd }}</span>
+          </div> -->
+        <!-- </v-card> -->
       </div>
     </v-card>
   </v-dialog>
@@ -58,7 +66,7 @@ import tokens from '@/services/tokens';
 export default {
   name: "ModalCryptos",
   props: {
-    dataTokens: {
+    dataPayments: {
       type: Array,
       default: undefined,
     }
@@ -69,6 +77,7 @@ export default {
       search: '',
       selectedCoin: undefined,
       loading: false,
+      selectedPayment: "",
       tokensData: [],
       dataTokensFinal: [
         // {
