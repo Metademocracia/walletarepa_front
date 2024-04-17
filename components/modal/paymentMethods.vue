@@ -3,7 +3,7 @@
     v-model="model"
     max-width="max-content"
     :overlay-opacity=".9"
-    content-class="modal-cryptos"
+    content-class="modal-payments"
   >
     <aside class="d-flex justify-end mb-5">
       <v-text-field
@@ -17,17 +17,17 @@
     </aside>
 
 
-    <v-card class="cryptos-card">
+    <v-card class="payment-card">
       <div
         v-if="loading"
-        class="cryptos-card__wrapper"
+        class="payment-card__wrapper"
         style="text-align: center;"
       >
       Cargando....
       </div>
       <div
         v-else
-        class="cryptos-card__wrapper"
+        class="payment-card__wrapper"
       >
         <v-list>
           <v-list-item
@@ -42,7 +42,7 @@
         <!-- <v-card
           v-for="(item, i) in dataPayments" :key="i"
           color="transparent"
-          class="cryptos-card-coin space"
+          class="payment-card-coin space"
           @click="onSelected(item)"
         > -->
           <!-- <div class="center" style="gap: 14px;">
@@ -64,7 +64,7 @@ import axios from 'axios';
 import tokens from '@/services/tokens';
 
 export default {
-  name: "ModalCryptos",
+  name: "ModalPayment",
   props: {
     dataPayments: {
       type: Array,
@@ -230,7 +230,7 @@ export default {
 </script>
 
 <style lang="scss">
-.modal-cryptos {
+.modal-payments {
 
   .v-input {
     flex-grow: 1;
@@ -257,7 +257,26 @@ export default {
   }
 
 
-  .cryptos-card {
+  .v-list {
+    &-item {
+      justify-content: space-between;
+
+      &::after { display: none !important }
+    }
+
+    img {
+      width: 24px;
+      height: 24px;
+
+      &[alt="circle icon"] {
+        width: 22px;
+        height: 22px;
+      }
+    }
+  }
+
+
+  .payment-card {
     --height: 600px;
     --padding-block: 29px;
 
@@ -269,7 +288,7 @@ export default {
     padding-block: var(--padding-block);
     padding-right: 2px;
 
-    .cryptos-card__wrapper {
+    .payment-card__wrapper {
       display: flex;
       flex-direction: column;
       scrollbar-gutter: stable;

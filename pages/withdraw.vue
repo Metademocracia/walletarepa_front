@@ -16,7 +16,7 @@
       v-model="modelPayments"
       max-width="max-content"
       :overlay-opacity=".9"
-      content-class="modal-cryptos"
+      content-class="modal-payments"
     >
       <aside class="d-flex justify-end mb-5">
         <v-text-field
@@ -30,17 +30,17 @@
       </aside>
 
 
-      <v-card class="cryptos-card">
+      <v-card class="payment-card">
         <div
           v-if="loading"
-          class="cryptos-card__wrapper"
+          class="payment-card__wrapper"
           style="text-align: center;"
         >
         Cargando....
         </div>
         <div
           v-else
-          class="cryptos-card__wrapper"
+          class="payment-card__wrapper"
         >
           <v-list>
             <v-list-item
@@ -55,7 +55,7 @@
           <!-- <v-card
             v-for="(item, i) in otherPayments" :key="i"
             color="transparent"
-            class="cryptos-card-coin space"
+            class="payment-card-coin space"
             @click="onSelected(item)"
           > -->
             <!-- <div class="center" style="gap: 14px;">
@@ -163,14 +163,6 @@
         <img src="@/assets/sources/icons/warning-orange.svg" alt="info icon" class="ml-1" style="translate: 0 5px">
       </h6>
     </section>
-
-
-    <Footer ref="footer">
-      <span class="text tcenter" style="--text: var(--text2); font-size: 10px !important;">© 2023 Near p2p LLC. reservados todos los derechos.</span>
-      <a class="text" style="font-size: 10px !important; --fw: 700; color: var(--primary) !important" href="#" target="_blank">
-        Términos de política y privacidad del servicio
-      </a>
-    </Footer>
   </v-form>
 </template>
 
