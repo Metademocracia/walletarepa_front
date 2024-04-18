@@ -89,6 +89,20 @@
 
       <v-card class="card-outline pa-4 mt-16 d-flex flex-column jsutify-center align-center" style="--bg: var(--card-2)">
         <p class="text-center" style="--fs: 9px; width: min(100%, 192px)">PARA RETIRAR HACIA BANCO TRADICIONAL</p>
+        <v-select
+          :items="listFiats"
+          label="RETIRAR FIAT"
+          item-text="fiat_method"
+          item-value="fiat_method"
+          solo
+        >
+          <template #item="{ item }">
+            <div class="d-flex">
+              <img :src="item.flagcdn" alt="flag" height="20px" class="mr-2">
+              <span>{{ item.fiat_method.trim() }}</span>
+            </div>
+          </template>
+        </v-select>
         <v-btn
           class="btn-outlined flex-grow-1"
           style="--h: 34px; width: min(100%, 192px)"
@@ -102,6 +116,8 @@
 </template>
 
 <script>
+// eslint-disable-next-line import/no-named-as-default
+import gql from "graphql-tag";
 import walletUtils from '@/services/wallet';
 
 
@@ -116,6 +132,7 @@ export default {
       balance: 0.00,
       required: [(v) => !!v || "Campo requerido", (v) => Number(v) <= Number(this.balance) || "Saldo insuficiente" ],
       dataToken: null,
+      listFiats: [],
     }
   },
   head() {
@@ -127,6 +144,7 @@ export default {
 
   mounted() {
     this.getBalance();
+    this.selects();
   },
 
   methods: {
@@ -163,7 +181,35 @@ export default {
       this.tokenImg = token.icon;
       this.tokenSymbol = token.symbol;
       this.dataToken = token.name !== "NEAR" ? token : null;
-    }
+    },
+
+    selects() {
+      const selects = gql`
+        query MyQuery {
+          fiatmethods(orderBy: id) {
+            id
+            flagcdn
+            fiat_method
+          }
+        }
+      `;
+
+      this.$apollo
+        .mutate({
+          mutation: selects,
+        })
+        .then((response) => {
+          for (let i = 0; i < response.data.fiatmethods.length; i++) {
+						this.listFiats.push(response.data.fiatmethods[i]);
+					}
+          this.listFiats.sort((a, b) =>
+						a.fiat_method > b.fiat_method ? 1 : -1
+					);
+        })
+        .catch((err) => {
+          console.log("Error", err);
+        });
+    },
   },
 }
 </script>
