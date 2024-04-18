@@ -97,6 +97,7 @@ export default {
     '~/plugins/google-maps.js',
     '~/plugins/unlock-wallet.js',
     '~/plugins/vue-debounce.js',
+    '~/plugins/firebase.js',
     // services
     '~/services/near-api',
   ],

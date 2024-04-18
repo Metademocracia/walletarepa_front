@@ -237,7 +237,7 @@ export default {
           authorId: "system",
           createdAt: Timestamp.now(),
           status: MessageStatus.sent,
-          text: "The order was successfully processed, please wait for your counterparty's payment.",
+          text: "El pedido se procesó exitosamente, espere el pago de su contraparte.",
           type: MessageType.text,
           updatedAt: Timestamp.now()
         }).toJson(),

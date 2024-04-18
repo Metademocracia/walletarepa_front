@@ -38,7 +38,7 @@
         <profile-avatar
           show-name
           :profile="{
-            name: 'detextre4',
+            name: 'Iniciar Trade',
             avatar: require('@/assets/sources/avatars/avatar.png'),
             verified: true,
           }"
