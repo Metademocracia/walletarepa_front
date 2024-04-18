@@ -1,7 +1,7 @@
 // Cross-domain proxy prefix
 // const API_PROXY_PREFIX='/api'
 // const BASE_URL = process.env.NODE_ENV === 'production' ? process.env.VUE_APP_API_BASE_URL : API_PROXY_PREFIX
-
+const wallet = process.env.Network === 'mainnet' ? 'https://mi.arepa.digital' : 'http://localhost:8000/wallet-p2p/'
 
 export function configNear(keyStores) {
   const network = process.env.Network
@@ -13,7 +13,7 @@ export function configNear(keyStores) {
         networkId: "mainnet",
         keyStore: keyStores,
         nodeUrl: "https://rpc.mainnet.near.org",
-        walletUrl: "https://app.mynearwallet.com/",
+        walletUrl: wallet,
         helperUrl: "https://helper.mainnet.near.org",
         explorerUrl: "https://explorer.mainnet.near.org",
       };
@@ -22,7 +22,7 @@ export function configNear(keyStores) {
         networkId: "testnet",
         keyStore: keyStores,
         nodeUrl: "https://rpc.testnet.near.org",
-        walletUrl: "https://testnet.mynearwallet.com/",
+        walletUrl: wallet,
         helperUrl: "https://helper.testnet.near.org",
         explorerUrl: "https://explorer.testnet.near.org",
       };
