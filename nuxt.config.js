@@ -17,6 +17,9 @@ export default {
     URL_EXPLORER_TXS: process.env.URL_EXPLORER_TXS || 'http://localhost:3000',
     ROUTER_EXPLORER_NEAR: process.env.ROUTER_EXPLORER_NEAR || 'http://localhost:3000',
     ROUTER_RPC: process.env.ROUTER_RPC || 'http://localhost:3000',
+    VUE_APP_CONTRACT_NAME: process.env.VUE_APP_CONTRACT_NAME || 'http://localhost:3000',
+    VUE_APP_CONTRACT_NAME_USDT: process.env.VUE_APP_CONTRACT_NAME_USDT || 'http://localhost:3000',
+    VUE_APP_API_MAIL_URL: process.env.VUE_APP_API_MAIL_URL || 'http://localhost:3000',
   },
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,
@@ -97,8 +100,10 @@ export default {
     '~/plugins/google-maps.js',
     '~/plugins/unlock-wallet.js',
     '~/plugins/vue-debounce.js',
+    '~/plugins/firebase.js',
     // services
     '~/services/near-api',
+    { src: '~/plugins/vue-cryptojs.js', ssr: false },
   ],
 
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
