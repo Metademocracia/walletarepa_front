@@ -90,13 +90,14 @@
       <v-card class="card-outline pa-4 mt-16 d-flex flex-column justify-center align-center" style="--bg: var(--card-2)">
         <p class="text-center" style="--fs: 9px; width: min(100%, 192px)">PARA RETIRAR HACIA BANCO TRADICIONAL</p>
         <v-select
+          v-model="selectedFiat"
           :items="listFiats"
           label="RETIRAR FIAT"
           item-text="fiat_method"
           item-value="fiat_method"
           solo
           :menu-props="{ contentClass: 'menu__content_v2' }"
-          class="mt-0 mb-0 improved-field"
+          class="mt-0 mb-0"
         >
           <template #item="{ item }">
             <div class="d-flex">
@@ -106,6 +107,7 @@
           </template>
         </v-select>
         <v-btn
+          :disabled="!selectedFiat"
           class="btn-outlined flex-grow-1"
           style="--h: 34px; width: min(100%, 192px)"
           @click="$router.push('/withdraw')"
@@ -127,6 +129,7 @@ export default {
   name: "SendPage",
   data() {
     return {
+      selectedFiat: null,
       validForm: true,
       amount: "",
       tokenImg: require('@/assets/sources/logos/near-icon.svg'),
