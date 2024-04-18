@@ -28,4 +28,10 @@
       min-height: 50px;
     }
   }
+
+  .v-input--select {
+    label {
+      translate: 0 -10px !important;
+    }
+  }
 }

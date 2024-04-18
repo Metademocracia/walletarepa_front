@@ -87,7 +87,7 @@
       
       <!-- <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto mt-16 mb-8" style="width: 200px"> -->
 
-      <v-card class="card-outline pa-4 mt-16 d-flex flex-column jsutify-center align-center" style="--bg: var(--card-2)">
+      <v-card class="card-outline pa-4 mt-16 d-flex flex-column justify-center align-center" style="--bg: var(--card-2)">
         <p class="text-center" style="--fs: 9px; width: min(100%, 192px)">PARA RETIRAR HACIA BANCO TRADICIONAL</p>
         <v-select
           :items="listFiats"
@@ -95,11 +95,13 @@
           item-text="fiat_method"
           item-value="fiat_method"
           solo
+          :menu-props="{ contentClass: 'menu__content_v2' }"
+          class="mt-0 mb-0 improved-field"
         >
           <template #item="{ item }">
             <div class="d-flex">
               <img :src="item.flagcdn" alt="flag" height="20px" class="mr-2">
-              <span>{{ item.fiat_method.trim() }}</span>
+              <span id="text-inside">{{ item.fiat_method.trim() }}</span>
             </div>
           </template>
         </v-select>
