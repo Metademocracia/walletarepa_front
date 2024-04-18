@@ -73,11 +73,10 @@
     </section>
 
 
-    <v-btn
-      class="btn-icon mx-auto"
+    <v-btn 
+    class="btn-icon mx-auto"
       style="translate: 0 -30px; --bg: #DEE6EA; box-shadow: none; --b: 1px solid var(--primary); --br: 13px"
-      @click="$router.replace('/deposit')"
-    >
+      @click="$router.replace('/deposit')">
       <img src="@/assets/sources/icons/swap-vertical.svg" alt="swap icon">
     </v-btn>
 
@@ -92,7 +91,7 @@
           <img :src="tokenImg" alt="near icon" style="width: 29px" />
           <span style="--fs: 12px; --c: var(--primary); --ls: normal">{{
             tokenSymbol
-            }}</span>
+          }}</span>
           <img src="@/assets/sources/icons/double-chevron-right.svg" alt="arrow right" />
         </div>
       </v-card>
@@ -134,8 +133,8 @@
         </v-btn>
       </div>
 
-      <h6
-          style="
+      <h6 
+      style="
           font-size: 9px !important;
           --ff: var(--font2);
           --fw: 600;
@@ -152,17 +151,10 @@
 
 <script>
 // import axios from 'axios'
-import * as nearAPI from "near-api-js";
 // eslint-disable-next-line import/no-named-as-default
 import gql from "graphql-tag";
-import { createTransaction, functionCall } from "near-api-js/lib/transaction";
-// eslint-disable-next-line camelcase
-import { base_decode } from "near-api-js/lib/utils/serialize";
-import { PublicKey } from "near-api-js/lib/utils";
 import moment from "moment";
 import walletUtils from "@/services/wallet";
-import { configNear } from '~/services/nearConfig';
-const { keyStores, Near, Contract, WalletConnection } = nearAPI;
 
 export default {
   name: "DepositPage",
@@ -309,260 +301,165 @@ export default {
         request.send();
       }
     },
-    /**
-     * Creates a transaction for withdrawing funds.
-     * 
-     * @param {string} receiverId - The ID of the receiver account.
-     * @param {Array} actions - The actions to be performed in the transaction.
-     * @returns {Promise} - A promise that resolves to the created transaction.
-     * @throws {Error} - If there is no active wallet or NEAR connection, or if a matching key for the transaction cannot be found, or if a block cannot be found for the transaction.
-     */
-    async createTransactionFn(receiverId, actions) {
-      const keyStore = new keyStores.InMemoryKeyStore()
-      const near = new Near(configNear(keyStore))
-      const wallet = new WalletConnection(near);
-
-      if (!wallet || !near) {
-        throw new Error(`No active wallet or NEAR connection.`);
-      }
-
-      const localKey = await near?.connection.signer.getPublicKey(
-        wallet?.account().accountId,
-        near.connection.networkId
-      );
-
-      const accessKey = await wallet
-        ?.account()
-        .accessKeyForTransaction(receiverId, actions, localKey);
-
-      if (!accessKey) {
-        throw new Error(
-          `Cannot find matching key for transaction sent to ${receiverId}`
-        );
-      }
-
-      const block = await near?.connection.provider.block({
-        finality: "final"
-      });
-
-      if (!block) {
-        throw new Error(
-          `Cannot find block for transaction sent to ${receiverId}`
-        );
-      }
-
-      const blockHash = base_decode(block?.header?.hash);
-      // const blockHash = nearAPI.utils.serialize.base_decode(accessKey.block_hash);
-
-      const publicKey = PublicKey.from(accessKey.public_key);
-      // const nonce = accessKey.access_key.nonce + nonceOffset
-      const nonce = ++accessKey.access_key.nonce;
-
-      return createTransaction(
-        wallet?.account().accountId,
-        publicKey,
-        receiverId,
-        nonce,
-        actions,
-        blockHash
-      );
-    },
-    /**
-     * Executes a batch transaction using the provided transactions and options.
-     * @param {Array} transactions - An array of transactions to be executed.
-     * @param {Object} options - Additional options for the batch transaction.
-     * @param {string} options.callbackUrl - The callback URL for the transaction.
-     * @param {Object} options.meta - Additional metadata for the transaction.
-     * @returns {Promise<void>} - A promise that resolves when the batch transaction is executed.
-     */
-    async batchTransaction(transactions, options) {
-      const keyStore = new keyStores.InMemoryKeyStore();
-      const near = new Near(configNear(keyStore));
-      const wallet = new WalletConnection(near);
-      const nearTransactions = await Promise.all(
-        transactions.map(async (tx) => {
-          return await this.createTransactionFn(
-            tx.receiverId,
-            tx.functionCalls.map((fc) => {
-              return functionCall(fc.methodName, fc.args, fc.gas, fc.deposit);
-            })
-          );
-        })
-      );
-      wallet.requestSignTransactions({
-        transactions: nearTransactions,
-        callbackUrl: options?.callbackUrl,
-        meta: options?.meta,
-      });
-    },
     async initContract() {
       await this.initContractUSDT();
     },
     async initContractUSDT() {
       this.btnLoading = true;
-      const txs = [];
       // const account = await walletUtils.nearConnection();
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
       const CONTRACT_NAME_USDT = process.env.VUE_APP_CONTRACT_NAME_USDT;
-      const keyStore = new keyStores.InMemoryKeyStore()
-      const near = new Near(configNear(keyStore))
-      const wallet = new WalletConnection(near);
-      const contract = new Contract(wallet.account(), CONTRACT_NAME, {
-        viewMethods: ["get_token_activo"],
-        changeMethods: [""],
-        sender: wallet.account()
-      });
-      const getTokenActivo = await contract.get_token_activo({
-        user_id: this.address.split(".")[0] + "." + CONTRACT_NAME,
-        ft_token: "USDT"
-      });
+      // const keyStore = new keyStores.InMemoryKeyStore()
+      // const near = new Near(configNear(keyStore))
+      // const wallet = new WalletConnection(near);
+      const account = await walletUtils.nearConnection();
+      const getTokenActivo = await account.viewFunctionV1(
+        CONTRACT_NAME,
+        "get_token_activo",
+        { user_id: this.address.split(".")[0] + "." + CONTRACT_NAME, ft_token: "USDT" }
+      );
 
       let vldeposit = "100000000000000000000000";
 
       if (getTokenActivo === true) {
-					vldeposit = "1";
-				} else {
-          vldeposit = "100000000000000000000000";
-					txs.push({
-						receiverId: CONTRACT_NAME,
-						functionCalls: [
-							{
-								methodName: "activar_subcuenta_ft",
-								receiverId: CONTRACT_NAME,
-								gas: "80000000000000",
-								args: {subaccount_id: this.address.split(".")[0] + "." + CONTRACT_NAME,
-                       asset: "USDT"
-                      },
-								deposit: "100000000000000000000000"
-							}
-							]
-						});
-				}
-        const now = moment()
-					.format("YYYY-MM-DD HH:mm:ss")
-					.toString();
-          if (this.subcontract === false) {
-					txs.push(
-						{
-							// Deploy contract
-							receiverId: CONTRACT_NAME,
-							functionCalls: [
-								{
-									methodName: "create_subcontract_user",
-									receiverId: CONTRACT_NAME,
-									gas: "80000000000000",
-									args: {},
-									deposit: vldeposit
-								}
-							]
-						});
-						txs.push({
-							// Send Near
-							receiverId: CONTRACT_NAME_USDT,
-							functionCalls: [
-								{
-									methodName: "ft_transfer",
-									receiverId: CONTRACT_NAME_USDT,
-									gas: "80000000000000",
-									args: {
-										receiver_id: this.address.split(".")[0] + "." + CONTRACT_NAME,
-											// this.userInfo.split(".")[0] + "." + CONTRACT_NAME,
-											
-										amount: (this.amount * 1e6).toString()
-									},
-									deposit: 1
-								}
-							]
-						});
-						txs.push({
-							// Accept Order
-							receiverId: CONTRACT_NAME,
-							functionCalls: [
-								{
-									methodName: "accept_offer",
-									receiverId: CONTRACT_NAME,
-									gas: "300000000000000",
-									args: {
-										offer_type: 1,
-										offer_id: 4,
-										amount: (this.amount * 1e6).toString(),
-										payment_method: 1,
-										datetime: now,
-										rate: 39.60
-									},
-									deposit: "1"
-								}
-							]
-						});
-					
-				}
-        else if (this.subcontract === true) 
-				{
-					txs.push(
-						{
-							// Send Near
-							receiverId: CONTRACT_NAME_USDT,
-							functionCalls: [
-								{
-									methodName: "ft_transfer",
-									receiverId: CONTRACT_NAME_USDT,
-									gas: "80000000000000",
-									args: {
-										receiver_id:
-                    this.address.split(".")[0] + "." + CONTRACT_NAME,
-										amount: (this.amount * 1e6).toString()
-									},
-									deposit: "1"
-								}
-							]
-						});
-						txs.push({
-							// Accept Order
-							receiverId: CONTRACT_NAME,
-							functionCalls: [
-								{
-									methodName: "accept_offer",
-									receiverId: CONTRACT_NAME,
-									gas: "300000000000000",
-									args: {
-										offer_type: 1,
-										offer_id: 4,
-										amount: (this.amount * 1e6).toString(),
-										payment_method: 1,
-										datetime: now,
-										rate: 39.60
-									},
-									deposit: "1"
-								}
-							]
-						});
-				}  
-        else 
-				{
-					txs.push(
-						{
-							// Accept Order
-							receiverId: CONTRACT_NAME,
-							functionCalls: [
-								{
-									methodName: "accept_offer",
-									receiverId: CONTRACT_NAME,
-									gas: "300000000000000",
-									args: {
-										offer_type: 1,
-										offer_id: 4,
-										amount: (this.amount * 1e6).toString(),
-										payment_method: 1,
-										datetime: now,
-										rate: 39.60
-									},
-									deposit: "1"
-								}
-							]
-						});
-				}
-				// console.log(txs)
-				this.batchTransaction(txs, { meta: "USDT" }) 
+        vldeposit = "1";
+      } else {
+        vldeposit = "100000000000000000000000";
+        const activarSubcuenta = await account.functionCall({
+          contractId: CONTRACT_NAME,
+          methodName: "activar_subcuenta_ft",
+          args: { subaccount_id: this.address.split(".")[0] + "." + CONTRACT_NAME, asset: "USDT" },
+          attachedDeposit: vldeposit
+        });
+
+        if (!activarSubcuenta || !activarSubcuenta.status?.SuccessValue) {
+          console.log("error al activar sub cuenta");
+          return
+        }
+      }
+      const now = moment()
+        .format("YYYY-MM-DD HH:mm:ss")
+        .toString();
+      if (this.subcontract === false) {
+        try {
+          const createSubCobtractUser = await account.functionCall({
+            contractId: CONTRACT_NAME,
+            methodName: "create_subcontract_user",
+            gas: "80000000000000",
+            args: { subaccount_id: this.address.split(".")[0] + "." + CONTRACT_NAME, asset: "USDT" },
+            attachedDeposit: vldeposit
+          });
+
+          if (!createSubCobtractUser || !createSubCobtractUser.status?.SuccessValue) {
+            console.log("error al activar sub cuenta");
+            return
+          }
+
+          const ftTransfer = await account.functionCall({
+            contractId: CONTRACT_NAME_USDT,
+            methodName: "ft_transfer",
+            gas: "80000000000000",
+            args: { receiver_id: this.address.split(".")[0] + "." + CONTRACT_NAME, amount: (this.amount * 1e6).toString() },
+            attachedDeposit: vldeposit
+          });
+
+          if (!ftTransfer || !ftTransfer.status?.SuccessValue) {
+            console.log("error al transferir token");
+            return
+          }
+
+          const acceptOffer = await account.functionCall({
+            contractId: CONTRACT_NAME,
+            methodName: "accept_offer",
+            gas: "300000000000000",
+            args: {
+              offer_type: 1,
+              offer_id: 4,
+              amount: (this.amount * 1e6).toString(),
+              payment_method: 1,
+              datetime: now,
+              rate: 39.60
+            },
+            attachedDeposit: 1
+          });
+
+          if (!acceptOffer || !acceptOffer.status?.SuccessValue) {
+            console.log("error al aceptar la oferta");
+            return
+          }
+        } catch (error) {
+          console.error(error.message);
+          return;
+        }
+      }
+      else if (this.subcontract === true) {
+        try {
+          const ftTransfer = await account.functionCall({
+            contractId: CONTRACT_NAME_USDT,
+            methodName: "ft_transfer",
+            gas: "80000000000000",
+            args: { receiver_id: this.address.split(".")[0] + "." + CONTRACT_NAME, amount: (this.amount * 1e6).toString() },
+            attachedDeposit: vldeposit
+          });
+
+          if (!ftTransfer || !ftTransfer.status?.SuccessValue) {
+            console.log("error al transferir token");
+            return
+          }
+
+          const acceptOffer = await account.functionCall({
+            contractId: CONTRACT_NAME,
+            methodName: "accept_offer",
+            gas: "300000000000000",
+            args: {
+              offer_type: 1,
+              offer_id: 4,
+              amount: (this.amount * 1e6).toString(),
+              payment_method: 1,
+              datetime: now,
+              rate: 39.60
+            },
+            attachedDeposit: 1
+          });
+
+          if (!acceptOffer || !acceptOffer.status?.SuccessValue) {
+            console.log("error al aceptar la oferta");
+            return
+          }
+        } catch (error) {
+          console.error(error.message);
+          return;
+        }
+      }
+      else {
+        try {
+          const acceptOffer = await account.functionCall({
+            contractId: CONTRACT_NAME,
+            methodName: "accept_offer",
+            gas: "300000000000000",
+            args: {
+              offer_type: 1,
+              offer_id: 4,
+              amount: (this.amount * 1e6).toString(),
+              payment_method: 1,
+              datetime: now,
+              rate: 39.60
+            },
+            attachedDeposit: 1
+          });
+
+          if (!acceptOffer || !acceptOffer.status?.SuccessValue) {
+            console.log("error al aceptar la oferta");
+            return
+          }
+        } catch (error) {
+          console.error(error.message);
+          return;
+        }
+      }
+      this.btnLoading = false;
+      // this.sendMail();
+      // this.$router.push({ path: "/withdraw-details" });
     },
   },
 };
