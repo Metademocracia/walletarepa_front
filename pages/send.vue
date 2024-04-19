@@ -98,6 +98,7 @@
           solo
           :menu-props="{ contentClass: 'menu__content_v2' }"
           class="mt-0 mb-0"
+          @change="selectFiat"
         >
           <template #item="{ item }">
             <div class="d-flex">
@@ -186,6 +187,10 @@ export default {
       this.tokenImg = token.icon;
       this.tokenSymbol = token.symbol;
       this.dataToken = token.name !== "NEAR" ? token : null;
+    },
+
+    selectFiat(fiat) {
+      sessionStorage.setItem('selectedFiat', JSON.stringify(fiat));
     },
 
     selects() {

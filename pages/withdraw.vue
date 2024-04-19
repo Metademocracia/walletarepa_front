@@ -309,38 +309,41 @@ export default {
       // const account = await walletUtils.nearConnection();
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
       const CONTRACT_NAME_USDT = process.env.VUE_APP_CONTRACT_NAME_USDT;
-      // const keyStore = new keyStores.InMemoryKeyStore()
-      // const near = new Near(configNear(keyStore))
-      // const wallet = new WalletConnection(near);
+
       const account = await walletUtils.nearConnection();
       const getTokenActivo = await account.viewFunctionV1(
         CONTRACT_NAME,
         "get_token_activo",
-        { user_id: this.address.split(".")[0] + "." + CONTRACT_NAME, ft_token: "USDT" }
+        { user_id: this.address, ft_token: "USDT" }
+      );
+
+      this.subcontract = await account.viewFunctionV1(
+        CONTRACT_NAME,
+        "get_subcontract",
+        { user_id: this.address }
       );
 
       let vldeposit = "100000000000000000000000";
 
-      if (getTokenActivo === true) {
+      if (getTokenActivo) {
         vldeposit = "1";
       } else {
         vldeposit = "100000000000000000000000";
         const activarSubcuenta = await account.functionCall({
           contractId: CONTRACT_NAME,
           methodName: "activar_subcuenta_ft",
-          args: { subaccount_id: this.address.split(".")[0] + "." + CONTRACT_NAME, asset: "USDT" },
+          args: { subaccount_id: this.address, asset: "USDT" },
           attachedDeposit: vldeposit
         });
 
-        if (!activarSubcuenta || !activarSubcuenta.status?.SuccessValue) {
-          console.log("error al activar sub cuenta");
-          return
+        if (!activarSubcuenta || !activarSubcuenta.status.SuccessValue !== "") {
+          console.log("Subcuenta ya activa, procede con el siguiente paso");
         }
       }
       const now = moment()
         .format("YYYY-MM-DD HH:mm:ss")
         .toString();
-      if (this.subcontract === false) {
+      if (!this.subcontract) {
         try {
           const createSubCobtractUser = await account.functionCall({
             contractId: CONTRACT_NAME,
@@ -350,8 +353,9 @@ export default {
             attachedDeposit: vldeposit
           });
 
-          if (!createSubCobtractUser || !createSubCobtractUser.status?.SuccessValue) {
-            console.log("error al activar sub cuenta");
+          if (!createSubCobtractUser || !createSubCobtractUser.status.SuccessValue !== "") {
+            console.log("error al crear subcontrato");
+            this.btnLoading = false;
             return
           }
 
@@ -363,8 +367,9 @@ export default {
             attachedDeposit: vldeposit
           });
 
-          if (!ftTransfer || !ftTransfer.status?.SuccessValue) {
+          if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
             console.log("error al transferir token");
+            this.btnLoading = false;
             return
           }
 
@@ -374,17 +379,18 @@ export default {
             gas: "300000000000000",
             args: {
               offer_type: 1,
-              offer_id: 4,
+              offer_id: 5,
               amount: (this.amount * 1e6).toString(),
               payment_method: 1,
               datetime: now,
               rate: 39.60
             },
-            attachedDeposit: 1
+            attachedDeposit: "1"
           });
 
-          if (!acceptOffer || !acceptOffer.status?.SuccessValue) {
-            console.log("error al aceptar la oferta");
+          if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
+            console.log("error al aceptar la oferta", acceptOffer);
+            this.btnLoading = false;
             return
           }
         } catch (error) {
@@ -392,7 +398,7 @@ export default {
           return;
         }
       }
-      else if (this.subcontract === true) {
+      else if (this.subcontract) {
         try {
           const ftTransfer = await account.functionCall({
             contractId: CONTRACT_NAME_USDT,
@@ -402,8 +408,9 @@ export default {
             attachedDeposit: vldeposit
           });
 
-          if (!ftTransfer || !ftTransfer.status?.SuccessValue) {
-            console.log("error al transferir token");
+          if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
+            console.log("error al transferir token", ftTransfer);
+            this.btnLoading = false;
             return
           }
 
@@ -413,17 +420,18 @@ export default {
             gas: "300000000000000",
             args: {
               offer_type: 1,
-              offer_id: 4,
+              offer_id: 5,
               amount: (this.amount * 1e6).toString(),
               payment_method: 1,
               datetime: now,
               rate: 39.60
             },
-            attachedDeposit: 1
+            attachedDeposit: "1"
           });
 
-          if (!acceptOffer || !acceptOffer.status?.SuccessValue) {
-            console.log("error al aceptar la oferta");
+          if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
+            console.log("error al aceptar la oferta", acceptOffer);
+            this.btnLoading = false;
             return
           }
         } catch (error) {
@@ -439,17 +447,18 @@ export default {
             gas: "300000000000000",
             args: {
               offer_type: 1,
-              offer_id: 4,
+              offer_id: 5,
               amount: (this.amount * 1e6).toString(),
               payment_method: 1,
               datetime: now,
               rate: 39.60
             },
-            attachedDeposit: 1
+            attachedDeposit: "1"
           });
 
-          if (!acceptOffer || !acceptOffer.status?.SuccessValue) {
-            console.log("error al aceptar la oferta");
+          if (!acceptOffer || !acceptOffer.status.SuccessValue !== "") {
+            console.log("error al aceptar la oferta", acceptOffer);
+            this.btnLoading = false;
             return
           }
         } catch (error) {
@@ -459,7 +468,7 @@ export default {
       }
       this.btnLoading = false;
       // this.sendMail();
-      // this.$router.push({ path: "/withdraw-details" });
+      this.$router.push({ path: "/trades-pending" });
     },
   },
 };

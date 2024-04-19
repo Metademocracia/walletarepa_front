@@ -199,7 +199,6 @@ export default {
         // Compare the balance_usd property of each token object
         return b.balance_usd - a.balance_usd;
       }); */
-
       this.tokensData = inventory.fts;
 
       if (this.filter) {
