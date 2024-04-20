@@ -190,7 +190,12 @@ export default {
     },
 
     selectFiat(fiat) {
-      sessionStorage.setItem('selectedFiat', JSON.stringify(fiat));
+      const selectedFiat = this.listFiats.find(item => item.fiat_method === fiat);
+      if (selectedFiat) {
+        localStorage.setItem('selectedFiat', selectedFiat.id);
+      } else {
+        console.error('Fiat not found');
+      }
     },
 
     selects() {

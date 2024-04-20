@@ -225,6 +225,7 @@ export default {
     onSelected(item) {
       this.model = false;
       this.$emit('on-selected-coin', item)
+      localStorage.setItem('selectedCoin', JSON.stringify(item));
     }
   },
 

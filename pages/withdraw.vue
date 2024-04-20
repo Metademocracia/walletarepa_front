@@ -24,10 +24,11 @@
           <v-list>
             <v-list-item 
             v-for="(payment, i) in otherPayments" :key="i"
-              @click="selectPaymentDialog(payment.payment_method)">
-              {{ payment.payment_method }}
+              class="font-weight-bold"
+              @click="selectPaymentDialog(payment)">
+              {{ payment }}
               <img 
-              v-if="selectedPayment == payment.payment_method" src="@/assets/sources/icons/checked.svg"
+              v-if="selectedPayment == payment" src="@/assets/sources/icons/checked.svg"
                 alt="checked icon" />
               <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon" />
             </v-list-item>
@@ -91,7 +92,7 @@
           <img :src="tokenImg" alt="near icon" style="width: 29px" />
           <span style="--fs: 12px; --c: var(--primary); --ls: normal">{{
             tokenSymbol
-          }}</span>
+            }}</span>
           <img src="@/assets/sources/icons/double-chevron-right.svg" alt="arrow right" />
         </div>
       </v-card>
@@ -162,7 +163,7 @@ export default {
     return {
       filter: ["usdt", "near", "arp"],
       selectedPayment: "",
-      payments: ["Pago Móvil", "Zelle", "Banesco"],
+      payments: [],
       btnContinue: true,
       otherPayments: [],
       originalPayments: [],
@@ -181,6 +182,7 @@ export default {
       search: "",
       address: localStorage.getItem("address"),
       subcontract: false,
+      listOffers: [],
     };
   },
   head() {
@@ -207,10 +209,10 @@ export default {
     selectPaymentDialog(payment) {
       this.selectedPayment = payment;
       this.payments[2] = payment;
-
-      this.otherPayments = this.originalPayments.filter(
-        (item) => !this.payments.includes(item.payment_method)
-      );
+      this.otherPayments = this.originalPayments.filter(item => !this.payments.includes(item));
+      // this.otherPayments = this.originalPayments.filter(
+      //   (item) => !this.payments.includes(item.payment_method)
+      // );
       this.disabledContinue();
       this.modelPayments = false;
     },
@@ -246,6 +248,7 @@ export default {
       this.tokenImg = token.icon;
       this.tokenSymbol = token.symbol;
       this.dataToken = token.name !== "NEAR" ? token : null;
+      this.selects();
     },
 
     debouncePreviewWithdraw() {
@@ -255,31 +258,70 @@ export default {
     },
     selects() {
       const selects = gql`
-        query MyQuery {
-          paymentmethods(orderBy: id) {
-            id
+      query MyQuery( $fiat_method: String, $token: String, $address: String ) {
+        offerssells(
+          where: {fiat_method: $fiat_method, asset_contains: $token, owner_id_not: $address}
+          orderBy: exchange_rate
+          orderDirection: desc
+        ) {
+          amount
+          asset
+          exchange_rate
+          fiat_method
+          id
+          max_limit
+          min_limit
+          owner_id
+          remaining_amount
+          status
+          terms_conditions
+          time
+          payment_method {
             payment_method
+            payment_method_id
           }
         }
+      }
       `;
-
+      const selectedFiat = localStorage.getItem('selectedFiat');
+      // const eltoken = this.selectToken;
+      let paymentMethods = new Set();
+      this.listOffers = [];
       this.$apollo
-        .mutate({
-          mutation: selects,
+        .watchQuery({
+          query: selects,
+          variables: {
+            fiat_method: selectedFiat,
+            token: this.tokenSymbol,
+            address: localStorage.getItem("address"),
+          },
         })
-        .then((response) => {
-          const paymentmethods = response.data.paymentmethods;
-
-          if (!paymentmethods) {
-            return;
+        .subscribe(({ data }) => {
+          data.offerssells.forEach(offer => {
+              offer.payment_method.forEach(method => {
+                paymentMethods.add(method.payment_method);
+              });
+          });
+          Object.entries(data.offerssells).forEach(
+								([key, value]) => {
+                  this.listOffers.push(value);
+								}
+							);
+          paymentMethods = Array.from(paymentMethods);
+          /**
+           * If the paymentMethods array includes "Pago Móvil",
+           * this code filters out "Pago Móvil" from the array
+           * and adds it back to the beginning of the array.
+           */
+          if (paymentMethods.includes("Pago Móvil")) {
+            paymentMethods = paymentMethods.filter(method => method !== "Pago Móvil");
+            paymentMethods.unshift("Pago Móvil");
           }
-          this.otherPayments = paymentmethods.filter(
-            (item) => !this.payments.includes(item.payment_method)
-          );
-          this.originalPayments = paymentmethods;
-        })
-        .catch((err) => {
-          console.log("Error", err);
+
+          this.payments = paymentMethods.slice(0, 3);
+
+          this.otherPayments = paymentMethods.filter(item => !this.payments.includes(item));
+          this.originalPayments = paymentMethods;
         });
     },
     sendMail() {
@@ -306,11 +348,27 @@ export default {
     },
     async initContractUSDT() {
       this.btnLoading = true;
-      // const account = await walletUtils.nearConnection();
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
       const CONTRACT_NAME_USDT = process.env.VUE_APP_CONTRACT_NAME_USDT;
+      /**
+       * Converts the withdrawal amount to the appropriate format based on the token symbol.
+       * If the token symbol is "NEAR", the amount is multiplied by 1e24.
+       * If the token symbol is not "NEAR", the amount is multiplied by 1e6.
+       */
+      const orderAmount = this.tokenSymbol === "NEAR" ? (this.amount * 1e24).toString(): (this.amount * 1e6).toString();
+
+      // Filtering the list by payment method and the highest exchange rate
+      // and the remaining amount is greater than the order amount
+      this.filteredOffers = this.listOffers
+      .filter(offer => offer.payment_method.some(method => method.payment_method === this.selectedPayment))
+      .filter(offer => parseFloat(offer.remaining_amount) >= orderAmount)
+      .sort((a, b) => b.exchange_rate - a.exchange_rate)
+      .find(() => true);
+      // Filter paymet method as per selected payment
+      const filteredPaymentMethod = this.filteredOffers.payment_method.find(method => method.payment_method === this.selectedPayment);
 
       const account = await walletUtils.nearConnection();
+
       const getTokenActivo = await account.viewFunctionV1(
         CONTRACT_NAME,
         "get_token_activo",
@@ -363,7 +421,7 @@ export default {
             contractId: CONTRACT_NAME_USDT,
             methodName: "ft_transfer",
             gas: "80000000000000",
-            args: { receiver_id: this.address.split(".")[0] + "." + CONTRACT_NAME, amount: (this.amount * 1e6).toString() },
+            args: { receiver_id: this.address.split(".")[0] + "." + CONTRACT_NAME, amount: orderAmount },
             attachedDeposit: vldeposit
           });
 
@@ -379,11 +437,11 @@ export default {
             gas: "300000000000000",
             args: {
               offer_type: 1,
-              offer_id: 5,
-              amount: (this.amount * 1e6).toString(),
-              payment_method: 1,
+              offer_id: parseInt(this.filteredOffers.id),
+              amount: orderAmount,
+              payment_method: parseInt(filteredPaymentMethod.payment_method_id),
               datetime: now,
-              rate: 39.60
+              rate: parseFloat(this.filteredOffers.exchange_rate)
             },
             attachedDeposit: "1"
           });
@@ -404,7 +462,7 @@ export default {
             contractId: CONTRACT_NAME_USDT,
             methodName: "ft_transfer",
             gas: "80000000000000",
-            args: { receiver_id: this.address.split(".")[0] + "." + CONTRACT_NAME, amount: (this.amount * 1e6).toString() },
+            args: { receiver_id: this.address.split(".")[0] + "." + CONTRACT_NAME, amount: orderAmount },
             attachedDeposit: vldeposit
           });
 
@@ -420,11 +478,11 @@ export default {
             gas: "300000000000000",
             args: {
               offer_type: 1,
-              offer_id: 5,
-              amount: (this.amount * 1e6).toString(),
-              payment_method: 1,
+              offer_id: parseInt(this.filteredOffers.id),
+              amount: orderAmount,
+              payment_method: parseInt(filteredPaymentMethod.payment_method_id),
               datetime: now,
-              rate: 39.60
+              rate: parseFloat(this.filteredOffers.exchange_rate)
             },
             attachedDeposit: "1"
           });
@@ -447,11 +505,11 @@ export default {
             gas: "300000000000000",
             args: {
               offer_type: 1,
-              offer_id: 5,
-              amount: (this.amount * 1e6).toString(),
-              payment_method: 1,
+              offer_id: parseInt(this.filteredOffers.id),
+              amount: orderAmount,
+              payment_method: parseInt(filteredPaymentMethod.payment_method_id),
               datetime: now,
-              rate: 39.60
+              rate: parseFloat(this.filteredOffers.exchange_rate)
             },
             attachedDeposit: "1"
           });
