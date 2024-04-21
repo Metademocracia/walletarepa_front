@@ -410,12 +410,13 @@ export default {
             args: { subaccount_id: this.address.split(".")[0] + "." + CONTRACT_NAME, asset: "USDT" },
             attachedDeposit: vldeposit
           });
-
-          if (!createSubCobtractUser || !createSubCobtractUser.status.SuccessValue !== "") {
+          console.log(createSubCobtractUser)
+          if (!createSubCobtractUser || createSubCobtractUser.status.SuccessValue !== "") {
             console.log("error al crear subcontrato");
             this.btnLoading = false;
             return
           }
+          
 
           const ftTransfer = await account.functionCall({
             contractId: CONTRACT_NAME_USDT,

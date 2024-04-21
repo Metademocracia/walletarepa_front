@@ -1,6 +1,6 @@
 <template>
   <div id="trades-pending" class="d-flex flex-column">
-    <v-dialog
+   <v-dialog
     v-model="dialog"
     max-width="max-content"
     :overlay-opacity=".9"
@@ -23,6 +23,29 @@
     </v-card>
   </v-dialog>
 
+  <v-dialog
+    v-model="dialog2"
+    max-width="max-content"
+    :overlay-opacity=".9"
+    content-class="modal-cryptos"
+  >
+    <v-card class="cryptos-card">
+      <div
+        class="cryptos-card__wrapper"
+      >
+        <v-card
+          color="transparent"
+          class="cryptos-card-coin space"
+          @click="onSelected(item)"
+        >
+        <div class="center" style="gap: 14px;">
+        <p style="font-size: 14px!important; text-align: justify;" >En la pantalla principal podrá visualizar si tiene una orden pendiente, para que pueda seguir operando con su wallet. <br/><br/> Al culminar el tiempo de la orden, si no ha finalizado la transacción siempre visualizará la pantalla de trasacciones pendientes hasta culminarla</p>
+      </div>
+        </v-card>
+      </div>
+    </v-card>
+  </v-dialog>
+
     <Header top-text="EN ESPERA DE" bottom-text="CONFIRMACIÓN" bottom-text-dir="ltr" hide-prepend class="mb-4">
       <template #prepend>
         <v-btn class="btn-icon-shadow ml-auto" @click="$router.back()">
@@ -34,8 +57,8 @@
     <aside
       style="display: grid; grid-template-columns: repeat(5, 1fr) 35px; grid-template-rows: repeat(2, 1fr) 35px; gap: 15px;">
       <v-card 
-      class="card pa-4 px-6 d-flex"
-        style="--bg: var(--card-2); grid-column: span 4; grid-row: span 2; gap: 5px;">
+      class="card pa-4 px- d-flex"
+        style="--bg: var(--card-2); grid-column: span 6; grid-row: span 2; gap: 5px;">
         <div>
           <p class="mb-0" style="font-family: var(--font3) !important; --fs: 12px">
             Tiempo estimado para la confirmación del pago:
@@ -49,9 +72,7 @@
         <img src="@/assets/sources/icons/reloj.svg" alt="clock icon">
       </v-card>
 
-      <v-card class="card clock pa-4" style="--bg: var(--card-2); grid-column: span 2; grid-row: span 2;">
-        {{ formattedTime(secondsEstimated) }}
-      </v-card>
+     
 
       <v-card class="card px-4 d-flex align-center justify-space-between" style="--bg: #D6DAE2; grid-column: span 5">
         <profile-avatar 
@@ -111,7 +132,7 @@
     <v-card class="card-outline pa-4">
       <div class="d-flex justify-space-between align-center">
         <p class="mb-0" style="font-weight: 700 !important;">VENDER {{ tokenSymbol }}</p>
-        <img :src="tokenImage" alt="crypto coin" style="width: 20px;">
+        <img :src="tokenImage" alt="c" style="width: 20px;">
       </div>
       <div class="d-flex justify-space-between align-center">
         <p class="mb-0">Monto a recibir</p>
@@ -139,7 +160,7 @@
       PUEDE SEGUIR HACIENDO OTRAS TAREAS<br><br><br>
       PARA VOLVER AQUÍ PUEDE DAR CLIC EN ACTIVIDADES RECIENTES, EN LA ZONA INFERIOR DE LA VENTANA PRINCIPAL
 
-      <img src="@/assets/sources/icons/warning-orange.svg" alt="info icon" class="ml-1" style="translate: 0 5px">
+      <img src="@/assets/sources/icons/warning-orange.svg" alt="info icon" class="ml-1" style="translate: 0 5px" @click="dialog2 = true">
     </h6>
   </div>
 </template>
@@ -165,6 +186,7 @@ export default {
       traderName: "",
       terms: "",
       dialog: false,
+      dialog2: false,
       receiveAmount: 0,
       tokenSymbol: "",
       tokenImage: "",
@@ -215,16 +237,31 @@ export default {
     }
   },
   mounted() {
+    const time = sessionStorage.getItem('traderName') ? 100 : 3000;
+    let counter = 0;
+    const maxAttempts = 3;
     // Info from trader
-    this.selects();
-    let selectedToken = localStorage.getItem("selectedCoin");
-    if (selectedToken) {
-      selectedToken = JSON.parse(selectedToken);
-      this.tokenSymbol = selectedToken.symbol;
-      this.tokenImage = selectedToken.icon;
-    }
-    this.fiatSymbol = localStorage.getItem("selectedFiat") === "1" ? "Bs." : "$" ;
-    this.crypto = localStorage.getItem("selectedFiat") === "1" ? "VES" : "USD" ;
+    const intervalId = setInterval(() => {
+      this.selects();
+      let selectedToken = localStorage.getItem("selectedCoin");
+      if (selectedToken) {
+        selectedToken = JSON.parse(selectedToken);
+        this.tokenSymbol = selectedToken.symbol;
+        this.tokenImage = selectedToken.icon;
+      }
+      this.fiatSymbol = localStorage.getItem("selectedFiat") === "1" ? "Bs." : "$" ;
+      this.crypto = localStorage.getItem("selectedFiat") === "1" ? "VES" : "USD" ;
+
+      counter++;
+
+      if (this.data.length > 0 || sessionStorage.getItem('traderName')) {
+        clearInterval(intervalId);
+      } else if (counter >= maxAttempts) {
+        clearInterval(intervalId);
+        this.$router.push('/');
+      }
+    }, time);
+    
   },
   methods: {
     selects() {
@@ -251,29 +288,44 @@ export default {
         }
       }
       `;    
-      this.$apollo
-        .watchQuery({
-          query: selects,
-          variables: {
-            address: localStorage.getItem("address"),
-          },
-        })
-        .subscribe(({ data }) => {
+      if (sessionStorage.getItem('terms') && sessionStorage.getItem('exchangeRate') && sessionStorage.getItem('receiveAmount') && sessionStorage.getItem('operationAmount') && sessionStorage.getItem('orderId') && sessionStorage.getItem('seconds') && sessionStorage.getItem('traderName')) {
+        this.terms = sessionStorage.getItem('terms');
+        this.exchangeRate = sessionStorage.getItem('exchangeRate');
+        this.receiveAmount = sessionStorage.getItem('receiveAmount');
+        this.operationAmount = sessionStorage.getItem('operationAmount');
+        this.orderId = sessionStorage.getItem('orderId');
+        this.seconds = sessionStorage.getItem('seconds');
+        this.traderName = sessionStorage.getItem('traderName');
+      } else {
+        this.$apollo
+          .watchQuery({
+            query: selects,
+            variables: {
+              address: localStorage.getItem("address"),
+            },
+          })
+          .subscribe(({ data }) => {
             this.data = [];
-						Object.entries(data.ordersells).forEach(([key, value]) => {
-								this.data.push(value);
-                this.trader( this.data[0].owner_id );   
-                this.terms = this.data[0].terms_conditions;
-                walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
-                   this.exchangeRate = this.data[0].exchange_rate * price;
-                   this.receiveAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
-                }); 
-                this.operationAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) : (this.data[0].operation_amount / 1e6);               
-						    this.orderId = this.data[0].order_id;    
-                this.seconds = this.data[0].time * 1000;
+            Object.entries(data.ordersells).forEach(([key, value]) => {
+              this.data.push(value);
+              this.trader(this.data[0].owner_id);
+              this.terms = this.data[0].terms_conditions;
+              sessionStorage.setItem('terms', this.terms);
+              walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
+                this.exchangeRate = this.data[0].exchange_rate * price;
+                sessionStorage.setItem('exchangeRate', this.exchangeRate);
+                this.receiveAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
+                sessionStorage.setItem('receiveAmount', this.receiveAmount);
+              });
+              this.operationAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) : (this.data[0].operation_amount / 1e6);
+              sessionStorage.setItem('operationAmount', this.operationAmount);
+              this.orderId = this.data[0].order_id;
+              sessionStorage.setItem('orderId', this.orderId);
+              this.seconds = this.data[0].time * 1000;
+              sessionStorage.setItem('seconds', this.seconds);
             });
-        });
-        
+          });
+      }
     },
     trader( ownerId ) {
       const selects = gql`
@@ -284,6 +336,9 @@ export default {
         }
       }
       `;
+      if (sessionStorage.getItem('traderName')) {
+        this.traderName = sessionStorage.getItem('traderName');
+      } else {
       this.$apollo
         .watchQuery({
           query: selects,
@@ -294,17 +349,22 @@ export default {
         .subscribe(({ data }) => {
             this.dataTrader = [];
 						Object.entries(data.datausers).forEach(([key, value]) => {
-								this.dataTrader.push(value);
-                this.traderName = this.dataTrader.length > 0 ? this.dataTrader[0].name + ' ' + this.dataTrader[0].last_name : ownerId;
-						});
+            this.dataTrader.push(value);
+            this.traderName = this.dataTrader.length > 0 ? this.dataTrader[0].name + ' ' + this.dataTrader[0].last_name : ownerId;
+            sessionStorage.setItem('traderName', this.traderName);
+          });
         });
-        
+      }
     },
     goToSupport() {
       window.open('https://t.me/nearp2p', '_blank');
     },
     formatNumber(number) {
-      return new Intl.NumberFormat('es-VE', {  currency: 'VES' }).format(number);
+      return new Intl.NumberFormat('es-VE', { 
+        style: 'decimal', 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+      }).format(number);
     },
     startCountdown() {
       const intervalId = setInterval(() => {

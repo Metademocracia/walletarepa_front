@@ -19,11 +19,11 @@
     <aside class="d-flex flex-column mt-6" style="gap: 10px">
       <h3>EXECUTED</h3>
 
-      <v-btn class="btn mb-4">
+      <v-btn class="btn mb-4" @click="goToExplorer">
         CHECK TRANSACTION IN EXPLORER
       </v-btn>
 
-      <v-btn class="btn-outlined" style="--bg: #fff">
+      <v-btn class="btn-outlined" style="--bg: #fff" @click="$router.push('/')">
         OK
       </v-btn>
     </aside>
@@ -50,6 +50,9 @@ export default {
     }
   },
   methods: {
+    goToExplorer() {
+      window.open(process.env.URL_EXPLORER + localStorage.getItem('address'), '_blank');
+    },
   },
 };
 </script>
