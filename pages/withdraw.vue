@@ -112,7 +112,7 @@
       </v-list>
 
       <v-card 
-      class="btn-outlined space" style="--bg: var(--secondary); --b-color: #d1c4e8; padding: 0 23px"
+      v-if="moreBanks" class="btn-outlined space" style="--bg: var(--secondary); --b-color: #d1c4e8; padding: 0 23px"
         @click="modelPayments = true">
         <h5 class="mb-0">BUSCAR OTRO MÉTODO</h5>
 
@@ -167,6 +167,7 @@ export default {
       selectedPayment: "",
       payments: [],
       btnContinue: true,
+      moreBanks: false,
       otherPayments: [],
       originalPayments: [],
       required: [
@@ -321,6 +322,7 @@ export default {
           }
 
           this.payments = paymentMethods.slice(0, 3);
+          this.payments.length === 3 ? this.moreBanks = true : this.moreBanks = false;
 
           this.otherPayments = paymentMethods.filter(item => !this.payments.includes(item));
           this.originalPayments = paymentMethods;
