@@ -322,7 +322,7 @@ export default {
           }
 
           this.payments = paymentMethods.slice(0, 3);
-          this.payments.length === 3 ? this.moreBanks = true : this.moreBanks = false;
+          this.payments.length > 3 ? this.moreBanks = true : this.moreBanks = false;
 
           this.otherPayments = paymentMethods.filter(item => !this.payments.includes(item));
           this.originalPayments = paymentMethods;
