@@ -348,6 +348,7 @@ export default {
       }
     },
     async initContract() {
+      localStorage.setItem("operation", "SELL");
       this.tokenSymbol === "NEAR" ? await this.initContractNEAR() : await this.initContractUSDT();
     },
     async initContractUSDT() {

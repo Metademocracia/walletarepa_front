@@ -97,7 +97,7 @@
     class="my-4"
       style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 151px), 1fr)); grid-auto-rows: 111px; gap: 15px;">
       <v-card class="card-outline flex-grow-1 d-flex flex-column pa-4">
-        <p class="mb-1">Nombre de comprador</p>
+        <p class="mb-1">{{ traderNameTitle }}</p>
         <span 
         class="d-flex"
           style="font-family: var(--font3) !important; font-size: 13px; line-height: 2ch !important;">
@@ -131,11 +131,11 @@
 
     <v-card class="card-outline pa-4">
       <div class="d-flex justify-space-between align-center">
-        <p class="mb-0" style="font-weight: 700 !important;">VENDER {{ tokenSymbol }}</p>
+        <p class="mb-0" style="font-weight: 700 !important;">{{ typeOffer }} {{ tokenSymbol }}</p>
         <img :src="tokenImage" alt="c" style="width: 20px;">
       </div>
       <div class="d-flex justify-space-between align-center">
-        <p class="mb-0">Monto a recibir</p>
+        <p class="mb-0">{{ amountTittle }}</p>
         <span class="mb-0" style="font-weight: 700 !important; font-size: 16px !important">{{ fiatSymbol }} {{ formatNumber(receiveAmount) }}</span>
       </div>
       <div class="d-flex justify-space-between align-center mb-2">
@@ -143,11 +143,11 @@
         <p class="mb-0" style="font-weight: 700 !important;">{{ fiatSymbol }} {{ formatNumber(exchangeRate) }}</p>
       </div>
       <div class="d-flex justify-space-between align-center mb-2">
-        <p class="mb-0">Crypto Amount:</p>
+        <p class="mb-0">{{ cryptoTittle }}</p>
         <p class="mb-0" style="font-weight: 700 !important;">{{ operationAmount }} {{ tokenSymbol }}</p>
       </div>
       <div class="d-flex justify-space-between align-center">
-        <p class="mb-0">Orden número:</p>
+        <p class="mb-0">Orden Número:</p>
         <p class="mb-0">{{ orderId }}</p>
       </div>
     </v-card>
@@ -186,6 +186,7 @@ export default {
       data: [],
       dataTrader: [],
       traderName: "",
+      traderNameTitle: "",
       terms: "",
       dialog: false,
       dialog2: false,
@@ -196,7 +197,10 @@ export default {
       crypto: "",
       exchangeRate: 0,
       operationAmount: 0,
-      orderId: 0
+      orderId: 0,
+      typeOffer: "",
+      amountTittle: "",
+      cryptoTittle: "",
     }
   },
   head() {
@@ -239,6 +243,17 @@ export default {
     }
   },
   mounted() {
+    if(localStorage.getItem("operation") === "SELL"){
+      this.traderNameTitle = "Nombre de comprador:";
+      this.typeOffer = "VENDER"
+      this.amountTittle = "Monto a Recibir:";
+      this.cryptoTittle = "Crypto a Vender:";
+    } else {
+      this.traderNameTitle = "Nombre de vendedor:";
+      this.typeOffer = "COMPRAR";
+      this.amountTittle = "Monto a Pagar:";
+      this.cryptoTittle = "Crypto a Recibir:";
+    }
     const time = sessionStorage.getItem('traderName') ? 100 : 3000;
     let counter = 0;
     const maxAttempts = 3;
@@ -259,20 +274,25 @@ export default {
       if (this.data.length > 0 || sessionStorage.getItem('traderName')) {
         clearInterval(intervalId);
       } else if (counter >= maxAttempts) {
-        // clearInterval(intervalId);
-        // this.$router.push('/');
+         localStorage.setItem('endTime', '0');
+         clearInterval(intervalId);
+         this.$router.push('/');
       }
     }, time);
     
   },
   methods: {
-    selects() {
+    selects(){
+      localStorage.getItem("operation") === "SELL" ? this.orderSell() : this.orderBuy();
+    },
+    orderSell() {
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
             where: {signer_id: $address}
           orderBy: id
           orderDirection: desc
+          first: 1
           ) {
           id
           amount_delivered
@@ -304,11 +324,76 @@ export default {
             query: selects,
             variables: {
               address: localStorage.getItem("address"),
-            },
+            }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
             this.data = [];
             Object.entries(data.ordersells).forEach(([key, value]) => {
+              this.data.push(value);
+              this.trader(this.data[0].owner_id);
+              this.terms = this.data[0].terms_conditions;
+              sessionStorage.setItem('terms', this.terms);
+              walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
+                this.exchangeRate = this.data[0].exchange_rate * price;
+                sessionStorage.setItem('exchangeRate', this.exchangeRate);
+                this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
+                sessionStorage.setItem('receiveAmount', this.receiveAmount);
+              });
+              this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
+              sessionStorage.setItem('operationAmount', this.operationAmount);
+              this.orderId = this.data[0].order_id;
+              sessionStorage.setItem('orderId', this.orderId);
+              localStorage.setItem('orderId', this.orderId);
+              this.seconds = this.data[0].time * 1000;
+              sessionStorage.setItem('seconds', this.seconds);
+            });
+          });
+      }
+    },
+    orderBuy() {
+      const selects = gql`
+        query MyQuery( $address : String) {
+          orderbuys(
+            where: {signer_id: $address}
+          orderBy: id
+          orderDirection: desc
+          first: 1
+          ) {
+          id
+          amount_delivered
+          asset
+          exchange_rate
+          fee_deducted
+          fiat_method
+          owner_id
+          payment_method
+          signer_id
+          terms_conditions
+          time
+          operation_amount
+          order_id
+        }
+      }
+      `;    
+      if (sessionStorage.getItem('terms') && sessionStorage.getItem('exchangeRate') && sessionStorage.getItem('receiveAmount') && sessionStorage.getItem('operationAmount') && sessionStorage.getItem('orderId') && sessionStorage.getItem('seconds') && sessionStorage.getItem('traderName')) {
+        this.terms = sessionStorage.getItem('terms');
+        this.exchangeRate = sessionStorage.getItem('exchangeRate');
+        this.receiveAmount = sessionStorage.getItem('receiveAmount');
+        this.operationAmount = sessionStorage.getItem('operationAmount');
+        this.orderId = sessionStorage.getItem('orderId');
+        this.seconds = sessionStorage.getItem('seconds');
+        this.traderName = sessionStorage.getItem('traderName');
+      } else {
+        this.$apollo
+          .watchQuery({
+            query: selects,
+            variables: {
+              address: localStorage.getItem("address"),
+            }, pollInterval: 3000
+          })
+          .subscribe(({ data }) => {
+            this.data = [];
+            Object.entries(data.orderbuys).forEach(([key, value]) => {
               this.data.push(value);
               this.trader(this.data[0].owner_id);
               this.terms = this.data[0].terms_conditions;

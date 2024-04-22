@@ -44,6 +44,16 @@
         </v-btn>
       </div>
 
+      <div class="space" style="gap: 10px">
+        <v-btn
+          class="btn-outlined"
+          style="--bg: var(--secondary); flex: 1 1"
+          @click="$refs.modalCryptos.model = true"
+        >
+          BALANCES
+        </v-btn>
+      </div>
+
       <aside class="container-available">
         <h1 class="p">
           <span style="--fw: 400">$</span>{{ balance }}

@@ -348,6 +348,7 @@ export default {
       }
     },
     async initContract() {
+      localStorage.setItem("operation", "BUY");
       this.btnLoading = true;
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
       /**
