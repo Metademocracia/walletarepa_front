@@ -44,14 +44,16 @@
         </v-btn>
       </div>
 
-      <div class="space" style="gap: 10px">
+      <div v-if="pendingTrades" class="centered-container">
         <v-btn
-          class="btn-outlined"
-          style="--bg: var(--secondary); flex: 1 1"
-          @click="$refs.modalCryptos.model = true"
+          class="btn-icon"
+          @click="$router.push('trades-pending')"
         >
-          BALANCES
+        <img :src="operationSymbol" style="height: 18px;" alt="plus">
         </v-btn>
+      </div>
+      <div v-if="pendingTrades">
+          <span  class="centered-container-text" @click="$router.push('trades-pending')">P2P PENDIENTE</span>
       </div>
 
       <aside class="container-available">
@@ -265,7 +267,9 @@ export default {
         },
       ],
       dataActivity: [],
-      dataTokens: []
+      dataTokens: [],
+      operationSymbol: "",
+      pendingTrades: false,
     }
   },
   head() {
@@ -275,9 +279,15 @@ export default {
     }
   },
   mounted() {
+    this.setOperationSymbol();
+
     this.address = localStorage.getItem("address");
 
     sessionStorage.removeItem("create-import-proccess")
+
+    if(localStorage.getItem('orderId')){
+      this.pendingTrades = true;
+    }
 
     // localStorage.removeItem("importEmailNickname");
     // localStorage.removeItem("importEmail");
@@ -492,7 +502,15 @@ export default {
         }
 
       })
-    }
+    },
+    setOperationSymbol() {
+      const tokenSymbol = localStorage.getItem('tokenSymbol');
+      if (tokenSymbol === "USDT") {
+        this.operationSymbol = require("@/assets/sources/tokens/usdt.svg");
+      } else {
+        this.operationSymbol = require("@/assets/sources/tokens/near.svg");
+      }
+    },
   }
 };
 </script>

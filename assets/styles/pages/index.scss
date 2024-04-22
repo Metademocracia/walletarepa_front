@@ -50,6 +50,23 @@
       }
     }
 
+    .centered-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 5px;
+    }
+
+    .centered-container-text {
+      margin-bottom: 10px; /* Adjust as needed */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 5px;
+      font-weight: bold !important;
+      color: red !important;
+    }
+
     .container-btns {
       --size-btn: 40px;
       --distance: calc(17px + var(--size-btn));

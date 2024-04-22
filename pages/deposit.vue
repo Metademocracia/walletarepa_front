@@ -195,6 +195,9 @@ export default {
     };
   },
   mounted() {
+    if(localStorage.getItem('orderId')){
+      this.$router.push('trades-pending');
+    }
     this.getBalance();
     this.selects();
   },

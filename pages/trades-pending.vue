@@ -265,6 +265,7 @@ export default {
         selectedToken = JSON.parse(selectedToken);
         this.tokenSymbol = selectedToken.symbol;
         this.tokenImage = selectedToken.icon;
+        localStorage.setItem('tokenSymbol', this.tokenSymbol);
       }
       this.fiatSymbol = localStorage.getItem("selectedFiat") === "1" ? "Bs." : "$" ;
       this.crypto = localStorage.getItem("selectedFiat") === "1" ? "VES" : "USD" ;
