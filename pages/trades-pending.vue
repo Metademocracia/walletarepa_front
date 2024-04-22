@@ -275,7 +275,8 @@ export default {
       if (this.data.length > 0 || sessionStorage.getItem('traderName')) {
         clearInterval(intervalId);
       } else if (counter >= maxAttempts) {
-         localStorage.setItem('endTime', '0');
+         localStorage.removeItem('endTime');
+         localStorage.removeItem('startTime');
          clearInterval(intervalId);
          this.$router.push('/');
       }
@@ -463,7 +464,8 @@ export default {
             this.seconds = secondsLeft;
           } else {
             this.seconds = 0;
-            localStorage.setItem('endTime', '0'); // Set endTime in localStorage to 0
+            localStorage.removeItem('endTime');
+            localStorage.removeItem('startTime');
             clearInterval(intervalId);
           }
         } else {

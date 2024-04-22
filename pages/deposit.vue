@@ -266,7 +266,7 @@ export default {
       const selects = gql`
       query MyQuery( $fiat_method: String, $token: String, $address: String ) {
         offersbuys(
-          where: {fiat_method: $fiat_method, asset_contains: $token, owner_id_not: $address}
+          where: {fiat_method: $fiat_method, asset_contains: $token, owner_id_not: $address, is_pause: false}
           orderBy: exchange_rate
           orderDirection: desc
         ) {
