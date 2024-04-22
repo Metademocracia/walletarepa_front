@@ -167,10 +167,12 @@
 
 
 <script>
+import * as nearAPI from "near-api-js";
 // eslint-disable-next-line import/no-named-as-default
 import gql from "graphql-tag";
 import { formattedTime } from '@/plugins/functions'
 import walletUtils from "@/services/wallet";
+const { utils } = nearAPI;
 
 export default {
   name: "TradesPendingPage",
@@ -257,8 +259,8 @@ export default {
       if (this.data.length > 0 || sessionStorage.getItem('traderName')) {
         clearInterval(intervalId);
       } else if (counter >= maxAttempts) {
-        clearInterval(intervalId);
-        this.$router.push('/');
+        // clearInterval(intervalId);
+        // this.$router.push('/');
       }
     }, time);
     
@@ -314,10 +316,10 @@ export default {
               walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
                 this.exchangeRate = this.data[0].exchange_rate * price;
                 sessionStorage.setItem('exchangeRate', this.exchangeRate);
-                this.receiveAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
+                this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
                 sessionStorage.setItem('receiveAmount', this.receiveAmount);
               });
-              this.operationAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) : (this.data[0].operation_amount / 1e6);
+              this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
               sessionStorage.setItem('operationAmount', this.operationAmount);
               this.orderId = this.data[0].order_id;
               sessionStorage.setItem('orderId', this.orderId);
@@ -383,6 +385,16 @@ export default {
         }
       }, 1000);
     },
+    yoctoNEARNEAR(yoctoNEAR) {
+				const amountInNEAR = utils.format.formatNearAmount(yoctoNEAR);
+				// console.log(amountInNEAR);
+				return amountInNEAR.toString();
+			},
+		NEARyoctoNEAR(NEARyocto) {
+				const amountInYocto = utils.format.parseNearAmount(NEARyocto);
+				// console.log('',amountInYocto);
+				return amountInYocto.toString();
+			},
     
   }
 };

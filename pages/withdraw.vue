@@ -152,10 +152,12 @@
 
 <script>
 // import axios from 'axios'
+import * as nearAPI from "near-api-js";
 // eslint-disable-next-line import/no-named-as-default
 import gql from "graphql-tag";
 import moment from "moment";
 import walletUtils from "@/services/wallet";
+const { utils } = nearAPI;
 
 export default {
   name: "DepositPage",
@@ -344,7 +346,7 @@ export default {
       }
     },
     async initContract() {
-      await this.initContractUSDT();
+      this.tokenSymbol === "NEAR" ? await this.initContractNEAR() : await this.initContractUSDT();
     },
     async initContractUSDT() {
       this.btnLoading = true;
@@ -355,7 +357,7 @@ export default {
        * If the token symbol is "NEAR", the amount is multiplied by 1e24.
        * If the token symbol is not "NEAR", the amount is multiplied by 1e6.
        */
-      const orderAmount = this.tokenSymbol === "NEAR" ? (this.amount * 1e24).toString(): (this.amount * 1e6).toString();
+      const orderAmount = this.tokenSymbol === "NEAR" ? this.NEARyoctoNEAR(this.amount): (this.amount * 1e6).toString();
 
       // Filtering the list by payment method and the highest exchange rate
       // and the remaining amount is greater than the order amount
@@ -410,7 +412,7 @@ export default {
             args: { subaccount_id: this.address.split(".")[0] + "." + CONTRACT_NAME, asset: "USDT" },
             attachedDeposit: vldeposit
           });
-          console.log(createSubCobtractUser)
+          // console.log(createSubCobtractUser)
           if (!createSubCobtractUser || createSubCobtractUser.status.SuccessValue !== "") {
             console.log("error al crear subcontrato");
             this.btnLoading = false;
@@ -529,6 +531,178 @@ export default {
       // this.sendMail();
       this.$router.push({ path: "/trades-pending" });
     },
+    async initContractNEAR() {
+      this.btnLoading = true;
+      const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
+      /**
+       * Converts the withdrawal amount to the appropriate format based on the token symbol.
+       * If the token symbol is "NEAR", the amount is multiplied by 1e24.
+       * If the token symbol is not "NEAR", the amount is multiplied by 1e6.
+       */
+      const orderAmount = this.tokenSymbol === "NEAR" ? this.NEARyoctoNEAR(this.amount): (this.amount * 1e6).toString();
+
+      // Filtering the list by payment method and the highest exchange rate
+      // and the remaining amount is greater than the order amount
+      this.filteredOffers = this.listOffers
+      .filter(offer => offer.payment_method.some(method => method.payment_method === this.selectedPayment))
+      .filter(offer => parseFloat(offer.remaining_amount) >= orderAmount)
+      .sort((a, b) => b.exchange_rate - a.exchange_rate)
+      .find(() => true);
+      // Filter paymet method as per selected payment
+      const filteredPaymentMethod = this.filteredOffers.payment_method.find(method => method.payment_method === this.selectedPayment);
+
+      const account = await walletUtils.nearConnection();
+
+
+      this.subcontract = await account.viewFunctionV1(
+        CONTRACT_NAME,
+        "get_subcontract",
+        { user_id: this.address }
+      );
+
+      const vldeposit = "100000000000000000000000";
+
+      const now = moment()
+        .format("YYYY-MM-DD HH:mm:ss")
+        .toString();
+      if (!this.subcontract) {
+        try {
+          const createSubCobtractUser = await account.functionCall({
+            contractId: CONTRACT_NAME,
+            methodName: "create_subcontract_user",
+            gas: "80000000000000",
+            args: { },
+            attachedDeposit: vldeposit
+          });
+          // console.log(createSubCobtractUser)
+          if (!createSubCobtractUser || createSubCobtractUser.status.SuccessValue !== "") {
+            console.log("error al crear subcontrato");
+            this.btnLoading = false;
+            return
+          }
+          
+
+          const ftTransfer = await account.functionCall({
+            contractId: CONTRACT_NAME,
+            methodName: "deposit",
+            gas: "300000000000000",
+            args: { sub_contract: this.address.split(".")[0] + "." + CONTRACT_NAME },
+            attachedDeposit: orderAmount
+          });
+
+          if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
+            console.log("error al transferir token");
+            this.btnLoading = false;
+            return
+          }
+
+          const acceptOffer = await account.functionCall({
+            contractId: CONTRACT_NAME,
+            methodName: "accept_offer",
+            gas: "300000000000000",
+            args: {
+              offer_type: 1,
+              offer_id: parseInt(this.filteredOffers.id),
+              amount: orderAmount,
+              payment_method: parseInt(filteredPaymentMethod.payment_method_id),
+              datetime: now,
+              rate: parseFloat(this.filteredOffers.exchange_rate)
+            },
+            attachedDeposit: "1"
+          });
+
+          if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
+            console.log("error al aceptar la oferta", acceptOffer);
+            this.btnLoading = false;
+            return
+          }
+        } catch (error) {
+          console.error(error.message);
+          return;
+        }
+      }
+      else if (this.subcontract) {
+        try {
+          const ftTransfer = await account.functionCall({
+            contractId: CONTRACT_NAME,
+            methodName: "deposit",
+            gas: "300000000000000",
+            args: { sub_contract: this.address.split(".")[0] + "." + CONTRACT_NAME },
+            attachedDeposit: orderAmount
+          });
+
+          if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
+            console.log("error al transferir token", ftTransfer);
+            this.btnLoading = false;
+            return
+          }
+
+          const acceptOffer = await account.functionCall({
+            contractId: CONTRACT_NAME,
+            methodName: "accept_offer",
+            gas: "300000000000000",
+            args: {
+              offer_type: 1,
+              offer_id: parseInt(this.filteredOffers.id),
+              amount: orderAmount,
+              payment_method: parseInt(filteredPaymentMethod.payment_method_id),
+              datetime: now,
+              rate: parseFloat(this.filteredOffers.exchange_rate)
+            },
+            attachedDeposit: "1"
+          });
+
+          if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
+            console.log("error al aceptar la oferta", acceptOffer);
+            this.btnLoading = false;
+            return
+          }
+        } catch (error) {
+          console.error(error.message);
+          return;
+        }
+      }
+      else {
+        try {
+          const acceptOffer = await account.functionCall({
+            contractId: CONTRACT_NAME,
+            methodName: "accept_offer",
+            gas: "300000000000000",
+            args: {
+              offer_type: 1,
+              offer_id: parseInt(this.filteredOffers.id),
+              amount: orderAmount,
+              payment_method: parseInt(filteredPaymentMethod.payment_method_id),
+              datetime: now,
+              rate: parseFloat(this.filteredOffers.exchange_rate)
+            },
+            attachedDeposit: "1"
+          });
+
+          if (!acceptOffer || !acceptOffer.status.SuccessValue !== "") {
+            console.log("error al aceptar la oferta", acceptOffer);
+            this.btnLoading = false;
+            return
+          }
+        } catch (error) {
+          console.error(error.message);
+          return;
+        }
+      }
+      this.btnLoading = false;
+      // this.sendMail();
+      this.$router.push({ path: "/trades-pending" });
+    },
+    yoctoNEARNEAR(yoctoNEAR) {
+				const amountInNEAR = utils.format.formatNearAmount(yoctoNEAR);
+				// console.log(amountInNEAR);
+				return amountInNEAR.toString();
+			},
+		NEARyoctoNEAR(NEARyocto) {
+				const amountInYocto = utils.format.parseNearAmount(NEARyocto);
+				// console.log('',amountInYocto);
+				return amountInYocto.toString();
+			},
   },
 };
 </script>
