@@ -311,6 +311,7 @@ export default {
 								}
 							);
           paymentMethods = Array.from(paymentMethods);
+          paymentMethods.length > 3 ? this.moreBanks = true : this.moreBanks = false;
           /**
            * If the paymentMethods array includes "Pago Móvil",
            * this code filters out "Pago Móvil" from the array
@@ -320,10 +321,9 @@ export default {
             paymentMethods = paymentMethods.filter(method => method !== "Pago Móvil");
             paymentMethods.unshift("Pago Móvil");
           }
-
+          
           this.payments = paymentMethods.slice(0, 3);
-          this.payments.length > 3 ? this.moreBanks = true : this.moreBanks = false;
-
+          
           this.otherPayments = paymentMethods.filter(item => !this.payments.includes(item));
           this.originalPayments = paymentMethods;
         });
