@@ -1,60 +1,61 @@
 // import { webpack } from 'webpack'
-import colors from 'vuetify/es5/util/colors'
+import colors from "vuetify/es5/util/colors";
 
-const development = process.env.NODE_ENV !== 'production'
+const development = process.env.NODE_ENV !== "production";
 
 export default {
   env: {
-    Network: process.env.Network || 'testnet',
-    baseUrl: process.env.BASE_URL || 'http://localhost:3000',
-    URL_BACKEND: process.env.URL_BACKEND || 'http://localhost:3000',
-    URL_BACKEND_SWAP: process.env.URL_BACKEND_SWAP || 'http://localhost:3000',
-    URL_APIP_PRICE: process.env.URL_APIP_PRICE || 'http://localhost:3000',
-    URL_API_NFT: process.env.URL_API_NFT || 'http://localhost:3000',
-    URL_API_INDEXER: process.env.URL_API_INDEXER || 'http://localhost:3000',
-    CLIEN_ID_GOOGLE: process.env.CLIEN_ID_GOOGLE || 'http://localhost:3000',
-    URL_EXPLORER: process.env.URL_EXPLORER || 'http://localhost:3000',
-    URL_EXPLORER_TXS: process.env.URL_EXPLORER_TXS || 'http://localhost:3000',
-    ROUTER_EXPLORER_NEAR: process.env.ROUTER_EXPLORER_NEAR || 'http://localhost:3000',
-    ROUTER_RPC: process.env.ROUTER_RPC || 'http://localhost:3000',
-    VUE_APP_CONTRACT_NAME: process.env.VUE_APP_CONTRACT_NAME || 'http://localhost:3000',
-    VUE_APP_CONTRACT_NAME_USDT: process.env.VUE_APP_CONTRACT_NAME_USDT || 'http://localhost:3000',
-    VUE_APP_API_MAIL_URL: process.env.VUE_APP_API_MAIL_URL || 'http://localhost:3000',
+    Network: process.env.Network || "testnet",
+    baseUrl: process.env.BASE_URL || "http://localhost:3000",
+    URL_BACKEND: process.env.URL_BACKEND || "http://localhost:3000",
+    URL_BACKEND_SWAP: process.env.URL_BACKEND_SWAP || "http://localhost:3000",
+    URL_APIP_PRICE: process.env.URL_APIP_PRICE || "http://localhost:3000",
+    URL_API_NFT: process.env.URL_API_NFT || "http://localhost:3000",
+    URL_API_INDEXER: process.env.URL_API_INDEXER || "http://localhost:3000",
+    CLIEN_ID_GOOGLE: process.env.CLIEN_ID_GOOGLE || "http://localhost:3000",
+    URL_EXPLORER: process.env.URL_EXPLORER || "http://localhost:3000",
+    URL_EXPLORER_TXS: process.env.URL_EXPLORER_TXS || "http://localhost:3000",
+    ROUTER_EXPLORER_NEAR: process.env.ROUTER_EXPLORER_NEAR || "http://localhost:3000",
+    ROUTER_RPC: process.env.ROUTER_RPC || "http://localhost:3000",
+    VUE_APP_CONTRACT_NAME: process.env.VUE_APP_CONTRACT_NAME || "http://localhost:3000",
+    VUE_APP_CONTRACT_NAME_USDT: process.env.VUE_APP_CONTRACT_NAME_USDT || "http://localhost:3000",
+    VUE_APP_API_MAIL_URL: process.env.VUE_APP_API_MAIL_URL || "http://localhost:3000",
+    VUE_APP_CHAT_FIREBASE: process.env.VUE_APP_CHAT_FIREBASE || "http://localhost:3000",
   },
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,
 
   // Target: https://go.nuxtjs.dev/config-target
-  target: 'static',
+  target: "static",
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    titleTemplate: '%s - wallet-arepa',
-    title: 'Home',
+    titleTemplate: "%s - wallet-arepa",
+    title: "Home",
     htmlAttrs: {
-      lang: 'en',
-      class: 'light',
+      lang: "en",
+      class: "light",
     },
     meta: [
-      { charset: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: '' },
-      { name: 'format-detection', content: 'telephone=no' },
+      { charset: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { hid: "description", name: "description", content: "" },
+      { name: "format-detection", content: "telephone=no" },
     ],
     link: [
-      { rel: 'icon', type: 'image/icon', href: 'favicon.ico' },
+      { rel: "icon", type: "image/icon", href: "favicon.ico" },
       // <-- icons-default -->
-      { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css' },
-      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/icon?family=Material+Icons' },
+      { rel: "stylesheet", href: "https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/icon?family=Material+Icons" },
       // <!-- fonts -->
-      { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-      { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
       //   <!-- league gothic -->
-      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=League+Gothic&display=swap' },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=League+Gothic&display=swap" },
     ],
     script: [
       {
-        src: 'https://accounts.google.com/gsi/client',
+        src: "https://accounts.google.com/gsi/client",
       },
       // {
       //   src: "https://code.jquery.com/jquery-3.5.1.min.js",
@@ -65,17 +66,17 @@ export default {
 
   google: {
     clientId: process.env.CLIEN_ID_GOOGLE,
-    codeChallengeMethod: '',
-    responseType: 'code',
+    codeChallengeMethod: "",
+    responseType: "code",
     endpoints: {
-      token: 'http://localhost:8000/wallet-p2p/login', // somm backend url to resolve your auth with google and give you the token back
-      userInfo: 'http://localhost:8000/wallet-p2p/login' // the endpoint to get the user info after you recived the token 
+      token: "http://localhost:8000/wallet-p2p/login", // somm backend url to resolve your auth with google and give you the token back
+      userInfo: "http://localhost:8000/wallet-p2p/login", // the endpoint to get the user info after you recived the token
     },
   },
 
   loading: {
-    color: 'hsl(225 225% 225% / .5)',
-    height: '2px',
+    color: "hsl(225 225% 225% / .5)",
+    height: "2px",
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
@@ -84,67 +85,67 @@ export default {
   // Auto import components (https://go.nuxtjs.dev/config-components)
   // components: true,
   components: [
-    '~/components', // shortcut to { path: '~/components' }
+    "~/components", // shortcut to { path: '~/components' }
     // { path: '~/components/sections/', prefix: 'sections' },
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     // plugins
-    '~/plugins/injects.js',
-    '~/plugins/polyfills.js',
-    '~/plugins/directives.js',
-    '~/plugins/mixinsImport.js',
-    '~/plugins/axios.js',
-    '~/plugins/apexchart.js',
-    '~/plugins/google-maps.js',
-    '~/plugins/unlock-wallet.js',
-    '~/plugins/vue-debounce.js',
-    '~/plugins/firebase.js',
+    "~/plugins/injects.js",
+    "~/plugins/polyfills.js",
+    "~/plugins/directives.js",
+    "~/plugins/mixinsImport.js",
+    "~/plugins/axios.js",
+    "~/plugins/apexchart.js",
+    "~/plugins/google-maps.js",
+    "~/plugins/unlock-wallet.js",
+    "~/plugins/vue-debounce.js",
+    "~/plugins/firebase.js",
     // services
-    '~/services/near-api',
-    { src: '~/plugins/vue-cryptojs.js', ssr: false },
+    "~/services/near-api",
+    { src: "~/plugins/vue-cryptojs.js", ssr: false },
   ],
 
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
     // https://go.nuxtjs.dev/eslint
-    '@nuxtjs/eslint-module',
+    "@nuxtjs/eslint-module",
     // https://go.nuxtjs.dev/vuetify
-    '@nuxtjs/vuetify',
+    "@nuxtjs/vuetify",
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     // https://go.nuxtjs.dev/axios
-    '@nuxtjs/axios',
-    '@nuxtjs/i18n',
-    '@nuxtjs/auth-next',
-    'nuxt-clipboard2',
+    "@nuxtjs/axios",
+    "@nuxtjs/i18n",
+    "@nuxtjs/auth-next",
+    "nuxt-clipboard2",
     // GraphQl Apollo Client
-    '@nuxtjs/apollo'
+    "@nuxtjs/apollo",
   ],
 
   apollo: {
     clientConfigs: {
       default: {
         httpEndpoint: process.env.GRAPH_URL,
-      }
-    }
+      },
+    },
   },
 
   auth: {
     strategies: {
       google: {
-        clientId: process.env.CLIEN_ID_GOOGLE
+        clientId: process.env.CLIEN_ID_GOOGLE,
       },
-    }
+    },
   },
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
-    baseURL: development ? 'http://localhost:3001/api' : 'https://domain/api',
+    baseURL: development ? "http://localhost:3001/api" : "https://domain/api",
   },
 
   // nuxt i18n documentation: https://i18n.nuxtjs.org
@@ -156,7 +157,7 @@ export default {
   i18n: {
     locales: [
       { code: "es", iso: "es", file: "es.js" },
-      { code: "en", iso: "en", file: "en.js" }
+      { code: "en", iso: "en", file: "en.js" },
     ],
     lazy: true,
     langDir: "i18n/",
@@ -169,15 +170,15 @@ export default {
       fallbackRoot: true,
       silentFallbackWarn: false,
       silentTranslationWarn: false,
-    }
+    },
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
     customVariables: [
-      '~/assets/styles/main/_fonts.scss',
-      '~/assets/styles/main/_variables.scss',
-      '~/assets/styles/main/_custom-mixins.scss',
+      "~/assets/styles/main/_fonts.scss",
+      "~/assets/styles/main/_variables.scss",
+      "~/assets/styles/main/_custom-mixins.scss",
     ],
     theme: {
       dark: false,
@@ -211,24 +212,24 @@ export default {
     // middleware: ['route-validator'],
     extendRoutes(routes, resolve) {
       routes.push({
-        path: '*',
-        component: resolve(__dirname, 'layouts/error.vue'),
-        name: 'ErrorPage',
+        path: "*",
+        component: resolve(__dirname, "layouts/error.vue"),
+        name: "ErrorPage",
         props: (route) => ({
-          error: route.params.error || { statusCode: 404 }
-        })
+          error: route.params.error || { statusCode: 404 },
+        }),
       });
-    }
+    },
   },
 
   server: {
-    host: 'localhost', // default: localhost,
-    port: '8000', // default: 3000
+    host: "localhost", // default: localhost,
+    port: "8000", // default: 3000
   },
-  
+
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-    publicPath: '/wallet-p2p/',
+    publicPath: "/wallet-p2p/",
     // publicPath: development ? '/wallet-arepa/' : '/', //! commented
     // TODO: read about this to fix it.
     // plugins: [
@@ -250,7 +251,7 @@ export default {
     extend(config, ctx) {
       config.module.rules.push({
         exclude: /(node_modules)/,
-      })
+      });
     },
   },
 
@@ -260,5 +261,5 @@ export default {
   },
   privateRuntimeConfig: {
     // myPrivateToken: process.env.PRIVATE_TOKEN
-  }
-}
+  },
+};

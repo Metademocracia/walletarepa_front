@@ -93,8 +93,8 @@
     </v-card>
 
 
-    <p2p-chat
-    ></p2p-chat>
+    <p2p-chat-trade
+    ></p2p-chat-trade>
 
     <v-btn
       :loading="btnLoading" 
@@ -131,9 +131,9 @@ export default {
       crypto: "",
       exchangeRate: 0,
       operationAmount: 0,
-      orderId: 0,
       dialog2: false,
       btnLoading: false,
+      orderId: localStorage.getItem("orderId")
     }
   },
   head() {
@@ -143,10 +143,12 @@ export default {
     }
   },
   mounted() {
+    console.log(localStorage.getItem("orderId"))
     const time = sessionStorage.getItem('traderName') ? 100 : 3000;
     let counter = 0;
     const maxAttempts = 3;
     // Info from trader
+    // this.getMessages()
     const intervalId = setInterval(() => {
       this.selects();
       let selectedToken = localStorage.getItem("selectedCoin");
