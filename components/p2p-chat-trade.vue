@@ -222,7 +222,7 @@ export default {
       this.photo = event;
       // this.$refs.input.focus();
 
-      event?.preventDefault();
+      // event?.preventDefault();
       if (this.photo) {
         const timestamp = Date.now();
         const storageRef = firebase
@@ -236,7 +236,7 @@ export default {
               authorId: null,
               wallet: localStorage.getItem("address"),
               photoURL: url,
-              text: this.message,
+              text: this.message || " ",
               type: MessageType.image,
               updatedAt: Date.now(),
               createdAt: Date.now(),
