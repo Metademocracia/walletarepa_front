@@ -110,7 +110,7 @@
           <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon" />
         </v-list-item>
       </v-list>
-
+      <h5 v-if="modalNoOffers" style="color: red !important;">{{ modalNoMessage }}</h5>
       <v-card 
        v-if="moreBanks" class="btn-outlined space" style="--bg: var(--secondary); --b-color: #d1c4e8; padding: 0 23px"
         @click="modelPayments = true">
@@ -161,6 +161,7 @@ const { utils } = nearAPI;
 
 export default {
   name: "DepositPage",
+  middleware: ["pending-p2p"],
   data() {
     return {
       filter: ["usdt", "near", "arp"],
@@ -186,6 +187,9 @@ export default {
       address: localStorage.getItem("address"),
       subcontract: false,
       listOffers: [],
+      minLimit : 0,
+      modalNoOffers: false,
+      modalNoMessage: false,
     };
   },
   head() {
@@ -195,9 +199,6 @@ export default {
     };
   },
   mounted() {
-    if(localStorage.getItem('orderId')){
-      this.$router.push('trades-pending');
-    }
     this.getBalance();
     this.selects();
   },
@@ -360,15 +361,24 @@ export default {
        * If the token symbol is not "NEAR", the amount is multiplied by 1e6.
        */
       const orderAmount = this.tokenSymbol === "NEAR" ? this.NEARyoctoNEAR(this.amount): (this.amount * 1e6).toString();
-      console.log("orderAmount", orderAmount);
-      console.log("tokenSymbol", this.tokenSymbol);
+      // console.log("orderAmount", orderAmount);
+      // console.log("tokenSymbol", this.tokenSymbol);
       // Filtering the list by payment method and the highest exchange rate
       // and the remaining amount is greater than the order amount
       this.filteredOffers = this.listOffers
       .filter(offer => offer.payment_method.some(method => method.payment_method === this.selectedPayment))
-      .filter(offer => parseFloat(offer.remaining_amount) >= orderAmount)
+      .filter(offer => parseFloat(offer.remaining_amount) >= parseFloat(orderAmount))
+      .filter(offer => parseFloat(offer.min_limit) <= parseFloat(orderAmount))
       .sort((a, b) => b.exchange_rate - a.exchange_rate)
       .find(() => true);
+      const lowestMinAmount = Math.min(...this.listOffers.map(offer => offer.min_limit));
+      if (!this.filteredOffers) {
+        const lowestMinAmountFormated = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(lowestMinAmount) : lowestMinAmount / 1e6;
+        this.modalNoMessage = "No hay ofertas disponibles, busque un monto superior a " + lowestMinAmountFormated + ' ' + localStorage.getItem('tokenSymbol')
+        this.modalNoOffers = true;
+        this.btnLoading = false;
+        return;
+      }
       // Filter paymet method as per selected payment
       const filteredPaymentMethod = this.filteredOffers.payment_method.find(method => method.payment_method === this.selectedPayment);
 

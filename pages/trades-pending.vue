@@ -410,6 +410,7 @@ export default {
               sessionStorage.setItem('operationAmount', this.operationAmount);
               this.orderId = this.data[0].order_id;
               sessionStorage.setItem('orderId', this.orderId);
+              localStorage.setItem('orderId', this.orderId);
               this.seconds = this.data[0].time * 1000;
               sessionStorage.setItem('seconds', this.seconds);
             });
