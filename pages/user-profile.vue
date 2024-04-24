@@ -37,7 +37,7 @@
         class="btn"
         :disable="loading"
         :loading="loading"
-        @click="onContinue('/withdraw')"
+        @click="onContinue()"
       >
         GUARDAR Y CONTINUAR
       </v-btn>
@@ -132,22 +132,25 @@ export default {
   },
   methods: {
     async onContinue() {
-      if(this.$refs.formEmail.validate()) {
+      if(this.$refs.formUser.validate()) {
         this.loading = true
-        await axios.post(process.env.URL_BACKEND +'/wallet/send-code-verify-email',
-        {email: this.emailImput, cedula: this.cedulaImput}, {
+        await axios.post(process.env.URL_BACKEND +'/wallet/update-wallet',
+        { email: this.emailImput, 
+          cedula: this.cedulaImput, 
+          name: this.nameInput, 
+          walletname: localStorage.getItem('address') 
+        }, {
           headers: {
             'accept': 'application/json',
           },
-        }).then(() => {
+        }).then((response) => {
           this.loading = false
-          sessionStorage.setItem("email", this.emailImput);
-          sessionStorage.setItem("cedula", this.cedulaImput);
           // localStorage.setItem("login", true);
+          // console.log(response.data)
           
           // this.$router.push(utils.routeAction(this.$route.query.action,"/create-wallet-verification"));
           
-          this.$router.push({ path: "/create-wallet-verification" });
+          this.$router.push({ path: "/withdraw" });
           // this.$router.push(this.localePath("/verification"))
         }).catch((error) => {
           this.loading = false

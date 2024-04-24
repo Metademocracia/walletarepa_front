@@ -161,7 +161,7 @@ const { utils } = nearAPI;
 
 export default {
   name: "DepositPage",
-  middleware: ["pending-p2p"],
+  middleware: ["verify-wallet"],
   data() {
     return {
       filter: ["usdt", "near", "arp"],
