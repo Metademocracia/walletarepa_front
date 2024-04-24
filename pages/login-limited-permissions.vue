@@ -143,7 +143,7 @@ export default {
     }
   },
   methods: {
-    async connect2(){
+    async connect(){
       if (!this.address || !this.domain) return
 
       localStorageUser.addApp({
@@ -175,7 +175,33 @@ export default {
 
     },
 
-    connect(){
+    completeLogin(_account) {
+      let ruta = this.token.success;
+
+      const json = JSON.stringify({
+        wallet: _account.address,
+        cretaDate: new Date(),
+        email: _account.email,
+        privateKey: _account.privateKey,
+      })
+
+      const token = window.btoa(json)
+
+      if(this.token?.search) {
+        ruta += this.token.search + "&token="+token;
+      } else {
+        ruta += "?token="+token;
+        if(this.loginNear) {
+          // const paramsOrigin = ""; // this.$route.query?.success_url.split("?").length > 0 ? "&" : "?"
+          const publicKeyParam = !this.token?.public_key ? "" : `&public_key=${this.token.public_key}`;
+          ruta =  `${this.$route.query?.success_url}?account_id=${_account.address}${publicKeyParam}&all_keys=${_account.publicKey}`;// this.token.success;
+        }
+      }
+      
+      location.replace(ruta);
+    },
+    
+    connect2(){
       if (!this.address || !this.domain) return
       
 
