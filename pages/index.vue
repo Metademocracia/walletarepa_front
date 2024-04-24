@@ -49,7 +49,7 @@
           class="btn-icon"
           @click="$router.push('trades-pending')"
         >
-        <img :src="operationSymbol" style="height: 18px;" alt="plus">
+        <img :src="operationSymbol" style="height: 20px;" alt="plus">
         </v-btn>
       </div>
       <div v-if="pendingTrades">
@@ -214,6 +214,8 @@
 
 <script>
 import axios from 'axios';
+// eslint-disable-next-line import/no-named-as-default
+import gql from "graphql-tag";
 import * as nearAPI from "near-api-js";
 import VueQr from 'vue-qr'
 import moment from 'moment';
@@ -270,6 +272,7 @@ export default {
       dataTokens: [],
       operationSymbol: "",
       pendingTrades: false,
+      data: [],
     }
   },
   head() {
@@ -285,9 +288,24 @@ export default {
 
     sessionStorage.removeItem("create-import-proccess")
 
-    if(localStorage.getItem('orderId')){
-      this.pendingTrades = true;
+    if(!localStorage.getItem('orderId')){
+      this.orderSell();
+      if(this.data.length === 0){
+        this.orderBuy();
+      }
     }
+    let counter = 0;
+    const maxAttempts = 5;
+
+    const intervalId = setInterval(() => {
+      if (localStorage.getItem('orderId')) {
+        this.pendingTrades = true;
+        clearInterval(intervalId);
+      } else if (++counter >= maxAttempts) {
+        clearInterval(intervalId);
+      }
+    }, 5000);
+
 
     // localStorage.removeItem("importEmailNickname");
     // localStorage.removeItem("importEmail");
@@ -510,6 +528,88 @@ export default {
       } else {
         this.operationSymbol = require("@/assets/sources/tokens/near.svg");
       }
+    },
+    orderSell() {
+      const selects = gql`
+        query MyQuery( $address : String) {
+          ordersells(
+            where: {signer_id: $address}
+          orderBy: id
+          orderDirection: desc
+          first: 1
+          ) {
+          id
+          amount_delivered
+          asset
+          exchange_rate
+          fee_deducted
+          fiat_method
+          owner_id
+          payment_method
+          signer_id
+          terms_conditions
+          time
+          operation_amount
+          order_id
+        }
+      }
+      `;    
+       this.$apollo
+          .watchQuery({
+            query: selects,
+            variables: {
+              address: localStorage.getItem("address"),
+            }
+          })
+          .subscribe(({ data }) => {
+            this.data = [];
+            Object.entries(data.ordersells).forEach(([key, value]) => {
+              this.data.push(value);
+              this.orderId = this.data[0].order_id;
+              localStorage.setItem('orderId', this.orderId);
+            });
+          });
+    },
+    orderBuy() {
+      const selects = gql`
+        query MyQuery( $address : String) {
+          orderbuys(
+            where: {signer_id: $address}
+          orderBy: id
+          orderDirection: desc
+          first: 1
+          ) {
+          id
+          amount_delivered
+          asset
+          exchange_rate
+          fee_deducted
+          fiat_method
+          owner_id
+          payment_method
+          signer_id
+          terms_conditions
+          time
+          operation_amount
+          order_id
+        }
+      }
+      `;    
+       this.$apollo
+          .watchQuery({
+            query: selects,
+            variables: {
+              address: localStorage.getItem("address"),
+            }
+          })
+          .subscribe(({ data }) => {
+            this.data = [];
+            Object.entries(data.orderbuys).forEach(([key, value]) => {
+              this.data.push(value);
+              this.orderId = this.data[0].order_id;
+              localStorage.setItem('orderId', this.orderId);
+            });
+          });
     },
   }
 };

@@ -1,20 +1,40 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
-import 'firebase/compat/storage';
+import firebase from "firebase/compat/app";
+import "firebase/compat/auth";
+import "firebase/compat/firestore";
+import "firebase/compat/storage";
 
 // Chat testnet
 // Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAogyHNNPfawxx22Iphb2cf9Yjtu7fzSgQ",
-  authDomain: "nearp2p-ff014.firebaseapp.com",
-  databaseURL: "https://nearp2p-ff014-default-rtdb.firebaseio.com",
-  projectId: "nearp2p-ff014",
-  storageBucket: "nearp2p-ff014.appspot.com",
-  messagingSenderId: "321404603196",
-  appId: "1:321404603196:web:3645c05b9d1adfe61fac39"
-};
+const firebaseConfig =
+  process.env.Network === "mainnet"
+    ? {
+        apiKey: "AIzaSyAnL8N-tpjOXRuGJv694TwtlJ15raXQMEU",
+        authDomain: "nearp2pmainnet.firebaseapp.com",
+        projectId: "nearp2pmainnet",
+        storageBucket: "nearp2pmainnet.appspot.com",
+        messagingSenderId: "253746891899",
+        appId: "1:253746891899:web:925b05e946376eb60da6de",
+        measurementId: "G-Q54N9T6LFL",
+      }
+    : {
+        apiKey: "AIzaSyC8iTeCI50fXBfcmutV9Y4PQrbSY2tgKmo",
+        authDomain: "nearp2ptestnet.firebaseapp.com",
+        projectId: "nearp2ptestnet",
+        storageBucket: "nearp2ptestnet.appspot.com",
+        messagingSenderId: "347747371227",
+        appId: "1:347747371227:web:b4f6e8615632f4e30c64fe",
+        measurementId: "G-2YM4CSZZ74",
+      };
 
+// const firebaseConfig = {
+//   apiKey: "AIzaSyAogyHNNPfawxx22Iphb2cf9Yjtu7fzSgQ",
+//   authDomain: "nearp2p-ff014.firebaseapp.com",
+//   databaseURL: "https://nearp2p-ff014-default-rtdb.firebaseio.com",
+//   projectId: "nearp2p-ff014",
+//   storageBucket: "nearp2p-ff014.appspot.com",
+//   messagingSenderId: "321404603196",
+//   appId: "1:321404603196:web:3645c05b9d1adfe61fac39"
+// };
 
 // Chat Mainnet
 // const firebaseConfig = {
@@ -27,8 +47,6 @@ const firebaseConfig = {
 //   appId: "1:860458954942:web:f2023cd1400e6841aceeef"
 // };
 
-
-
-firebase.initializeApp(firebaseConfig)
+firebase.initializeApp(firebaseConfig);
 
 export const db = firebase.firestore();

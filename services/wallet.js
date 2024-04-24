@@ -149,6 +149,19 @@ async function getNearId(_publicKey) {
   return nearId
 }
 
+async function verifyWallet() {
+  try {
+    const response = await axios.post(process.env.URL_BACKEND + '/wallet/verify-wallet', {
+      walletname: localStorage.getItem('address')
+    });
+    // console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return error;
+  }
+}
+
 
 export default {
   formatTokenAmount,
@@ -159,5 +172,6 @@ export default {
   getPrice,
   nearConnection,
   getNearId,
-  getNfts
+  getNfts,
+  verifyWallet
 }

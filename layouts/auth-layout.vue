@@ -38,6 +38,7 @@ export default {
         '/create-import',
         '/import-wallet',
         '/create-wallet',
+        '/user-profile',
       ],
       bgLogo: [
         '/create-wallet-verification'
