@@ -95,8 +95,9 @@ export default {
       ],
       domain: null,
       contract: null,
-      token: null,
+      token: {},
       address: sessionStorage.getItem("connectAppAddressSelect"),
+      loginNear: false,
     }
   },
   head() {
@@ -106,7 +107,7 @@ export default {
       title,
     }
   },
-  mounted() {
+  created() {
     // const token = sessionStorage.getItem("token");
     /* let tokenJSON;
     if(this.$route.query.token){
@@ -129,7 +130,6 @@ export default {
       this.contract = tokenJSON.contract;
       this.token = tokenJSON;
     } else {
-      // console.log(this.$route.query);
       const params = this.$route.query;
        
       this.domain = this.token.domain = this.$route.query?.success_url ? this.$route.query?.success_url.split("/")[2] : null;
@@ -192,15 +192,31 @@ export default {
       } else {
         ruta += "?token="+token;
         if(this.loginNear) {
-          // const paramsOrigin = ""; // this.$route.query?.success_url.split("?").length > 0 ? "&" : "?"
+
+          const callbackUrl = this.$route.query?.success_url.split('?')
+          let urlParams = "";
+
+          if(callbackUrl.length > 1) {
+            urlParams = new URLSearchParams(callbackUrl[1]);
+            urlParams.delete("transactionHashes");
+            urlParams.delete("transactions");
+            urlParams.delete("token");
+          }
+
+          const urlParamsFinal = urlParams.toString().trim() === "" ? "" : `&${urlParams.toString()}`;
           const publicKeyParam = !this.token?.public_key ? "" : `&public_key=${this.token.public_key}`;
-          ruta =  `${this.$route.query?.success_url}?account_id=${_account.address}${publicKeyParam}&all_keys=${_account.publicKey}`;// this.token.success;
+          ruta = `${callbackUrl[0]}?account_id=${_account.address}${publicKeyParam}&all_keys=${_account.publicKey}${urlParamsFinal}`;// this.token.success;
+
+
+          
+          // const publicKeyParam = !this.token?.public_key ? "" : `&public_key=${this.token.public_key}`;
+          // ruta =  `${this.$route.query?.success_url}?account_id=${_account.address}${publicKeyParam}&all_keys=${_account.publicKey}`;// this.token.success;
         }
       }
       
       location.replace(ruta);
     },
-    
+
     connect2(){
       if (!this.address || !this.domain) return
       

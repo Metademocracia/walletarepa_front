@@ -79,7 +79,7 @@ export default {
       contrcat: null,
       address: null,
       routeCancel: null,
-      token: JSON.parse(sessionStorage.getItem("token")),
+      token: {}, // JSON.parse(sessionStorage.getItem("token")),
     }
   },
   head() {
