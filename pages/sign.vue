@@ -149,12 +149,13 @@
 </template>
 
 <script>
-// import * as nearAPI from "near-api-js";
 import moment from 'moment';
 // import {functionCall} from 'near-api-js/lib/transaction'
 import BN from 'bn.js';
-import utils from '../services/utils';
+import * as nearAPI from "near-api-js";
+import utiles from '../services/utils';
 import encryp from '../services/encryp';
+import { WalletError } from '../utils/walletError'
 import localStorageUser from '~/services/local-storage-user';
 
 import { configNear }  from '~/services/nearConfig';
@@ -166,6 +167,7 @@ import { ALERT_TYPE } from '~/plugins/dictionary';
 // const { KeyPair, keyStores, connect, WalletConnection, transactions, Account } = nearAPI;
 
 
+const { utils, transactions } = nearAPI;
 
 
 
@@ -186,7 +188,7 @@ export default {
       attachedDeposit: 0,
       deposit_usd: 0,
       balance: 0,
-      token: null,
+      token: {},
       error: null,
       transactionDetails: {
           network: "",
@@ -195,6 +197,7 @@ export default {
       contentClass: {
       type: String,
       default: '',
+      loginNear: false,
     },
     };
   },
@@ -205,12 +208,42 @@ export default {
     };
   },
   created() {
+    /* if(this.$route.query.token){
+      // const tokenString = window.atob(this.$route.query.token);
+      const tokenString = encryp.decryp(this.$route.query.token);
+      const tokenJSON = JSON.parse(tokenString);
+      // sessionStorage.setItem("token", tokenString);
+      this.token = tokenJSON
+    } */
+
     if(this.$route.query.token){
       // const tokenString = window.atob(this.$route.query.token);
       const tokenString = encryp.decryp(this.$route.query.token);
       const tokenJSON = JSON.parse(tokenString);
       // sessionStorage.setItem("token", tokenString);
       this.token = tokenJSON
+    } else {
+      const transactionsList = this.$route.query.transactions.split(',')
+        .map((str) => Buffer.from(str, 'base64'))
+        .map((buffer) => utils.serialize.deserialize(transactions.SCHEMA, transactions.Transaction, buffer))
+
+      const allActions = transactionsList.flatMap((t) => t.actions);
+      const totalAmount = allActions
+                .map((a) => (a.transfer && a.transfer.deposit) || (a.functionCall && a.functionCall.deposit) || 0)
+                .reduce((totalAmount, amount) => totalAmount.add(new BN(amount)), new BN(0)).toString();
+      
+      
+      // console.log(transactionsList, transactionsList[0])
+
+      this.token.from = transactionsList[0].signerId;
+      this.token.json = { attachedDeposit: totalAmount };
+      this.attachedDeposit = totalAmount;
+      this.token.transaction = transactionsList;
+      this.token.domain = this.$route.query?.callbackUrl ? this.$route.query?.callbackUrl.split("/")[2] : null;
+      this.token.error = this.token.callbackUrl = this.$route.query?.callbackUrl;
+
+      this.loginNear = true;
+
     }
   },
   mounted() {
@@ -243,7 +276,7 @@ export default {
       
       this.attachedDeposit = attachedDeposit.toFixed(5);
       this.deposit_usd = (attachedDeposit * depositUsd).toFixed(2);
-      this.from = utils.shortenAddress(from);
+      this.from = utiles.shortenAddress(from);
       this.balance = balance.toFixed(5);
       this.transactionDetails = {
           network: this.token.domain,
@@ -257,7 +290,98 @@ export default {
       }
     },
 
-    async approved() {
+    approved() {
+      if(this.loginNear) {
+        this.approvedNear();
+      } else {
+        this.approvedMeta();
+      }
+    },
+
+    async approvedNear() {
+      try {
+        this.loading = true
+        if(Number(this.balance) < Number(this.attachedDeposit)) {
+          this.loading = false
+          this.$alert(ALERT_TYPE.ERROR, { desc: "Su balance no es suficiente" })
+          return
+        }
+        
+        const transactionList = this.token?.transaction
+
+        if(!transactionList)  {
+          this.loading = false
+          this.$alert(ALERT_TYPE.ERROR, { desc: "No se encontro la transacción" })
+          return
+        }
+
+        const dataUser = localStorageUser.getAccount(this.token.from);
+        const privateKey = dataUser.privateKey;
+        const address = dataUser.address;
+        
+        const keyStore = new nearAPI.keyStores.InMemoryKeyStore();
+        const keyPairNew = nearAPI.KeyPair.fromString(privateKey);
+        await keyStore.setKey(process.env.Network, address, keyPairNew);
+        const near = await nearAPI.connect(configNear(keyStore));
+        const account = await near.account(address);
+
+        const transactionHashes = [];
+        for (const { receiverId, nonce, blockHash, actions } of transactionList) {
+            let status, transaction;
+            const recreateTransaction = account.deployMultisig || true;
+            if (recreateTransaction) {
+                try {
+                    ({ status, transaction } = await account.signAndSendTransaction({ receiverId, actions }));
+                } catch (error) {
+                    if (error.message.includes('Exceeded the prepaid gas')) {
+                      this.$alert(ALERT_TYPE.ERROR, { desc: error.message })
+                      throw new WalletError(error.message, error.code, { transactionHashes });
+                    }
+                    throw error;
+                }
+            } else {
+                const [, signedTransaction] = await nearAPI.transactions.signTransaction(receiverId, nonce, actions, blockHash, this.connection.signer, address, process.env.Network);
+                ({ status, transaction } = await this.connection.provider.sendTransaction(signedTransaction));
+            }
+
+            if (status.Failure !== undefined) {
+              this.loading = false
+              this.$alert(ALERT_TYPE.ERROR, { desc: `Transaction failure for transaction hash: ${transaction.hash}, receiver_id: ${transaction.receiver_id} .` })
+              throw new Error(`Transaction failure for transaction hash: ${transaction.hash}, receiver_id: ${transaction.receiver_id} .`);
+            }
+            transactionHashes.push({
+                hash: transaction.hash,
+                nonceString: nonce.toString()
+            });
+        }
+
+        const hashesMap = transactionHashes.map((item) => {return item.hash});
+        const hashes = transactionHashes.length === 1 ? hashesMap[0] : hashesMap.join('%2C');
+
+        this.loading = false
+
+        const callbackUrl = this.token.callbackUrl.split('?')
+        let urlParams = "";
+
+        if(callbackUrl.length > 1) {
+          urlParams = new URLSearchParams(callbackUrl[1]);
+          urlParams.delete("transactionHashes");
+          urlParams.delete("transactions");
+        }
+
+        const urlParamsFinal = urlParams.toString().trim() === "" ? "" : `&${urlParams.toString()}`;
+        const rute = `${callbackUrl[0]}?transactionHashes=${hashes}${urlParamsFinal}`
+
+        location.replace(rute);
+        
+      } catch (error) {
+        this.loading = false
+        this.$alert(ALERT_TYPE.ERROR, { desc: error.toString() })
+        // console.log("error error: ", error.toString());
+      }
+    },
+
+    async approvedMeta() {
       try {
         this.loading = true
         if(Number(this.balance) < Number(this.attachedDeposit)) {
