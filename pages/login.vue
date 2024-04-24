@@ -96,7 +96,7 @@ export default {
     
     // console.log( this.$route.query.transactions)
     
-    if(this.$route.query.token){
+    /* if(this.$route.query.token){
       // const tokenString = window.atob(this.$route.query.token);
       const tokenString = encryp.decryp(this.$route.query.token);
       const tokenJSON = JSON.parse(tokenString);
@@ -106,7 +106,26 @@ export default {
     
     this.domain = this.token.domain;
     this.contract = this.token.contract;
-    this.routeCancel = this.token.success; 
+    this.routeCancel = this.token.success; */
+
+    if(this.$route.query.token){
+      // const tokenString = window.atob(this.$route.query.token);
+      const tokenString = encryp.decryp(this.$route.query.token);
+      const tokenJSON = JSON.parse(tokenString);
+      // sessionStorage.setItem("token", tokenString);
+      this.token = tokenJSON
+
+      this.domain = this.token.domain;
+      this.contract = this.token.contract;
+      this.routeCancel = this.token.success; 
+    } else {
+      const params = this.$route.query;
+       
+      this.domain = this.token.domain = this.$route.query?.success_url ? this.$route.query?.success_url.split("/")[2] : null;
+      this.contract = this.token.contract = params?.contract_id;
+      this.routeCancel = params?.failure_url;
+      this.token.success = params?.success_url;
+    }
 
     try {
       const arrayRes = localStorageUser.getAccounts();

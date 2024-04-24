@@ -79,7 +79,8 @@
 import utils from '../services/utils';
 import encryp from '../services/encryp';
 import localStorageUser from '~/services/local-storage-user';
-
+import walletFn from '~/services/wallet';
+import { ALERT_TYPE } from '~/plugins/dictionary';
 
 export default {
   name: "LimitedPermissions",
@@ -107,7 +108,7 @@ export default {
   },
   mounted() {
     // const token = sessionStorage.getItem("token");
-    let tokenJSON;
+    /* let tokenJSON;
     if(this.$route.query.token){
       // const tokenString = window.atob(this.$route.query.token);
       const tokenString = encryp.decryp(this.$route.query.token);
@@ -115,14 +116,65 @@ export default {
       // sessionStorage.setItem("token", tokenString);
     }
 
-    /* this.domain = this.$route.query?.success_url ? this.$route.query?.success_url.split("/")[2] : "";
-    this.contract = "";
-    this.routeCancel = this.$route.query?.success_url; */
+    
     this.domain = tokenJSON.domain;
     this.contract = tokenJSON.contract;
-    this.token = tokenJSON;
+    this.token = tokenJSON; */
+
+    if(this.$route.query.token){
+      const tokenString = encryp.decryp(this.$route.query.token);
+      const tokenJSON = JSON.parse(tokenString);
+      
+      this.domain = tokenJSON.domain;
+      this.contract = tokenJSON.contract;
+      this.token = tokenJSON;
+    } else {
+      // console.log(this.$route.query);
+      const params = this.$route.query;
+       
+      this.domain = this.token.domain = this.$route.query?.success_url ? this.$route.query?.success_url.split("/")[2] : null;
+      this.contract = this.token.contract = !params?.contract_id ? undefined : params?.contract_id;
+      this.routeCancel = params?.failure_url;
+      this.token.success = params?.success_url;
+      this.token.public_key = params?.public_key;
+
+      this.loginNear = true;
+      
+    }
   },
   methods: {
+    async connect2(){
+      if (!this.address || !this.domain) return
+
+      localStorageUser.addApp({
+          _address: this.address, 
+          _contract: !this.contract ? this.domain : this.contract,
+          _domain: this.domain
+      });
+      
+      const account = localStorageUser.getAccount(this.address)
+    
+      // sessionStorage.removeItem("token");
+      // sessionStorage.removeItem("connectAppAddressSelect")
+    
+      if(this.token?.public_key) {
+        const accountNear = await walletFn.nearConnection(this.address)
+        await accountNear.addKey(
+          this.token.public_key, // public key for new account
+          this.contract, // contract this key is allowed to call (optional)
+          // "example_method", // methods this key is allowed to call (optional)
+          // "2500000000000" // allowance key can use to call methods (optional)
+        ).then(() => {
+          this.completeLogin(account)
+        }).catch((error) => {
+          this.$alert(ALERT_TYPE.ERROR, { desc: error.toString() })
+        });
+      } else { 
+        this.completeLogin(account)
+      }
+
+    },
+
     connect(){
       if (!this.address || !this.domain) return
       
