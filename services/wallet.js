@@ -89,8 +89,9 @@ function getNfts(owner) {
   })
 }
 
-async function nearConnection() {
-  const { address, privateKey } = localStorageUser.getCurrentAccount();
+async function nearConnection(accountId) {
+  // const { address, privateKey } = localStorageUser.getCurrentAccount();
+  const { address, privateKey } = !accountId ? localStorageUser.getCurrentAccount() : localStorageUser.getAccount(accountId);
 
   const { keyStores, KeyPair } = nearAPI;
   const myKeyStore = new keyStores.InMemoryKeyStore();
