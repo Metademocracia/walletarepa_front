@@ -472,7 +472,7 @@ export default {
           })
           .subscribe(({ data }) => {
             // this.data = [];
-            Object.entries(data.orderhistorysells).forEach(([key, value]) => {
+            Object.entries(data.orderhistorybuys).forEach(([key, value]) => {
               this.dataCancel.push(value);
             });
           });

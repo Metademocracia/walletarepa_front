@@ -103,6 +103,13 @@
       @click="aprove"
     >MARCAR PAGO REALIZADO</v-btn>
 
+    <v-btn
+      :loading="btnLoading" 
+      class="btn-outlined mb-4"
+      style="--bg: var(--card-2); --br: 30px"
+      @click="cancel"
+    >CANCELAR ORDEN</v-btn>
+
     <h6 style="--ff: var(--font2); --fw: 700; --fs: 10px; --lh: 1ch">
       APENAS TERMINE DE TRANSFERIR PUEDE HACER  CLICK
 
@@ -302,6 +309,34 @@ export default {
       // this.sendMail();
       this.$router.push({ path: "/tx-executed" });
     },
+    async cancel() {
+      this.btnLoading = true;
+      const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
+      const account = await walletUtils.nearConnection();
+
+      const orderConfirmation = await account.functionCall({
+        contractId: CONTRACT_NAME,
+        methodName: "cancel_order",
+        gas: "300000000000000",
+        args: { offer_type: 2, order_id: parseInt(sessionStorage.getItem('orderId')) },
+        attachedDeposit: "3"
+      });
+      // console.log("orderConfirmation", orderConfirmation)
+      if (!orderConfirmation || orderConfirmation.status.SuccessValue !== "") {
+        console.log("Error cancelando la orden");
+        return
+      }
+      // console.log("orderConfirmation", orderConfirmation)
+      sessionStorage.clear(); // Clear all data from sessionStorage
+      localStorage.removeItem('endTime');
+      localStorage.removeItem('operation');
+      localStorage.removeItem('orderId');
+      localStorage.removeItem('tokenSymbol');
+      localStorage.removeItem('terms');
+      this.btnLoading = false;
+      // this.sendMail();
+      this.$router.push({ path: "/tx-canceled" });
+    },
     orderHistorySell() {
       const val = localStorage.getItem("operation") === "SELL" ? "1" : "2";
       const selects = gql`
@@ -347,7 +382,7 @@ export default {
           })
           .subscribe(({ data }) => {
             // this.data = [];
-            Object.entries(data.orderhistorysells).forEach(([key, value]) => {
+            Object.entries(data.orderhistorybuys).forEach(([key, value]) => {
               this.dataCancel.push(value);
             });
           });

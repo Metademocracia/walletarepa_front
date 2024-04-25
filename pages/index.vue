@@ -292,7 +292,7 @@ export default {
         this.orderBuy();
       }
       this.setOperationSymbol();
-    }, 5000);
+    }, 10000);
 
     let counter = 0;
       const maxAttempts = 5;
@@ -561,7 +561,6 @@ export default {
             }
           })
           .subscribe(({ data }) => {
-            this.data = [];
             Object.entries(data.ordersells).forEach(([key, value]) => {
               this.data.push(value);
               this.orderId = this.data[0].order_id;
@@ -604,7 +603,6 @@ export default {
             }
           })
           .subscribe(({ data }) => {
-            this.data = [];
             Object.entries(data.orderbuys).forEach(([key, value]) => {
               this.data.push(value);
               this.orderId = this.data[0].order_id;

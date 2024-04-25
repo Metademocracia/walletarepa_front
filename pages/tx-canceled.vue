@@ -34,7 +34,6 @@
 export default {
   name: "TransactionExecutedPage",
   layout: 'default-variant-2',
-
   data() {
     return {
       langList: [
