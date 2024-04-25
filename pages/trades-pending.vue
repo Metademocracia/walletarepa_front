@@ -153,6 +153,7 @@
     </v-card>
 
     <v-btn class="btn-outlined mb-4 mt-8" style="--bg: var(--card-2)" @click="$router.push('/trades-chat')">VOLVER AL CHAT</v-btn>
+    <!-- <v-btn class="btn-outlined mb-4 mt-8" style="--bg: var(--card-2)" @click="sendMail('buy')">VOLVER AL CHAT</v-btn> -->
 
     <v-btn class="btn" @click="$router.push('/')" >IR A LA BILLETERA</v-btn>
 
@@ -170,6 +171,8 @@
 import * as nearAPI from "near-api-js";
 // eslint-disable-next-line import/no-named-as-default
 import gql from "graphql-tag";
+import axios from 'axios';
+import encrypDecript from "@/services/encryp";
 import { formattedTime } from '@/plugins/functions'
 import walletUtils from "@/services/wallet";
 const { utils } = nearAPI;
@@ -370,6 +373,7 @@ export default {
               localStorage.setItem('orderId', this.orderId);
               this.seconds = this.data[0].time * 1000;
               sessionStorage.setItem('seconds', this.seconds);
+              this.sendMail('buy');
             });
           });
        }
@@ -436,6 +440,7 @@ export default {
               localStorage.setItem('orderId', this.orderId);
               this.seconds = this.data[0].time * 1000;
               sessionStorage.setItem('seconds', this.seconds);
+              this.sendMail('sell');
             });
           });
        }
@@ -496,6 +501,7 @@ export default {
           datausers(where: {user_id: $address}) {
           name
           last_name
+          email
         }
       }
       `;
@@ -510,7 +516,6 @@ export default {
           },
         })
         .subscribe(({ data }) => {
-            this.dataTrader = [];
 						Object.entries(data.datausers).forEach(([key, value]) => {
             this.dataTrader.push(value);
             this.traderName = this.dataTrader.length > 0 ? this.dataTrader[0].name + ' ' + this.dataTrader[0].last_name : ownerId;
@@ -592,6 +597,22 @@ export default {
         }  
 			}, 5000);
 		},  
+    async sendMail(typeOffer) { 
+        // const data = await walletUtils.verifyWallet();
+        // const email = data?.data?.email;
+        // console.log(this.dataTrader.length)
+        if(this.dataTrader.length>0){
+          const emailTrader = await encrypDecript.decryp(this.dataTrader[0].email);
+          const BASE_URL_MAIL = process.env.VUE_APP_API_MAIL_URL;
+          const MAIL = `${BASE_URL_MAIL}admin@nearp2p.com/`;
+          const serviceUrl = `${MAIL}${emailTrader}/0/${typeOffer.toString()}`;
+          // console.log(serviceUrl);
+          if(emailTrader && (!localStorage.getItem('emailCounter') || localStorage.getItem('emailCounter') !== 'true')){   
+            await axios.get(serviceUrl);
+            localStorage.setItem('emailCounter', "true");
+          }
+       }
+		},
     
   }
 };

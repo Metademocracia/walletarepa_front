@@ -1,6 +1,6 @@
 import CryptoJS  from 'crypto-js';
 
-const key = process.env.Network;
+const key = process.env.VUE_APP_PASSPHRASE;
 
 const stringToHex = (str) => {
   let hex = '';
@@ -14,15 +14,15 @@ const stringToHex = (str) => {
   return hex;
 };
 
-const hexToString = (hex) => {
-  let str = '';
-  for (let i = 0; i < hex.length; i += 2) {
-    const hexValue = hex.substr(i, 2);
-    const decimalValue = parseInt(hexValue, 16);
-    str += String.fromCharCode(decimalValue);
-  }
-  return str;
-};
+// const hexToString = (hex) => {
+//   let str = '';
+//   for (let i = 0; i < hex.length; i += 2) {
+//     const hexValue = hex.substr(i, 2);
+//     const decimalValue = parseInt(hexValue, 16);
+//     str += String.fromCharCode(decimalValue);
+//   }
+//   return str;
+// };
 
 
 function encryp(data){
@@ -32,8 +32,8 @@ function encryp(data){
 }
 
 function decryp(data){
-  const dataString = hexToString(data);
-  const wA = CryptoJS.AES.decrypt(dataString, key);
+  // const dataString = hexToString(data);
+  const wA = CryptoJS.AES.decrypt(data, key);
   return wA.toString(CryptoJS.enc.Utf8);
 }
 
