@@ -215,16 +215,16 @@ export default {
       this.getMessages()
     }
   },
-  created() {
-    this.getUnreadMessagesCount();
-  },
+  // created() {
+  //   this.getUnreadMessagesCount();
+  // },
   beforeDestroy() {
     clearInterval(this.polling);
   },
   mounted() {
     this.getMessages()
     this.terms = localStorage.getItem("terms");
-    this.pollData();
+    // this.pollData();
     // this.getMessages()
   },
   methods: {
@@ -295,7 +295,7 @@ export default {
           read: true
         });
 
-        console.log("Document successfully updated!");
+        // console.log("Document successfully updated!");
       } catch (error) {
         console.error("Error updating document: ", error);
       }
@@ -308,7 +308,7 @@ export default {
           .collection("MESSAGES")
           .where("readed", "==", false)
           .get();
-        console.log(messagesSnapshot)
+        // console.log(messagesSnapshot)
         this.unreadMessagesCount = messagesSnapshot.size;
         console.log("unreadMessagesCount", this.unreadMessagesCount)
       } catch (error) {
@@ -343,6 +343,7 @@ export default {
               item.authorId = "2"
             } else {
               item.authorId = "1"
+
             }
             // console.log("message", item)
             
@@ -354,6 +355,7 @@ export default {
           });
 
           this.messages = msgs;
+          // console.log(this.messages , "MESSAGES")
           // this.chat = postData;
         });
     },
