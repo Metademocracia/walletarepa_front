@@ -24,6 +24,32 @@
     </v-dialog>
 
     <modal-warning
+      ref="aproveModal"
+    >
+      <template #action>
+        <v-btn class="btn-outlined-2 mt-6" @click="$refs.aproveModal.model = false">
+          VOLVER
+        </v-btn>
+      </template>
+
+      <p>
+        USTED ESTA A PUNTO APROBAR EL INTERCAMBIO, ESTÁ DE ACUERDO CON LA TRANSACCIÓN
+      </p>
+
+      <!-- <v-textarea
+        placeholder="COLOQUE AQUÍ LA DENUNCIA HACIA LA CONTRAPARTE"
+        hide-details solo
+        class="flex-grow-0"
+        style="--br: 10px; --c-place: #000 !important"
+      ></v-textarea> -->
+
+      <v-btn  class="btn mt-2 mb-8" :loading="btnLoading"  @click="aprove" >
+        MARCAR PAGO COMO REALIZADO
+      </v-btn>
+    </modal-warning>
+    
+
+    <modal-warning
       ref="warningModal"
     >
       <template #action>
@@ -43,7 +69,7 @@
         style="--br: 10px; --c-place: #000 !important"
       ></v-textarea> -->
 
-      <v-btn class="btn mt-2 mb-8">
+      <v-btn  class="btn mt-2 mb-8" :loading="btnLoading"  @click="dispute" >
         INICIAR DISPUTA
       </v-btn>
     </modal-warning>
@@ -69,6 +95,7 @@
       </v-card>
 
       <v-btn
+        :disabled="disputeDiabled"
         class="btn"
         style="--bg: var(--card-2); --br: 10px; --f: none; box-shadow: none;"
         @click="$refs.warningModal.model = true"
@@ -100,7 +127,7 @@
       :loading="btnLoading" 
       class="btn mt-2 mb-4"
       style="--bg: var(--primary); --br: 30px"
-      @click="aprove"
+      @click="$refs.aproveModal.model = true"
     >MARCAR PAGO REALIZADO</v-btn>
 
     <v-btn
@@ -145,6 +172,7 @@ export default {
       orderId: "",
       polling: null,
       cancelVisible: false,
+      disputeDiabled: false,
     }
   },
   head() {
@@ -201,6 +229,7 @@ export default {
     }, time);
     this.pollData();
     localStorage.getItem("operation") === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
+    localStorage.getItem("dispute") === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
   },
   methods: {
     selects() {
@@ -308,6 +337,7 @@ export default {
       localStorage.removeItem('orderId');
       localStorage.removeItem('tokenSymbol');
       localStorage.removeItem('terms');
+      localStorage.removeItem('dispute');
       this.btnLoading = false;
       // this.sendMail();
       this.$router.push({ path: "/tx-executed" });
@@ -336,9 +366,33 @@ export default {
       localStorage.removeItem('orderId');
       localStorage.removeItem('tokenSymbol');
       localStorage.removeItem('terms');
+      localStorage.removeItem('dispute');
       this.btnLoading = false;
       // this.sendMail();
       this.$router.push({ path: "/tx-canceled" });
+    },
+    async dispute() {
+      this.btnLoading = true;
+      const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
+      const account = await walletUtils.nearConnection();
+      const type = localStorage.getItem("operation") === "SELL" ? 1 : 2;
+      const orderConfirmation = await account.functionCall({
+        contractId: CONTRACT_NAME,
+        methodName: "order_dispute",
+        gas: "300000000000000",
+        args: { offer_type: type, order_id: parseInt(sessionStorage.getItem('orderId')) },
+        attachedDeposit: "3"
+      });
+      // console.log("orderConfirmation", orderConfirmation)
+      if (!orderConfirmation || orderConfirmation.status.SuccessValue !== "") {
+        console.log("Error cancelando la orden");
+        return
+      }
+      // console.log("orderConfirmation", orderConfirmation)
+      sessionStorage.clear(); // Clear all data from sessionStorage
+      this.btnLoading = false;
+      // this.sendMail();
+      this.$router.push({ path: "/tx-disputed" });
     },
     orderHistorySell() {
       const val = localStorage.getItem("operation") === "SELL" ? "1" : "2";

@@ -46,7 +46,7 @@
     </v-card>
   </v-dialog>
 
-    <Header top-text="EN ESPERA DE" bottom-text="CONFIRMACIÓN" bottom-text-dir="ltr" hide-prepend class="mb-4">
+    <Header :top-text="topText" :bottom-text="topBottom" bottom-text-dir="ltr" hide-prepend class="mb-4">
       <template #prepend>
         <v-btn class="btn-icon-shadow ml-auto" @click="$router.back()">
           <v-icon size="18">mdi-close</v-icon>
@@ -203,6 +203,10 @@ export default {
       amountTittle: "",
       cryptoTittle: "",
       polling: null,
+      topText: "EN ESPERA DE",
+      topBottom: "CONFIRMACIÓN",
+      intervalId: null,
+      secondsLeft: 0,
     }
   },
   head() {
@@ -243,6 +247,15 @@ export default {
         this.seconds = 0;
       }
     }
+    if(localStorage.getItem("dispute")){
+          this.topText = "TRANSACCIÓN MARCADA PARA";
+          this.topBottom = "DISPUTA";
+          this.stopCountdown();
+          this.seconds = 0;
+          clearInterval(this.polling);
+          localStorage.removeItem('endTime');
+          localStorage.removeItem('startTime');
+     }  
   },
   beforeDestroy() {
 		clearInterval(this.polling);
@@ -294,7 +307,7 @@ export default {
       localStorage.getItem("operation") === "SELL" ? this.orderSell() : this.orderBuy();
       localStorage.getItem("operation") === "SELL" ? this.orderHistorySell() : this.orderHistoryBuy();
     },
-    orderSell() {
+    async orderSell() {
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
@@ -329,7 +342,7 @@ export default {
         this.seconds = sessionStorage.getItem('seconds');
         this.traderName = sessionStorage.getItem('traderName');
       } else {
-        this.$apollo
+        await this.$apollo
           .watchQuery({
             query: selects,
             variables: {
@@ -361,7 +374,7 @@ export default {
           });
        }
     },
-    orderBuy() {
+    async orderBuy() {
       const selects = gql`
         query MyQuery( $address : String) {
           orderbuys(
@@ -395,7 +408,7 @@ export default {
         this.seconds = sessionStorage.getItem('seconds');
         this.traderName = sessionStorage.getItem('traderName');
       } else {
-        this.$apollo
+        await this.$apollo
           .watchQuery({
             query: selects,
             variables: {
@@ -427,7 +440,7 @@ export default {
           });
        }
     },
-    orderHistorySell() {
+    async orderHistorySell() {
       const val = localStorage.getItem("operation") === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
@@ -438,7 +451,7 @@ export default {
         }
       }
       `;    
-        this.$apollo
+        await this.$apollo
           .watchQuery({
             query: selects,
             variables: {
@@ -452,7 +465,7 @@ export default {
             });
           });
     },
-    orderHistoryBuy() {
+    async orderHistoryBuy() {
       const val = localStorage.getItem("operation") === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
@@ -463,7 +476,7 @@ export default {
         }
       }
       `;    
-        this.$apollo
+        await this.$apollo
           .watchQuery({
             query: selects,
             variables: {
@@ -477,7 +490,7 @@ export default {
             });
           });
     },
-    trader( ownerId ) {
+    async trader( ownerId ) {
       const selects = gql`
         query MyQuery( $address : String) {
           datausers(where: {user_id: $address}) {
@@ -489,7 +502,7 @@ export default {
       if (sessionStorage.getItem('traderName')) {
         this.traderName = sessionStorage.getItem('traderName');
       } else {
-      this.$apollo
+      await this.$apollo
         .watchQuery({
           query: selects,
           variables: {
@@ -517,22 +530,30 @@ export default {
       }).format(number);
     },
     startCountdown() {
-      const intervalId = setInterval(() => {
+      this.intervalId = setInterval(() => {
         const endTime = localStorage.getItem('endTime');
         if (endTime) {
-          const secondsLeft = Math.ceil((endTime - Date.now()) / 1000);
-          if (secondsLeft > 0) {
-            this.seconds = secondsLeft;
+           this.secondsLeft = Math.ceil((endTime - Date.now()) / 1000);
+          if (this.secondsLeft > 0) {
+            this.seconds = this.secondsLeft;
           } else {
             this.seconds = 0;
+            this.secondsLeft = 0;
             localStorage.removeItem('endTime');
             localStorage.removeItem('startTime');
-            clearInterval(intervalId);
+            this.stopCountdown();
           }
         } else {
-          clearInterval(intervalId);
+          this.stopCountdown();
         }
       }, 1000);
+    },
+    stopCountdown() {
+      if (this.intervalId) {
+        clearInterval(this.intervalId);
+        this.intervalId = null;
+        localStorage.removeItem('endTime');
+      }
     },
     yoctoNEARNEAR(yoctoNEAR) {
 				const amountInNEAR = utils.format.formatNearAmount(yoctoNEAR);
@@ -557,6 +578,18 @@ export default {
             this.$router.push('/tx-canceled');
           }
         }
+        if(this.data.length>0){
+          if(this.data[0].status === 3){
+            this.topText = "TRANSACCIÓN MARCADA PARA";
+            this.topBottom = "DISPUTA";
+            this.stopCountdown();
+            this.seconds = 0;
+            clearInterval(this.polling);
+            localStorage.removeItem('endTime');
+            localStorage.removeItem('startTime');
+            localStorage.setItem('dispute', 'true');
+          }
+        }  
 			}, 5000);
 		},  
     
