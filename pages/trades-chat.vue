@@ -123,6 +123,7 @@ export default {
     return {
       address: localStorage.getItem("address"),
       data: [],
+      dataCancel: [],
       terms: "",
       receiveAmount: 0,
       tokenSymbol: "",
@@ -133,7 +134,8 @@ export default {
       operationAmount: 0,
       dialog2: false,
       btnLoading: false,
-      orderId: localStorage.getItem("orderId")
+      orderId: "",
+      polling: null,
     }
   },
   head() {
@@ -142,15 +144,34 @@ export default {
       title,
     }
   },
+  beforeDestroy() {
+		clearInterval(this.polling);
+	},
   mounted() {
-    console.log(localStorage.getItem("orderId"))
+    // console.log(localStorage.getItem("orderId"))
     const time = sessionStorage.getItem('traderName') ? 100 : 3000;
     let counter = 0;
-    const maxAttempts = 3;
+    const maxAttempts = 4;
     // Info from trader
     // this.getMessages()
     const intervalId = setInterval(() => {
+      // In case the user open the session in other browser, will guarantee show the pending p2p
+      let selectedCoin;
       this.selects();
+      if (localStorage.getItem("tokenSymbol") === "USDT") {
+        selectedCoin = {
+          name: "Tether USD",
+          symbol: "USDT",
+          icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMic+PGcgZmlsbD0nbm9uZScgZmlsbC1ydWxlPSdldmVub2RkJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPScxNicgZmlsbD0nIzI2QTE3QicvPjxwYXRoIGZpbGw9JyNGRkYnIGQ9J00xNy45MjIgMTcuMzgzdi0uMDAyYy0uMTEuMDA4LS42NzcuMDQyLTEuOTQyLjA0Mi0xLjAxIDAtMS43MjEtLjAzLTEuOTcxLS4wNDJ2LjAwM2MtMy44ODgtLjE3MS02Ljc5LS44NDgtNi43OS0xLjY1OCAwLS44MDkgMi45MDItMS40ODYgNi43OS0xLjY2djIuNjQ0Yy4yNTQuMDE4Ljk4Mi4wNjEgMS45ODguMDYxIDEuMjA3IDAgMS44MTItLjA1IDEuOTI1LS4wNnYtMi42NDNjMy44OC4xNzMgNi43NzUuODUgNi43NzUgMS42NTggMCAuODEtMi44OTUgMS40ODUtNi43NzUgMS42NTdtMC0zLjU5di0yLjM2Nmg1LjQxNFY3LjgxOUg4LjU5NXYzLjYwOGg1LjQxNHYyLjM2NWMtNC40LjIwMi03LjcwOSAxLjA3NC03LjcwOSAyLjExOCAwIDEuMDQ0IDMuMzA5IDEuOTE1IDcuNzA5IDIuMTE4djcuNTgyaDMuOTEzdi03LjU4NGM0LjM5My0uMjAyIDcuNjk0LTEuMDczIDcuNjk0LTIuMTE2IDAtMS4wNDMtMy4zMDEtMS45MTQtNy42OTQtMi4xMTcnLz48L2c+PC9zdmc+",
+        };
+      } else {
+        selectedCoin = {
+          symbol: "NEAR",
+          icon: "/wallet-p2p/wallet-p2p/assets/sources/logos/near-icon.svg",
+        };
+      }
+      localStorage.setItem('selectedCoin', JSON.stringify(selectedCoin));
+
       let selectedToken = localStorage.getItem("selectedCoin");
       if (selectedToken) {
         selectedToken = JSON.parse(selectedToken);
@@ -169,9 +190,12 @@ export default {
         this.$router.push('/');
       }
     }, time);
+    this.pollData();
   },
   methods: {
     selects() {
+      localStorage.getItem("operation") === "SELL" ? this.orderHistorySell() : this.orderHistoryBuy();
+
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
@@ -215,6 +239,7 @@ export default {
 								this.data.push(value); 
                 this.terms = this.data[0].terms_conditions;
                 sessionStorage.setItem('terms', this.terms);
+                localStorage.setItem('terms', this.terms);
                 walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
                    this.exchangeRate = this.data[0].exchange_rate * price;
                    sessionStorage.setItem('exchangeRate', this.exchangeRate);
@@ -269,10 +294,79 @@ export default {
       }
       sessionStorage.clear(); // Clear all data from sessionStorage
       localStorage.removeItem('endTime');
+      localStorage.removeItem('operation');
+      localStorage.removeItem('orderId');
+      localStorage.removeItem('tokenSymbol');
+      localStorage.removeItem('terms');
       this.btnLoading = false;
       // this.sendMail();
       this.$router.push({ path: "/tx-executed" });
     },
+    orderHistorySell() {
+      const val = localStorage.getItem("operation") === "SELL" ? "1" : "2";
+      const selects = gql`
+        query MyQuery( $id : String) {
+          orderhistorysells(
+            where: {id: $id}
+          ) {
+          status
+        }
+      }
+      `;    
+        this.$apollo
+          .watchQuery({
+            query: selects,
+            variables: {
+              id: localStorage.getItem("orderId") + '|' + val,
+            }, pollInterval: 3000
+          })
+          .subscribe(({ data }) => {
+            // this.data = [];
+            Object.entries(data.orderhistorysells).forEach(([key, value]) => {
+              this.dataCancel.push(value);
+            });
+          });
+    },
+    orderHistoryBuy() {
+      const val = localStorage.getItem("operation") === "SELL" ? "1" : "2";
+      const selects = gql`
+        query MyQuery( $id : String) {
+          orderhistorybuys(
+            where: {id: $id}
+          ) {
+          status
+        }
+      }
+      `;    
+        this.$apollo
+          .watchQuery({
+            query: selects,
+            variables: {
+              id: localStorage.getItem("orderId") + '|' + val,
+            }, pollInterval: 3000
+          })
+          .subscribe(({ data }) => {
+            // this.data = [];
+            Object.entries(data.orderhistorysells).forEach(([key, value]) => {
+              this.dataCancel.push(value);
+            });
+          });
+    },
+    pollData() {
+			this.polling = setInterval(() => {
+        if(this.dataCancel.length>0){
+          if(this.dataCancel[0].status === 4){
+            sessionStorage.clear(); // Clear all data from sessionStorage
+            localStorage.removeItem('endTime');
+            localStorage.removeItem('operation');
+            localStorage.removeItem('orderId');
+            localStorage.removeItem('tokenSymbol');
+            localStorage.removeItem('terms');
+            this.$router.push('/tx-canceled');
+          }
+        }
+			}, 5000);
+		},  
   }
 };
 </script>

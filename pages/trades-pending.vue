@@ -184,6 +184,7 @@ export default {
       secondsEstimated: 300,
       address: localStorage.getItem("address"),
       data: [],
+      dataCancel: [],
       dataTrader: [],
       traderName: "",
       traderNameTitle: "",
@@ -201,6 +202,7 @@ export default {
       typeOffer: "",
       amountTittle: "",
       cryptoTittle: "",
+      polling: null,
     }
   },
   head() {
@@ -242,6 +244,9 @@ export default {
       }
     }
   },
+  beforeDestroy() {
+		clearInterval(this.polling);
+	},
   mounted() {
     if(localStorage.getItem("operation") === "SELL"){
       this.traderNameTitle = "Nombre de comprador:";
@@ -256,11 +261,11 @@ export default {
     }
     const time = sessionStorage.getItem('traderName') ? 100 : 3000;
     let counter = 0;
-    const maxAttempts = 3;
+    const maxAttempts = 4;
     // Info from trader
     const intervalId = setInterval(() => {
       this.selects();
-      let selectedToken = localStorage.getItem("selectedCoin");
+      let selectedToken =  localStorage.getItem("selectedCoin");
       if (selectedToken) {
         selectedToken = JSON.parse(selectedToken);
         this.tokenSymbol = selectedToken.symbol;
@@ -281,11 +286,13 @@ export default {
          this.$router.push('/');
       }
     }, time);
+    this.pollData();
     
   },
   methods: {
     selects(){
       localStorage.getItem("operation") === "SELL" ? this.orderSell() : this.orderBuy();
+      localStorage.getItem("operation") === "SELL" ? this.orderHistorySell() : this.orderHistoryBuy();
     },
     orderSell() {
       const selects = gql`
@@ -309,6 +316,7 @@ export default {
           time
           operation_amount
           order_id
+          status
         }
       }
       `;    
@@ -329,12 +337,13 @@ export default {
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            this.data = [];
+            // this.data = [];
             Object.entries(data.ordersells).forEach(([key, value]) => {
               this.data.push(value);
               this.trader(this.data[0].owner_id);
               this.terms = this.data[0].terms_conditions;
               sessionStorage.setItem('terms', this.terms);
+              localStorage.setItem('terms', this.terms);
               walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
                 this.exchangeRate = this.data[0].exchange_rate * price;
                 sessionStorage.setItem('exchangeRate', this.exchangeRate);
@@ -350,7 +359,7 @@ export default {
               sessionStorage.setItem('seconds', this.seconds);
             });
           });
-      }
+       }
     },
     orderBuy() {
       const selects = gql`
@@ -399,6 +408,7 @@ export default {
               this.data.push(value);
               this.trader(this.data[0].owner_id);
               this.terms = this.data[0].terms_conditions;
+              localStorage.setItem('terms', this.terms);
               sessionStorage.setItem('terms', this.terms);
               walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
                 this.exchangeRate = this.data[0].exchange_rate * price;
@@ -415,7 +425,57 @@ export default {
               sessionStorage.setItem('seconds', this.seconds);
             });
           });
+       }
+    },
+    orderHistorySell() {
+      const val = localStorage.getItem("operation") === "SELL" ? "1" : "2";
+      const selects = gql`
+        query MyQuery( $id : String) {
+          orderhistorysells(
+            where: {id: $id}
+          ) {
+          status
+        }
       }
+      `;    
+        this.$apollo
+          .watchQuery({
+            query: selects,
+            variables: {
+              id: localStorage.getItem("orderId") + '|' + val,
+            }, pollInterval: 3000
+          })
+          .subscribe(({ data }) => {
+            // this.data = [];
+            Object.entries(data.orderhistorysells).forEach(([key, value]) => {
+              this.dataCancel.push(value);
+            });
+          });
+    },
+    orderHistoryBuy() {
+      const val = localStorage.getItem("operation") === "SELL" ? "1" : "2";
+      const selects = gql`
+        query MyQuery( $id : String) {
+          orderhistorybuys(
+            where: {id: $id}
+          ) {
+          status
+        }
+      }
+      `;    
+        this.$apollo
+          .watchQuery({
+            query: selects,
+            variables: {
+              id: localStorage.getItem("orderId") + '|' + val,
+            }, pollInterval: 3000
+          })
+          .subscribe(({ data }) => {
+            // this.data = [];
+            Object.entries(data.orderhistorysells).forEach(([key, value]) => {
+              this.dataCancel.push(value);
+            });
+          });
     },
     trader( ownerId ) {
       const selects = gql`
@@ -484,6 +544,21 @@ export default {
 				// console.log('',amountInYocto);
 				return amountInYocto.toString();
 			},
+    pollData() {
+			this.polling = setInterval(() => {
+        if(this.dataCancel.length>0){
+          if(this.dataCancel[0].status === 4){
+            sessionStorage.clear(); // Clear all data from sessionStorage
+            localStorage.removeItem('endTime');
+            localStorage.removeItem('operation');
+            localStorage.removeItem('orderId');
+            localStorage.removeItem('tokenSymbol');
+            localStorage.removeItem('terms');
+            this.$router.push('/tx-canceled');
+          }
+        }
+			}, 5000);
+		},  
     
   }
 };

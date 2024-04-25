@@ -109,9 +109,10 @@
         </v-select>
         <v-btn
           :disabled="!selectedFiat"
+          :loading="loading"
           class="btn-outlined flex-grow-1"
           style="--h: 34px; width: min(100%, 192px)"
-          @click="$router.push('/withdraw')"
+          @click="$router.push('/withdraw'), loading = true"
         >
           <span style="color: #000 !important">RETIRAR FIAT</span>
         </v-btn>
@@ -139,6 +140,7 @@ export default {
       required: [(v) => !!v || "Campo requerido", (v) => Number(v) <= Number(this.balance) || "Saldo insuficiente" ],
       dataToken: null,
       listFiats: [],
+      loading: false,
     }
   },
   head() {

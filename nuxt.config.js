@@ -20,7 +20,7 @@ export default {
     VUE_APP_CONTRACT_NAME: process.env.VUE_APP_CONTRACT_NAME || "http://localhost:3000",
     VUE_APP_CONTRACT_NAME_USDT: process.env.VUE_APP_CONTRACT_NAME_USDT || "http://localhost:3000",
     VUE_APP_API_MAIL_URL: process.env.VUE_APP_API_MAIL_URL || "http://localhost:3000",
-    VUE_APP_CHAT_FIREBASE: process.env.VUE_APP_CHAT_FIREBASE || "http://localhost:3000",
+    VUE_APP_CHAT_FIREBASE: process.env.VUE_APP_CHAT_FIREBASE,
   },
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,

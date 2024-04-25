@@ -282,20 +282,20 @@ export default {
     }
   },
   mounted() {
-    this.setOperationSymbol();
-
+    
     this.address = localStorage.getItem("address");
-
     sessionStorage.removeItem("create-import-proccess")
 
-    if(!localStorage.getItem('orderId')){
+    setTimeout(() => {
       this.orderSell();
       if(this.data.length === 0){
         this.orderBuy();
       }
-    }
+      this.setOperationSymbol();
+    }, 5000);
+
     let counter = 0;
-    const maxAttempts = 5;
+      const maxAttempts = 5;
 
     const intervalId = setInterval(() => {
       if (localStorage.getItem('orderId')) {
@@ -305,7 +305,6 @@ export default {
         clearInterval(intervalId);
       }
     }, 5000);
-
 
     // localStorage.removeItem("importEmailNickname");
     // localStorage.removeItem("importEmail");
@@ -567,6 +566,8 @@ export default {
               this.data.push(value);
               this.orderId = this.data[0].order_id;
               localStorage.setItem('orderId', this.orderId);
+              localStorage.setItem('operation', 'SELL');
+              localStorage.setItem('tokenSymbol', this.data[0].asset);
             });
           });
     },
@@ -608,6 +609,8 @@ export default {
               this.data.push(value);
               this.orderId = this.data[0].order_id;
               localStorage.setItem('orderId', this.orderId);
+              localStorage.setItem('operation', 'BUY');
+              localStorage.setItem('tokenSymbol', this.data[0].asset);
             });
           });
     },

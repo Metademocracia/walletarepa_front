@@ -9,7 +9,7 @@
     </Header>
 
     <div id="tx-executed__bg-image">
-      <img src="@/assets/sources/images/approve-hand.png" alt="bg-image">
+      <img src="@/assets/sources/images/reject-hand.png" alt="bg-image">
     </div>
 
     <span class="big-title" style="z-index: 0">TRAN</span>
@@ -17,7 +17,7 @@
     <span class="big-title" style="text-indent: .5ch">CIÓN</span>
 
     <aside class="d-flex flex-column mt-6" style="gap: 10px">
-      <h3>EJECUTADA</h3>
+      <h3>CANCELADA</h3>
 
       <v-btn class="btn mb-4" @click="goToExplorer">
         VERIFICAR EN EL EXPLORADOR
@@ -34,7 +34,7 @@
 export default {
   name: "TransactionExecutedPage",
   layout: 'default-variant-2',
-  middleware: ["fromTrade"],
+
   data() {
     return {
       langList: [

@@ -112,7 +112,7 @@
           <span
             v-if="msg.authorId !== MessageSpecialId.system"
             class="message-date"
-          >{{ getHours(msg.createdAt) }}</span>
+          ><p style="font-weight: bold; margin-bottom: -1px;">{{ msg.wallet }}</p> {{ getHours(msg.createdAt) }}</span>
         </div>
       </section>
 
@@ -120,9 +120,9 @@
       <form @submit.prevent="sendMessage">
         <div
           v-if="photo"
-          @click="photo = null"
           class="photo-preview"
           :style="{ 'background-image': `url(${messagePhoto})` }"
+          @click="photo = null"
         ></div>
 
         <input
@@ -140,7 +140,7 @@
           @click="$refs.file.click()"
         >
           <v-icon>mdi-paperclip</v-icon>
-          <input ref="file" type="file" class="inputfile d-none" @change="event => onFileChange(event.target.files[0])" />
+          <input ref="file" type="file" class="inputfile d-none" accept=".jpg,.jpeg,.png" @change="event => onFileChange(event.target.files[0])" />
         </button>
 
         <button :disabled="!message" style="padding-right: 5px" @click="sendMessage">
@@ -184,6 +184,7 @@ export default {
     return {
       photo: null,
       orderId: localStorage.getItem("orderId"),
+      operation: localStorage.getItem("operation"),
       MessageSpecialId,
       MessageType,
       uid: "2",
@@ -197,14 +198,10 @@ export default {
       showInfoCard: false,
       showMoreInfoCard: false,
       infoMessage: "We recommend that you try to choose verified merchants, not reasdasd laksdñl aksñl dkasñl kdñlaskñs asd as das das a asd asd as d asdasdasda",
-
+      terms: localStorage.getItem("terms"),
       chat: null,
       file: null,
-    }
-  },
-  watch: {
-    roomId(_) {
-      this.getMessages()
+      unreadMessagesCount: 0,
     }
   },
   computed: {
@@ -212,13 +209,22 @@ export default {
       return URL.createObjectURL(this.photo);
     },
   },
+  watch: {
+    roomId(_) {
+      this.getMessages()
+    }
+  },
+  created() {
+    this.getUnreadMessagesCount();
+  },
   mounted() {
     this.getMessages()
+    this.terms = localStorage.getItem("terms");
     // this.getMessages()
   },
   methods: {
-    async onFileChange(event) {
-      console.log(event)
+    onFileChange(event) {
+      // console.log(event)
       this.photo = event;
       // this.$refs.input.focus();
 
@@ -227,58 +233,73 @@ export default {
         const timestamp = Date.now();
         const storageRef = firebase
           .storage()
-          .ref(`${timestamp}${this.photo.name}`)
-          .put(this.photo);
-        await storageRef.on(`state_changed`, () => {
-          storageRef.snapshot.ref.getDownloadURL().then(url => {
-            console.log("url",url)
-            const messageInfo = {
-              authorId: null,
-              wallet: localStorage.getItem("address"),
-              photoURL: url,
-              text: this.message || " ",
-              type: MessageType.image,
-              updatedAt: Date.now(),
-              createdAt: Date.now(),
-            }
+          .ref(`${timestamp}${this.photo.name}`);
+        const uploadTask = storageRef.put(this.photo);
 
-            console.log(messageInfo, "HOLAAAA")
+        uploadTask.on('state_changed', 
+          (snapshot) => {
+            // You can use this function to monitor the upload progress
+          }, 
+          (error) => {
+            // Handle unsuccessful uploads
+            console.error(error);
+          }, 
+          () => {
+            // Upload completed successfully, now we can get the download URL
+            uploadTask.snapshot.ref.getDownloadURL().then((url) => {
+              const messageInfo = {
+                authorId: null,
+                wallet: localStorage.getItem("address"),
+                photoURL: url,
+                text: this.message || " ",
+                type: MessageType.image,
+                updatedAt: Date.now(),
+                createdAt: Date.now(),
+              }
 
-            db
-              .collection(process.env.VUE_APP_CHAT_FIREBASE)
-              .doc(this.orderId)
-              .collection("MESSAGES")
-              .add(messageInfo);
-            // db
-            //   .collection(process.env.VUE_APP_CHAT_FIREBASE || "TESTNET")
-            //   .doc(this.orderId)
-            //   .set({ artist: this.activeChat.artist || "", ago: Date.now() });
+              db
+                .collection(process.env.VUE_APP_CHAT_FIREBASE)
+                .doc(this.operation+this.orderId)
+                .collection("MESSAGES")
+                .add(messageInfo);
 
-            this.getMessages();
+              this.getMessages();
 
-            this.message = "";
-            this.photo = null;
-          });
-        });
+              this.message = "";
+              this.photo = null;
+            });
+          }
+        );
       }
     },
+    async getUnreadMessagesCount() {
+      const messagesSnapshot = await db
+        .collection(process.env.VUE_APP_CHAT_FIREBASE)
+        .doc(this.operation+this.orderId)
+        .collection("MESSAGES")
+        .where("read", "==", false)
+        .get();
+
+      this.unreadMessagesCount = messagesSnapshot.size;
+      localStorage.setItem("unreadMessagesCount", this.unreadMessagesCount);
+    },
     getMessages() {
-      console.log("VUE_APP_CHAT_FIREBASE",process.env.VUE_APP_CHAT_FIREBASE)
+      // console.log("VUE_APP_CHAT_FIREBASE",process.env.VUE_APP_CHAT_FIREBASE)
       db
         .collection(process.env.VUE_APP_CHAT_FIREBASE)
-        .doc(this.orderId)
+        .doc(this.operation+this.orderId)
         .collection("MESSAGES")
         .orderBy("createdAt")
         .onSnapshot((snapshot) => {
           // const postData = [];
 
-          console.log("snapshot", snapshot)
+          // console.log("snapshot", snapshot)
 
           const msgs = [
             {
               authorId: "system",
               createdAt: Date.now(),
-              text: "El pedido se procesó exitosamente, espere el pago de su contraparte.",
+              text: this.terms,
               type: MessageType.text,
               updatedAt: Date.now()
             }
@@ -291,7 +312,7 @@ export default {
             } else {
               item.authorId = "1"
             }
-            console.log("message", item)
+            // console.log("message", item)
             
             msgs.push(item)
 
@@ -314,7 +335,7 @@ export default {
           .put(this.photo);
         await storageRef.on(`state_changed`, () => {
           storageRef.snapshot.ref.getDownloadURL().then(url => {
-            console.log("url",url)
+            // console.log("url",url)
             const messageInfo = {
               authorId: null,
               wallet: localStorage.getItem("address"),
@@ -325,11 +346,11 @@ export default {
               createdAt: Date.now(),
             }
 
-            console.log(messageInfo, "HOLAAAA")
+            // console.log(messageInfo, "HOLAAAA")
 
             db
               .collection(process.env.VUE_APP_CHAT_FIREBASE)
-              .doc(this.orderId)
+              .doc(this.operation+this.orderId)
               .collection("MESSAGES")
               .add(messageInfo);
             // db
@@ -354,11 +375,11 @@ export default {
           createdAt: Date.now(),
         }
 
-        console.log(messageInfo)
+        // console.log(messageInfo)
 
         db
           .collection(process.env.VUE_APP_CHAT_FIREBASE)
-          .doc(this.orderId)
+          .doc(this.operation+this.orderId)
           .collection("MESSAGES")
           .add(messageInfo);
         // db
@@ -410,7 +431,7 @@ export default {
           authorId: "system",
           createdAt: Timestamp.now(),
           status: MessageStatus.sent,
-          text: "El pedido se procesó exitosamente, espere el pago de su contraparte.",
+          text: this.terms,
           type: MessageType.text,
           updatedAt: Timestamp.now()
         }).toJson(),
