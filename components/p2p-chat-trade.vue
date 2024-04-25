@@ -202,6 +202,7 @@ export default {
       chat: null,
       file: null,
       unreadMessagesCount: 0,
+      polling: null,
     }
   },
   computed: {
@@ -217,9 +218,13 @@ export default {
   created() {
     this.getUnreadMessagesCount();
   },
+  beforeDestroy() {
+    clearInterval(this.polling);
+  },
   mounted() {
     this.getMessages()
     this.terms = localStorage.getItem("terms");
+    this.pollData();
     // this.getMessages()
   },
   methods: {
@@ -252,6 +257,7 @@ export default {
                 wallet: localStorage.getItem("address"),
                 photoURL: url,
                 text: this.message || " ",
+                readed: true,
                 type: MessageType.image,
                 updatedAt: Date.now(),
                 createdAt: Date.now(),
@@ -259,7 +265,7 @@ export default {
 
               db
                 .collection(process.env.VUE_APP_CHAT_FIREBASE)
-                .doc(this.operation+this.orderId)
+                .doc(`${this.operation}${this.orderId}`)
                 .collection("MESSAGES")
                 .add(messageInfo);
 
@@ -272,22 +278,48 @@ export default {
         );
       }
     },
-    async getUnreadMessagesCount() {
-      const messagesSnapshot = await db
-        .collection(process.env.VUE_APP_CHAT_FIREBASE)
-        .doc(this.operation+this.orderId)
-        .collection("MESSAGES")
-        .where("read", "==", false)
-        .get();
+    pollData() {
+			this.polling = setInterval(() => {
+        this.getUnreadMessagesCount();
+			}, 5000);
+		},  
+    async markMessageAsRead(messageId) {
+      try {
+        const docRef = db
+          .collection(process.env.VUE_APP_CHAT_FIREBASE)
+          .doc(`${this.operation}${this.orderId}`)
+          .collection("MESSAGES")
+          .doc(messageId);
 
-      this.unreadMessagesCount = messagesSnapshot.size;
-      localStorage.setItem("unreadMessagesCount", this.unreadMessagesCount);
+        await docRef.update({
+          read: true
+        });
+
+        console.log("Document successfully updated!");
+      } catch (error) {
+        console.error("Error updating document: ", error);
+      }
+    },
+    async getUnreadMessagesCount() {
+      try {
+        const messagesSnapshot = await db
+          .collection(process.env.VUE_APP_CHAT_FIREBASE)
+          .doc(`${this.operation}${this.orderId}`)
+          .collection("MESSAGES")
+          .where("readed", "==", false)
+          .get();
+        console.log(messagesSnapshot)
+        this.unreadMessagesCount = messagesSnapshot.size;
+        console.log("unreadMessagesCount", this.unreadMessagesCount)
+      } catch (error) {
+        console.error("Failed to get unread messages count:", error);
+      }
     },
     getMessages() {
       // console.log("VUE_APP_CHAT_FIREBASE",process.env.VUE_APP_CHAT_FIREBASE)
       db
         .collection(process.env.VUE_APP_CHAT_FIREBASE)
-        .doc(this.operation+this.orderId)
+        .doc(`${this.operation}${this.orderId}`)
         .collection("MESSAGES")
         .orderBy("createdAt")
         .onSnapshot((snapshot) => {
@@ -341,6 +373,7 @@ export default {
               wallet: localStorage.getItem("address"),
               photoURL: url,
               text: this.message,
+              readed: true,
               type: MessageType.image,
               updatedAt: Date.now(),
               createdAt: Date.now(),
@@ -350,7 +383,7 @@ export default {
 
             db
               .collection(process.env.VUE_APP_CHAT_FIREBASE)
-              .doc(this.operation+this.orderId)
+              .doc(`${this.operation}${this.orderId}`)
               .collection("MESSAGES")
               .add(messageInfo);
             // db
@@ -370,6 +403,7 @@ export default {
           authorId: null,
           wallet: localStorage.getItem("address"),
           text: this.message,
+          readed: true,
           type: MessageType.text,
           updatedAt: Date.now(),
           createdAt: Date.now(),
@@ -379,7 +413,7 @@ export default {
 
         db
           .collection(process.env.VUE_APP_CHAT_FIREBASE)
-          .doc(this.operation+this.orderId)
+          .doc(`${this.operation}${this.orderId}`)
           .collection("MESSAGES")
           .add(messageInfo);
         // db

@@ -36,15 +36,15 @@
         USTED ESTA A PUNTO CANCELAR EL INTERCAMBIO DEBIDO A UN COMPORTAMIENTO INUSUAL EN LA CONTRAPARTE
       </p>
 
-      <v-textarea
+      <!-- <v-textarea
         placeholder="COLOQUE AQUÍ LA DENUNCIA HACIA LA CONTRAPARTE"
         hide-details solo
         class="flex-grow-0"
         style="--br: 10px; --c-place: #000 !important"
-      ></v-textarea>
+      ></v-textarea> -->
 
       <v-btn class="btn mt-2 mb-8">
-        COLOCAR MOTIVO Y ABORTAR
+        INICIAR DISPUTA
       </v-btn>
     </modal-warning>
 
@@ -73,7 +73,7 @@
         style="--bg: var(--card-2); --br: 10px; --f: none; box-shadow: none;"
         @click="$refs.warningModal.model = true"
       >
-        <span style="color: var(--primary) !important">REPORTAR</span>
+        <span style="color: var(--primary) !important">DISPUTA</span>
       </v-btn>
     </div>
 
@@ -104,6 +104,7 @@
     >MARCAR PAGO REALIZADO</v-btn>
 
     <v-btn
+      v-if="cancelVisible"
       :loading="btnLoading" 
       class="btn-outlined mb-4"
       style="--bg: var(--card-2); --br: 30px"
@@ -143,6 +144,7 @@ export default {
       btnLoading: false,
       orderId: "",
       polling: null,
+      cancelVisible: false,
     }
   },
   head() {
@@ -198,6 +200,7 @@ export default {
       }
     }, time);
     this.pollData();
+    localStorage.getItem("operation") === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
   },
   methods: {
     selects() {
