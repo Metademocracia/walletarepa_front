@@ -174,6 +174,7 @@ import gql from "graphql-tag";
 import axios from 'axios';
 import encrypDecript from "@/services/encryp";
 import { formattedTime } from '@/plugins/functions'
+import wallet from '@/services/local-storage-user'
 import walletUtils from "@/services/wallet";
 import { db } from "@/plugins/firebase";
 const { utils } = nearAPI;
@@ -186,7 +187,7 @@ export default {
       startTime: null,
       seconds: 0,
       secondsEstimated: 300,
-      address: localStorage.getItem("address"),
+      address: wallet.getCurrentAccount().address,
       data: [],
       dataCancel: [],
       dataTrader: [],
@@ -213,6 +214,7 @@ export default {
       secondsLeft: 0,
       unreadMessagesCount: 0,
       unreadMessagesActive: false,
+      operation: "",
     }
   },
   head() {
@@ -254,50 +256,30 @@ export default {
         this.seconds = 0;
       }
     }
-    if(localStorage.getItem("dispute")){
-          this.topText = "TRANSACCIÓN MARCADA PARA";
-          this.topBottom = "DISPUTA";
-          this.stopCountdown();
-          this.seconds = 0;
-          clearInterval(this.polling);
-          localStorage.removeItem('endTime');
-          localStorage.removeItem('startTime');
-     }  
   },
   beforeDestroy() {
 		clearInterval(this.polling);
 	},
   mounted() {
-    if(localStorage.getItem("operation") === "SELL"){
-      this.traderNameTitle = "Nombre de comprador:";
-      this.typeOffer = "VENDER"
-      this.amountTittle = "Monto a Recibir:";
-      this.cryptoTittle = "Crypto a Vender:";
-    } else {
-      this.traderNameTitle = "Nombre de vendedor:";
-      this.typeOffer = "COMPRAR";
-      this.amountTittle = "Monto a Pagar:";
-      this.cryptoTittle = "Crypto a Recibir:";
-    }
     const time = sessionStorage.getItem('traderName') ? 100 : 3000;
     let counter = 0;
     const maxAttempts = 4;
     // Info from trader
     const intervalId = setInterval(() => {
       this.selects();
-      let selectedToken =  localStorage.getItem("selectedCoin");
+      let selectedToken =  this.data[0].asset; // localStorage.getItem("selectedCoin");
       if (selectedToken) {
         selectedToken = JSON.parse(selectedToken);
         this.tokenSymbol = selectedToken.symbol;
         this.tokenImage = selectedToken.icon;
         localStorage.setItem('tokenSymbol', this.tokenSymbol);
       }
-      this.fiatSymbol = localStorage.getItem("selectedFiat") === "1" ? "Bs." : "$" ;
-      this.crypto = localStorage.getItem("selectedFiat") === "1" ? "VES" : "USD" ;
+      this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
+      this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
 
       counter++;
 
-      if (this.data.length > 0 || sessionStorage.getItem('traderName')) {
+      if (this.data.length > 0) {
         clearInterval(intervalId);
         this.sendMail();
       } else if (counter >= maxAttempts) {
@@ -308,6 +290,28 @@ export default {
       }
     }, time);
     this.pollData();
+
+    if(this.data[0].status === 3){
+          this.topText = "TRANSACCIÓN MARCADA PARA";
+          this.topBottom = "DISPUTA";
+          this.stopCountdown();
+          this.seconds = 0;
+          clearInterval(this.polling);
+          localStorage.removeItem('endTime');
+          localStorage.removeItem('startTime');
+     }  
+
+    if(this.operation === "SELL"){
+      this.traderNameTitle = "Nombre de comprador:";
+      this.typeOffer = "VENDER"
+      this.amountTittle = "Monto a Recibir:";
+      this.cryptoTittle = "Crypto a Vender:";
+    } else {
+      this.traderNameTitle = "Nombre de vendedor:";
+      this.typeOffer = "COMPRAR";
+      this.amountTittle = "Monto a Pagar:";
+      this.cryptoTittle = "Crypto a Recibir:";
+    }
     
   },
   methods: {
@@ -385,6 +389,7 @@ export default {
             Object.entries(data.ordersells).forEach(([key, value]) => {
               this.data = [];
               this.data.push(value);
+              this.operation = "SELL";
               this.trader(this.data[0].owner_id);
               this.terms = this.data[0].terms_conditions;
               sessionStorage.setItem('terms', this.terms);
@@ -452,6 +457,7 @@ export default {
             Object.entries(data.orderbuys).forEach(([key, value]) => {
               this.data = [];
               this.data.push(value);
+              this.operation = "BUY";
               this.trader(this.data[0].owner_id);
               this.terms = this.data[0].terms_conditions;
               localStorage.setItem('terms', this.terms);

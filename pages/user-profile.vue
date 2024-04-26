@@ -105,6 +105,7 @@ import { ALERT_TYPE } from '~/plugins/dictionary';
 export default {
   name: "CreateProfile",
   layout: "auth-layout",
+  middleware: ["verify-user-profile"],
   data() {
     return {
       loading: false,
@@ -146,7 +147,7 @@ export default {
         }).then((response) => {
           this.loading = false
           // localStorage.setItem("login", true);
-          // console.log(response.data)
+          console.log(response.data)
           
           // this.$router.push(utils.routeAction(this.$route.query.action,"/create-wallet-verification"));
           

@@ -567,6 +567,7 @@ export default {
               this.data = [];
               this.data.push(value);
               this.orderId = this.data[0].order_id;
+              sessionStorage.setItem('dataOrder', this.data.length);
               localStorage.setItem('emailCounter', 'true');
             });
           });
@@ -608,6 +609,7 @@ export default {
               this.data = [];
               this.data.push(value);
               this.orderId = this.data[0].order_id;
+              sessionStorage.setItem('dataOrder', this.data.length);
               localStorage.setItem('emailCounter', 'true');
             });
           });
