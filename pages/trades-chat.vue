@@ -160,6 +160,7 @@ import axios from 'axios';
 // eslint-disable-next-line import/no-named-as-default
 import gql from "graphql-tag";
 import encrypDecript from "@/services/encryp";
+import wallet from '@/services/local-storage-user'
 import walletUtils from "@/services/wallet";
 
 export default {
@@ -184,6 +185,7 @@ export default {
       polling: null,
       cancelVisible: false,
       disputeDiabled: false,
+      operation: "",
     }
   },
   head() {
@@ -206,7 +208,7 @@ export default {
       // In case the user open the session in other browser, will guarantee show the pending p2p
       let selectedCoin;
       this.selects();
-      if (localStorage.getItem("tokenSymbol") === "USDT") {
+      if (this.data[0].asset === "USDT") {
         selectedCoin = {
           name: "Tether USD",
           symbol: "USDT",
@@ -226,12 +228,12 @@ export default {
         this.tokenSymbol = selectedToken.symbol;
         this.tokenImage = selectedToken.icon;
       }
-      this.fiatSymbol = localStorage.getItem("selectedFiat") === "1" ? "Bs." : "$" ;
-      this.crypto = localStorage.getItem("selectedFiat") === "1" ? "VES" : "USD" ;
+      this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
+      this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
 
       counter++;
 
-      if (this.data.length > 0 || sessionStorage.getItem('traderName')) {
+      if (this.data.length > 0) {
         clearInterval(intervalId);
       } else if (counter >= maxAttempts) {
         clearInterval(intervalId);
@@ -239,8 +241,8 @@ export default {
       }
     }, time);
     this.pollData();
-    localStorage.getItem("operation") === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
-    localStorage.getItem("dispute") === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
+    this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
+    this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
   },
   methods: {
     async trader( ownerId ) {
@@ -273,8 +275,18 @@ export default {
       // }
     },
     selects() {
-      localStorage.getItem("operation") === "SELL" ? this.orderHistorySell() : this.orderHistoryBuy();
+      this.orderSell();
+       if(this.data.length === 0){
+         this.orderBuy();
+       }
 
+      this.orderHistorySell();
+       if(this.dataCancel.length === 0){
+         this.orderHistoryBuy();
+       }
+
+    },
+    orderSell() {
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
@@ -309,27 +321,79 @@ export default {
         .watchQuery({
           query: selects,
           variables: {
-            address: localStorage.getItem("address"),
+            address: wallet.getCurrentAccount().address,
           },
         })
         .subscribe(({ data }) => {
             this.data = [];
 						Object.entries(data.ordersells).forEach(([key, value]) => {
 								this.data.push(value); 
+                this.operation = "SELL";
                 this.trader(this.data[0].owner_id);
                 this.terms = this.data[0].terms_conditions;
                 sessionStorage.setItem('terms', this.terms);
-                localStorage.setItem('terms', this.terms);
                 walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
                    this.exchangeRate = this.data[0].exchange_rate * price;
-                   sessionStorage.setItem('exchangeRate', this.exchangeRate);
                    this.receiveAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
-                   sessionStorage.setItem('receiveAmount', this.receiveAmount);
                 }); 
                 this.operationAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) : (this.data[0].operation_amount / 1e6);               
-						    sessionStorage.setItem('operationAmount', this.operationAmount);
-                this.orderId = this.data[0].order_id;   
-                sessionStorage.setItem('orderId', this.orderId); 
+                this.orderId = this.data[0].order_id;
+            });
+        });
+      // }
+    },
+    orderBuy() {
+      const selects = gql`
+        query MyQuery( $address : String) {
+          ordersbuys(
+            where: {signer_id: $address}
+          orderBy: id
+          orderDirection: desc
+          ) {
+          id
+          amount_delivered
+          asset
+          exchange_rate
+          fee_deducted
+          fiat_method
+          owner_id
+          payment_method
+          signer_id
+          terms_conditions
+          time
+          operation_amount
+          order_id
+        }
+      }
+      `;    
+      // if (sessionStorage.getItem('terms') && sessionStorage.getItem('exchangeRate') && sessionStorage.getItem('receiveAmount') && sessionStorage.getItem('operationAmount') && sessionStorage.getItem('orderId')) {
+      //   this.terms = sessionStorage.getItem('terms');
+      //   this.exchangeRate = sessionStorage.getItem('exchangeRate');
+      //   this.receiveAmount = sessionStorage.getItem('receiveAmount');
+      //   this.operationAmount = sessionStorage.getItem('operationAmount');
+      //   this.orderId = sessionStorage.getItem('orderId');
+      // } else {
+      this.$apollo
+        .watchQuery({
+          query: selects,
+          variables: {
+            address: wallet.getCurrentAccount().address,
+          },
+        })
+        .subscribe(({ data }) => {
+            this.data = [];
+						Object.entries(data.ordersells).forEach(([key, value]) => {
+								this.data.push(value); 
+                this.operation = "BUY";
+                this.trader(this.data[0].owner_id);
+                this.terms = this.data[0].terms_conditions;
+                sessionStorage.setItem('terms', this.terms);
+                walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
+                   this.exchangeRate = this.data[0].exchange_rate * price;
+                   this.receiveAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
+                }); 
+                this.operationAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) : (this.data[0].operation_amount / 1e6);               
+                this.orderId = this.data[0].order_id;
             });
         });
       // }
@@ -349,7 +413,7 @@ export default {
         contractId: CONTRACT_NAME,
         methodName: "order_confirmation",
         gas: "300000000000000",
-        args: { offer_type: 1, order_id: parseInt(sessionStorage.getItem('orderId')) },
+        args: { offer_type: 1, order_id: parseInt(this.data[0].order_id) },
         attachedDeposit: "3"
       });
       // console.log("orderConfirmation", orderConfirmation)
@@ -371,15 +435,8 @@ export default {
       if (!deleteContract || deleteContract.status.SuccessValue !== "") {
         console.log("Error borrando el contrato");
       }
-      this.sendMail('sell', localStorage.getItem("orderId"));
+      this.sendMail('sell', this.data[0].order_id);
       sessionStorage.clear(); // Clear all data from sessionStorage
-      localStorage.removeItem('endTime');
-      localStorage.removeItem('operation');
-      localStorage.removeItem('orderId');
-      localStorage.removeItem('tokenSymbol');
-      localStorage.removeItem('terms');
-      localStorage.removeItem('dispute');
-      localStorage.removeItem('emailCounter');
       this.btnLoading = false;
       this.$router.push({ path: "/tx-executed" });
     },
@@ -392,7 +449,7 @@ export default {
         contractId: CONTRACT_NAME,
         methodName: "cancel_order",
         gas: "300000000000000",
-        args: { offer_type: 2, order_id: parseInt(sessionStorage.getItem('orderId')) },
+        args: { offer_type: 2, order_id: parseInt(this.data[0].order_id) },
         attachedDeposit: "3"
       });
       // console.log("orderConfirmation", orderConfirmation)
@@ -401,14 +458,8 @@ export default {
         return
       }
       // console.log("orderConfirmation", orderConfirmation)
-      this.sendMailCancel(localStorage.getItem("orderId"));
+      this.sendMailCancel(this.data[0].order_id);
       sessionStorage.clear(); // Clear all data from sessionStorage
-      localStorage.removeItem('endTime');
-      localStorage.removeItem('operation');
-      localStorage.removeItem('orderId');
-      localStorage.removeItem('tokenSymbol');
-      localStorage.removeItem('terms');
-      localStorage.removeItem('dispute');
       this.btnLoading = false;
       // this.sendMail();
       this.$router.push({ path: "/tx-canceled" });
@@ -417,12 +468,12 @@ export default {
       this.btnLoading = true;
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
       const account = await walletUtils.nearConnection();
-      const type = localStorage.getItem("operation") === "SELL" ? 1 : 2;
+      const type = this.operation === "SELL" ? 1 : 2;
       const orderConfirmation = await account.functionCall({
         contractId: CONTRACT_NAME,
         methodName: "order_dispute",
         gas: "300000000000000",
-        args: { offer_type: type, order_id: parseInt(sessionStorage.getItem('orderId')) },
+        args: { offer_type: type, order_id: parseInt(this.data[0].order_id) },
         attachedDeposit: "3"
       });
       // console.log("orderConfirmation", orderConfirmation)
@@ -431,13 +482,13 @@ export default {
         return
       }
       // console.log("orderConfirmation", orderConfirmation)
-      this.sendMailDispute(localStorage.getItem("orderId"));
+      this.sendMailDispute(this.data[0].order_id);
       this.btnLoading = false;
       // this.sendMail();
       this.$router.push({ path: "/tx-disputed" });
     },
     orderHistorySell() {
-      const val = localStorage.getItem("operation") === "SELL" ? "1" : "2";
+      const val = this.operation === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
           orderhistorysells(
@@ -451,7 +502,7 @@ export default {
           .watchQuery({
             query: selects,
             variables: {
-              id: localStorage.getItem("orderId") + '|' + val,
+              id: this.data[0].order_id + '|' + val,
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
@@ -462,7 +513,7 @@ export default {
           });
     },
     orderHistoryBuy() {
-      const val = localStorage.getItem("operation") === "SELL" ? "1" : "2";
+      const val = this.operation === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
           orderhistorybuys(
@@ -476,7 +527,7 @@ export default {
           .watchQuery({
             query: selects,
             variables: {
-              id: localStorage.getItem("orderId") + '|' + val,
+              id: this.data[0].order_id + '|' + val,
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
@@ -491,11 +542,6 @@ export default {
         if(this.dataCancel.length>0){
           if(this.dataCancel[0].status === 4){
             sessionStorage.clear(); // Clear all data from sessionStorage
-            localStorage.removeItem('endTime');
-            localStorage.removeItem('operation');
-            localStorage.removeItem('orderId');
-            localStorage.removeItem('tokenSymbol');
-            localStorage.removeItem('terms');
             this.localStorage.removeItem('emailCounter')
             this.$router.push('/tx-canceled');
           }

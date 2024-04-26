@@ -365,15 +365,14 @@ export default {
       }
       // Filter paymet method as per selected payment
       const filteredPaymentMethod = this.filteredOffers.payment_method.find(method => method.payment_method === this.selectedPayment);
-      
+      console.log('PASO 1 get_token_activo')
       const account = await walletUtils.nearConnection();
-
       const getTokenActivo = await account.viewFunctionV1(
         CONTRACT_NAME,
         "get_token_activo",
-        { user_id: this.address, ft_token: "USDT" }
+        { user_id: `${this.address.split(".")[0]}.${CONTRACT_NAME}`, ft_token: "USDT" }
       );
-
+      console.log('PASO 2 get_subcontract')
       this.subcontract = await account.viewFunctionV1(
         CONTRACT_NAME,
         "get_subcontract",
@@ -381,7 +380,7 @@ export default {
       );
 
       let vldeposit = "100000000000000000000000";
-
+      console.log('PASO 3 activar_subcuenta_ft')
       if (getTokenActivo) {
         vldeposit = "1";
       } else {
@@ -397,6 +396,7 @@ export default {
           console.log("Subcuenta ya activa, procede con el siguiente paso");
         }
       }
+      console.log('PASO 4 create_subcontract_user')
       const now = moment()
         .format("YYYY-MM-DD HH:mm:ss")
         .toString();
@@ -416,7 +416,7 @@ export default {
             return
           }
           
-
+          console.log('PASO 5 ft_transfer')
           const ftTransfer = await account.functionCall({
             contractId: CONTRACT_NAME_USDT,
             methodName: "ft_transfer",
@@ -430,7 +430,7 @@ export default {
             this.btnLoading = false;
             return
           }
-
+          console.log('PASO 6 accept_offer')
           const acceptOffer = await account.functionCall({
             contractId: CONTRACT_NAME,
             methodName: "accept_offer",
