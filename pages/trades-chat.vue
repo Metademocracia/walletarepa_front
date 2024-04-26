@@ -121,12 +121,12 @@
     </v-card>
 
 
-    <p2p-chat-trade class="mb-4"
+    <p2p-chat-trade class="mb-5"
     ></p2p-chat-trade>
 
     <v-btn
       :loading="btnLoading" 
-      class="btn mt-2 mb-4"
+      class="btn mt-3 mb-4"
       style="--bg: var(--primary); --br: 30px"
       @click="$refs.aproveModal.model = true"
     >MARCAR PAGO REALIZADO</v-btn>

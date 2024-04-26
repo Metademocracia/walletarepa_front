@@ -114,6 +114,7 @@
             class="message-date"
           ><p style="font-weight: bold; margin-bottom: -1px;">{{ msg.wallet }}</p> {{ getHours(msg.createdAt) }}</span>
         </div>
+        <div ref="scrollable"></div>
       </section>
 
 
@@ -355,6 +356,10 @@ export default {
           });
 
           this.messages = msgs;
+
+          setTimeout(() =>{
+            this.$refs.scrollable.scrollIntoView({ behavior: "smooth" /* block: "end" */ });
+          }, 1000)
           // console.log(this.messages , "MESSAGES")
           // this.chat = postData;
         });
