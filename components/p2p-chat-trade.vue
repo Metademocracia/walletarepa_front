@@ -155,7 +155,7 @@
 <script>
 import firebase from "firebase/compat/app";
 import moment from "moment"
-import { Timestamp, collection, query, where, getDocs, doc } from 'firebase/firestore'
+import { Timestamp, collection, query, where, getDocs, doc, onSnapshot, orderBy } from 'firebase/firestore'
 // import { timeOf } from '@/plugins/functions'
 import { db } from "@/plugins/firebase";
 import { MessageModel, MessageSpecialId, MessageStatus, MessageType } from '~/models/message_model'
@@ -204,6 +204,7 @@ export default {
       file: null,
       unreadMessagesCount: 0,
       polling: null,
+      unsubscribe: null,
     }
   },
   computed: {
@@ -216,13 +217,18 @@ export default {
       this.getMessages()
     }
   },
-  created() {
+  /* created() {
     this.readMessages();
-    // this.getUnreadMessagesCount();
-  },
+    this.getUnreadMessagesCount();
+  }, */
 
   beforeDestroy() {
     clearInterval(this.polling);
+    // Cancela la suscripción a Firestore cuando el componente se destruye
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
+
   },
   mounted() {
     this.getMessages()
@@ -322,6 +328,7 @@ export default {
     async readMessages() {
       const q = query(
         collection(db, `${process.env.VUE_APP_CHAT_FIREBASE}/${this.operation}${this.orderId}/MESSAGES`),
+        where("wallet", "!=", localStorage.getItem("address")),
         where("readed", "==", false)
       );
 
@@ -339,7 +346,7 @@ export default {
 
     getMessages() {
       // console.log("VUE_APP_CHAT_FIREBASE",process.env.VUE_APP_CHAT_FIREBASE)
-      db
+      /* db
         .collection(process.env.VUE_APP_CHAT_FIREBASE)
         .doc(`${this.operation}${this.orderId}`)
         .collection("MESSAGES")
@@ -381,11 +388,58 @@ export default {
           
 
           setTimeout(() =>{
-            this.$refs.scrollable.scrollIntoView({ behavior: "smooth" /* block: "end" */ });
+            // this.$refs.scrollable.scrollIntoView({ behavior: "smooth", block: "end" });
+            this.$refs.scrollable.scrollIntoView({ behavior: "smooth" });
           }, 1000)
+
+          
           // console.log(this.messages , "MESSAGES")
           // this.chat = postData;
+        }); */
+
+        const q = query(
+          collection(db, `${process.env.VUE_APP_CHAT_FIREBASE}/${this.operation}${this.orderId}/MESSAGES`),
+          orderBy("createdAt")
+        );
+
+        // Guarda la función de cancelación de la suscripción en 'unsubscribe'
+        this.unsubscribe = onSnapshot(q, (querySnapshot) => {
+          const msgs = [
+            {
+              authorId: "system",
+              createdAt: Date.now(),
+              text: this.terms,
+              type: MessageType.text,
+              updatedAt: Date.now()
+            }
+          ];
+
+          querySnapshot.forEach((doc) => {
+            const item = { ...doc.data(), id: doc.id};
+            // item.text = !item?.text ? null : item.text.trim() === "" ? null : item.text.trim();
+            if (item.wallet === localStorage.getItem("address")) {
+              item.authorId = "2"
+            } else {
+              item.authorId = "1"
+
+            }
+            
+            msgs.push(item)
+
+          });
+
+          this.messages = msgs;
+          
+
+          setTimeout(() =>{
+            // this.$refs.scrollable.scrollIntoView({ behavior: "smooth", block: "end" });
+            this.$refs.scrollable.scrollIntoView({ behavior: "smooth" });
+          }, 1000)
+
+          this.readMessages();
+
         });
+
     },
     async sendMessage(event) {
       event.preventDefault();
@@ -604,6 +658,7 @@ export default {
       setTimeout(() => { this.message = saved }, 200);
     }
   }
+
 }
 </script>
 
