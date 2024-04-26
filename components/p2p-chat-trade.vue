@@ -155,7 +155,7 @@
 <script>
 import firebase from "firebase/compat/app";
 import moment from "moment"
-import { Timestamp } from 'firebase/firestore'
+import { Timestamp, collection, query, where, getDocs, doc } from 'firebase/firestore'
 // import { timeOf } from '@/plugins/functions'
 import { db } from "@/plugins/firebase";
 import { MessageModel, MessageSpecialId, MessageStatus, MessageType } from '~/models/message_model'
@@ -217,9 +217,10 @@ export default {
     }
   },
   created() {
-     this.getUnreadMessagesCount();
+    this.readMessages();
+    // this.getUnreadMessagesCount();
   },
-  
+
   beforeDestroy() {
     clearInterval(this.polling);
   },
@@ -316,7 +317,26 @@ export default {
       } catch (error) {
         console.error("Failed to get unread messages count:", error);
       }
+    }, 
+
+    async readMessages() {
+      const q = query(
+        collection(db, `${process.env.VUE_APP_CHAT_FIREBASE}/${this.operation}${this.orderId}/MESSAGES`),
+        where("readed", "==", false)
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      const batch = db.batch();
+
+      querySnapshot.forEach((item) => {
+        const docRef = doc(db, `${process.env.VUE_APP_CHAT_FIREBASE}/${this.operation}${this.orderId}/MESSAGES`, item.id);
+        batch.update(docRef, { readed: true });
+      });
+
+      await batch.commit();
     },
+
     getMessages() {
       // console.log("VUE_APP_CHAT_FIREBASE",process.env.VUE_APP_CHAT_FIREBASE)
       db
@@ -358,6 +378,7 @@ export default {
           });
 
           this.messages = msgs;
+          
 
           setTimeout(() =>{
             this.$refs.scrollable.scrollIntoView({ behavior: "smooth" /* block: "end" */ });
