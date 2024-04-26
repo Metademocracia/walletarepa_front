@@ -46,6 +46,7 @@
       <v-btn  class="btn mt-2 mb-8" :loading="btnLoading"  @click="aprove" >
         MARCAR PAGO COMO REALIZADO
       </v-btn>
+
     </modal-warning>
     
 
@@ -130,6 +131,13 @@
       @click="$refs.aproveModal.model = true"
     >MARCAR PAGO REALIZADO</v-btn>
 
+    <!--<v-btn
+      :loading="btnLoading" 
+      class="btn mt-2 mb-4"
+      style="--bg: var(--primary); --br: 30px"
+      @click="sendMailDispute"
+    >MARCAR PAGO REALIZADO</v-btn>-->
+
     <v-btn
       v-if="cancelVisible"
       :loading="btnLoading" 
@@ -148,8 +156,10 @@
 
 
 <script>
+import axios from 'axios';
 // eslint-disable-next-line import/no-named-as-default
 import gql from "graphql-tag";
+import encrypDecript from "@/services/encryp";
 import walletUtils from "@/services/wallet";
 
 export default {
@@ -158,6 +168,7 @@ export default {
     return {
       address: localStorage.getItem("address"),
       data: [],
+      dataTrader: [],
       dataCancel: [],
       terms: "",
       receiveAmount: 0,
@@ -232,6 +243,35 @@ export default {
     localStorage.getItem("dispute") === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
   },
   methods: {
+    async trader( ownerId ) {
+      const selects = gql`
+        query MyQuery( $address : String) {
+          datausers(where: {user_id: $address}) {
+          name
+          last_name
+          email
+        }
+      }
+      `;
+      // if (sessionStorage.getItem('traderName')) {
+      //   this.traderName = sessionStorage.getItem('traderName');
+      // } else {
+      await this.$apollo
+        .watchQuery({
+          query: selects,
+          variables: {
+            address: ownerId,
+          },
+        })
+        .subscribe(({ data }) => {
+						Object.entries(data.datausers).forEach(([key, value]) => {
+            this.dataTrader.push(value);
+            this.traderName = this.dataTrader.length > 0 ? this.dataTrader[0].name + ' ' + this.dataTrader[0].last_name : ownerId;
+            sessionStorage.setItem('traderName', this.traderName);
+          });
+        });
+      // }
+    },
     selects() {
       localStorage.getItem("operation") === "SELL" ? this.orderHistorySell() : this.orderHistoryBuy();
 
@@ -258,13 +298,13 @@ export default {
         }
       }
       `;    
-      if (sessionStorage.getItem('terms') && sessionStorage.getItem('exchangeRate') && sessionStorage.getItem('receiveAmount') && sessionStorage.getItem('operationAmount') && sessionStorage.getItem('orderId')) {
-        this.terms = sessionStorage.getItem('terms');
-        this.exchangeRate = sessionStorage.getItem('exchangeRate');
-        this.receiveAmount = sessionStorage.getItem('receiveAmount');
-        this.operationAmount = sessionStorage.getItem('operationAmount');
-        this.orderId = sessionStorage.getItem('orderId');
-      } else {
+      // if (sessionStorage.getItem('terms') && sessionStorage.getItem('exchangeRate') && sessionStorage.getItem('receiveAmount') && sessionStorage.getItem('operationAmount') && sessionStorage.getItem('orderId')) {
+      //   this.terms = sessionStorage.getItem('terms');
+      //   this.exchangeRate = sessionStorage.getItem('exchangeRate');
+      //   this.receiveAmount = sessionStorage.getItem('receiveAmount');
+      //   this.operationAmount = sessionStorage.getItem('operationAmount');
+      //   this.orderId = sessionStorage.getItem('orderId');
+      // } else {
       this.$apollo
         .watchQuery({
           query: selects,
@@ -276,6 +316,7 @@ export default {
             this.data = [];
 						Object.entries(data.ordersells).forEach(([key, value]) => {
 								this.data.push(value); 
+                this.trader(this.data[0].owner_id);
                 this.terms = this.data[0].terms_conditions;
                 sessionStorage.setItem('terms', this.terms);
                 localStorage.setItem('terms', this.terms);
@@ -291,7 +332,7 @@ export default {
                 sessionStorage.setItem('orderId', this.orderId); 
             });
         });
-      }
+      // }
     },
     formatNumber(number) {
       return new Intl.NumberFormat('es-VE', { 
@@ -304,7 +345,6 @@ export default {
       this.btnLoading = true;
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
       const account = await walletUtils.nearConnection();
-
       const orderConfirmation = await account.functionCall({
         contractId: CONTRACT_NAME,
         methodName: "order_confirmation",
@@ -331,6 +371,7 @@ export default {
       if (!deleteContract || deleteContract.status.SuccessValue !== "") {
         console.log("Error borrando el contrato");
       }
+      this.sendMail('sell', localStorage.getItem("orderId"));
       sessionStorage.clear(); // Clear all data from sessionStorage
       localStorage.removeItem('endTime');
       localStorage.removeItem('operation');
@@ -338,8 +379,8 @@ export default {
       localStorage.removeItem('tokenSymbol');
       localStorage.removeItem('terms');
       localStorage.removeItem('dispute');
+      localStorage.removeItem('emailCounter');
       this.btnLoading = false;
-      // this.sendMail();
       this.$router.push({ path: "/tx-executed" });
     },
     async cancel() {
@@ -360,6 +401,7 @@ export default {
         return
       }
       // console.log("orderConfirmation", orderConfirmation)
+      this.sendMailCancel(localStorage.getItem("orderId");
       sessionStorage.clear(); // Clear all data from sessionStorage
       localStorage.removeItem('endTime');
       localStorage.removeItem('operation');
@@ -389,7 +431,7 @@ export default {
         return
       }
       // console.log("orderConfirmation", orderConfirmation)
-      sessionStorage.clear(); // Clear all data from sessionStorage
+      this.sendMailDispute(localStorage.getItem("orderId"));
       this.btnLoading = false;
       // this.sendMail();
       this.$router.push({ path: "/tx-disputed" });
@@ -454,11 +496,54 @@ export default {
             localStorage.removeItem('orderId');
             localStorage.removeItem('tokenSymbol');
             localStorage.removeItem('terms');
+            this.localStorage.removeItem('emailCounter')
             this.$router.push('/tx-canceled');
           }
         }
 			}, 5000);
 		},  
+    async sendMailCancel(order) { 
+        const data = await walletUtils.verifyWallet();
+        const email = data?.data?.email;
+        if(this.dataTrader.length>0){
+          const emailTrader = await encrypDecript.decryp(this.dataTrader[0].email);
+          const BASE_URL_MAIL = process.env.VUE_APP_API_MAIL_URL;
+          const MAILCANCEL = `${BASE_URL_MAIL}cancel/`;
+          const serviceUrl = `${MAILCANCEL}admin@nearp2p.com/${emailTrader},${email}/${order}`;
+          if(emailTrader){   
+           await axios.get(serviceUrl);
+          }
+       }
+		},
+    async sendMailDispute(order) { 
+        const data = await walletUtils.verifyWallet();
+        const email = data?.data?.email;
+        if(this.dataTrader.length>0){
+          const emailTrader = await encrypDecript.decryp(this.dataTrader[0].email);
+          const BASE_URL_MAIL = process.env.VUE_APP_API_MAIL_URL;
+          const MAILDISPUTE = `${BASE_URL_MAIL}dispute/`;
+          const serviceUrl = `${MAILDISPUTE}admin@nearp2p.com/${emailTrader},${email}/${order}/sell`;
+          if(emailTrader){   
+            await axios.get(serviceUrl);
+          }
+       }
+		},
+    async sendMail(typeOffer, order) { 
+        const data = await walletUtils.verifyWallet();
+        const email = data?.data?.email;
+        if(this.dataTrader.length>0){
+          const emailTrader = await encrypDecript.decryp(this.dataTrader[0].email);
+          const BASE_URL_MAIL = process.env.VUE_APP_API_MAIL_URL;
+          const MAIL = `${BASE_URL_MAIL}admin@nearp2p.com/`;
+          const serviceUrlTrader = `${MAIL}${emailTrader}/${order}/${typeOffer.toString()}`;
+          const serviceUrlCustomer = `${MAIL}${email}/${order}/${typeOffer.toString()}`;
+          // console.log(serviceUrl);
+          if(emailTrader){   
+            await axios.get(serviceUrlTrader);
+            await axios.get(serviceUrlCustomer);
+          }
+       }
+		},
   }
 };
 </script>

@@ -286,13 +286,13 @@ export default {
     this.address = localStorage.getItem("address");
     sessionStorage.removeItem("create-import-proccess")
 
-    setTimeout(() => {
-      this.orderSell();
-      if(this.data.length === 0){
-        this.orderBuy();
-      }
-      this.setOperationSymbol();
-    }, 10000);
+    // setTimeout(() => {
+    //   this.orderSell();
+    //   if(this.data.length === 0){
+    //     this.orderBuy();
+    //   }
+    //   this.setOperationSymbol();
+    // }, 10000);
 
     let counter = 0;
       const maxAttempts = 5;
@@ -562,11 +562,13 @@ export default {
           })
           .subscribe(({ data }) => {
             Object.entries(data.ordersells).forEach(([key, value]) => {
+              this.data = [];
               this.data.push(value);
               this.orderId = this.data[0].order_id;
               localStorage.setItem('orderId', this.orderId);
               localStorage.setItem('operation', 'SELL');
               localStorage.setItem('tokenSymbol', this.data[0].asset);
+              localStorage.setItem('emailCounter', 'true');
             });
           });
     },
@@ -604,11 +606,13 @@ export default {
           })
           .subscribe(({ data }) => {
             Object.entries(data.orderbuys).forEach(([key, value]) => {
+              this.data = [];
               this.data.push(value);
               this.orderId = this.data[0].order_id;
               localStorage.setItem('orderId', this.orderId);
               localStorage.setItem('operation', 'BUY');
               localStorage.setItem('tokenSymbol', this.data[0].asset);
+              localStorage.setItem('emailCounter', 'true');
             });
           });
     },

@@ -33,7 +33,7 @@ function encryp(data){
 
 function decryp(data){
   // const dataString = hexToString(data);
-  const wA = CryptoJS.AES.decrypt(data, key);
+  const wA = CryptoJS.AES.decrypt(data, "Andromeda2018#");
   return wA.toString(CryptoJS.enc.Utf8);
 }
 

@@ -295,6 +295,7 @@ export default {
 
       if (this.data.length > 0 || sessionStorage.getItem('traderName')) {
         clearInterval(intervalId);
+        this.sendMail();
       } else if (counter >= maxAttempts) {
          localStorage.removeItem('endTime');
          localStorage.removeItem('startTime');
@@ -336,15 +337,15 @@ export default {
         }
       }
       `;    
-      if (sessionStorage.getItem('terms') && sessionStorage.getItem('exchangeRate') && sessionStorage.getItem('receiveAmount') && sessionStorage.getItem('operationAmount') && sessionStorage.getItem('orderId') && sessionStorage.getItem('seconds') && sessionStorage.getItem('traderName')) {
-        this.terms = sessionStorage.getItem('terms');
-        this.exchangeRate = sessionStorage.getItem('exchangeRate');
-        this.receiveAmount = sessionStorage.getItem('receiveAmount');
-        this.operationAmount = sessionStorage.getItem('operationAmount');
-        this.orderId = sessionStorage.getItem('orderId');
-        this.seconds = sessionStorage.getItem('seconds');
-        this.traderName = sessionStorage.getItem('traderName');
-      } else {
+      // if (sessionStorage.getItem('terms') && sessionStorage.getItem('exchangeRate') && sessionStorage.getItem('receiveAmount') && sessionStorage.getItem('operationAmount') && sessionStorage.getItem('orderId') && sessionStorage.getItem('seconds') && sessionStorage.getItem('traderName')) {
+      //   this.terms = sessionStorage.getItem('terms');
+      //   this.exchangeRate = sessionStorage.getItem('exchangeRate');
+      //   this.receiveAmount = sessionStorage.getItem('receiveAmount');
+      //   this.operationAmount = sessionStorage.getItem('operationAmount');
+      //   this.orderId = sessionStorage.getItem('orderId');
+      //   this.seconds = sessionStorage.getItem('seconds');
+      //   this.traderName = sessionStorage.getItem('traderName');
+      // } else {
         await this.$apollo
           .watchQuery({
             query: selects,
@@ -355,6 +356,7 @@ export default {
           .subscribe(({ data }) => {
             // this.data = [];
             Object.entries(data.ordersells).forEach(([key, value]) => {
+              this.data = [];
               this.data.push(value);
               this.trader(this.data[0].owner_id);
               this.terms = this.data[0].terms_conditions;
@@ -373,10 +375,9 @@ export default {
               localStorage.setItem('orderId', this.orderId);
               this.seconds = this.data[0].time * 1000;
               sessionStorage.setItem('seconds', this.seconds);
-              this.sendMail('buy');
             });
           });
-       }
+       // }
     },
     async orderBuy() {
       const selects = gql`
@@ -403,15 +404,15 @@ export default {
         }
       }
       `;    
-      if (sessionStorage.getItem('terms') && sessionStorage.getItem('exchangeRate') && sessionStorage.getItem('receiveAmount') && sessionStorage.getItem('operationAmount') && sessionStorage.getItem('orderId') && sessionStorage.getItem('seconds') && sessionStorage.getItem('traderName')) {
-        this.terms = sessionStorage.getItem('terms');
-        this.exchangeRate = sessionStorage.getItem('exchangeRate');
-        this.receiveAmount = sessionStorage.getItem('receiveAmount');
-        this.operationAmount = sessionStorage.getItem('operationAmount');
-        this.orderId = sessionStorage.getItem('orderId');
-        this.seconds = sessionStorage.getItem('seconds');
-        this.traderName = sessionStorage.getItem('traderName');
-      } else {
+      // if (sessionStorage.getItem('terms') && sessionStorage.getItem('exchangeRate') && sessionStorage.getItem('receiveAmount') && sessionStorage.getItem('operationAmount') && sessionStorage.getItem('orderId') && sessionStorage.getItem('seconds') && sessionStorage.getItem('traderName')) {
+      //   this.terms = sessionStorage.getItem('terms');
+      //   this.exchangeRate = sessionStorage.getItem('exchangeRate');
+      //   this.receiveAmount = sessionStorage.getItem('receiveAmount');
+      //   this.operationAmount = sessionStorage.getItem('operationAmount');
+      //   this.orderId = sessionStorage.getItem('orderId');
+      //   this.seconds = sessionStorage.getItem('seconds');
+      //   this.traderName = sessionStorage.getItem('traderName');
+      // } else {
         await this.$apollo
           .watchQuery({
             query: selects,
@@ -422,6 +423,7 @@ export default {
           .subscribe(({ data }) => {
             this.data = [];
             Object.entries(data.orderbuys).forEach(([key, value]) => {
+              this.data = [];
               this.data.push(value);
               this.trader(this.data[0].owner_id);
               this.terms = this.data[0].terms_conditions;
@@ -440,10 +442,10 @@ export default {
               localStorage.setItem('orderId', this.orderId);
               this.seconds = this.data[0].time * 1000;
               sessionStorage.setItem('seconds', this.seconds);
-              this.sendMail('sell');
+              this.sendMail();
             });
           });
-       }
+       // }
     },
     async orderHistorySell() {
       const val = localStorage.getItem("operation") === "SELL" ? "1" : "2";
@@ -464,7 +466,7 @@ export default {
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            // this.data = [];
+            this.dataCancel = [];
             Object.entries(data.orderhistorysells).forEach(([key, value]) => {
               this.dataCancel.push(value);
             });
@@ -489,7 +491,7 @@ export default {
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            // this.data = [];
+            this.dataCancel = [];
             Object.entries(data.orderhistorybuys).forEach(([key, value]) => {
               this.dataCancel.push(value);
             });
@@ -505,9 +507,9 @@ export default {
         }
       }
       `;
-      if (sessionStorage.getItem('traderName')) {
-        this.traderName = sessionStorage.getItem('traderName');
-      } else {
+      // if (sessionStorage.getItem('traderName')) {
+      //   this.traderName = sessionStorage.getItem('traderName');
+      // } else {
       await this.$apollo
         .watchQuery({
           query: selects,
@@ -516,13 +518,14 @@ export default {
           },
         })
         .subscribe(({ data }) => {
+            this.dataTrader = [];
 						Object.entries(data.datausers).forEach(([key, value]) => {
             this.dataTrader.push(value);
             this.traderName = this.dataTrader.length > 0 ? this.dataTrader[0].name + ' ' + this.dataTrader[0].last_name : ownerId;
             sessionStorage.setItem('traderName', this.traderName);
           });
         });
-      }
+      // }
     },
     goToSupport() {
       window.open('https://t.me/nearp2p', '_blank');
@@ -597,18 +600,19 @@ export default {
         }  
 			}, 5000);
 		},  
-    async sendMail(typeOffer) { 
-        // const data = await walletUtils.verifyWallet();
-        // const email = data?.data?.email;
-        // console.log(this.dataTrader.length)
+    async sendMail() { 
+        const data = await walletUtils.verifyWallet();
+        const email = data?.data?.email;
         if(this.dataTrader.length>0){
           const emailTrader = await encrypDecript.decryp(this.dataTrader[0].email);
           const BASE_URL_MAIL = process.env.VUE_APP_API_MAIL_URL;
           const MAIL = `${BASE_URL_MAIL}admin@nearp2p.com/`;
-          const serviceUrl = `${MAIL}${emailTrader}/0/${typeOffer.toString()}`;
-          // console.log(serviceUrl);
+          const serviceUrlTrader = `${MAIL}${emailTrader}/0/nueva`;
+          const serviceUrlCustomer = `${MAIL}${email}/0/nueva`;
+          //  console.log(serviceUrlTrader, serviceUrlCustomer);
           if(emailTrader && (!localStorage.getItem('emailCounter') || localStorage.getItem('emailCounter') !== 'true')){   
-            await axios.get(serviceUrl);
+            await axios.get(serviceUrlTrader);
+            await axios.get(serviceUrlCustomer);
             localStorage.setItem('emailCounter', "true");
           }
        }
