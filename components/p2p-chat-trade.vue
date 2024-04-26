@@ -128,7 +128,7 @@
         <input
           v-model="message"
           type="text"
-          placeholder="MESSAGE"
+          placeholder="MENSAJE"
         />
         
         <button

@@ -121,7 +121,7 @@
     </v-card>
 
 
-    <p2p-chat-trade
+    <p2p-chat-trade class="mb-4"
     ></p2p-chat-trade>
 
     <v-btn
