@@ -332,25 +332,6 @@ export default {
           this.originalPayments = paymentMethods;
         });
     },
-    sendMail() {
-      const passphrase = process.env.VUE_APP_PASSPHRASE;
-      const BASE_URL_MAIL = process.env.VUE_APP_API_MAIL_URL;
-      const MAIL = `${BASE_URL_MAIL}admin@nearp2p.com/`;
-      if (this.$session.get("user_mail") != null) {
-        // localStorage.setItem('acceptOrder', MAIL + CryptoJS.AES.decrypt(this.$session.get("user_mail"), passphrase).toString(CryptoJS.enc.Utf8) + "/0/" + this.$session.get("mail_info"));
-        const request = new XMLHttpRequest();
-        request.open(
-          "GET",
-          MAIL +
-          this.$CryptoJS.AES.decrypt(
-            this.$session.get("user_mail"),
-            passphrase
-          ).toString(this.$CryptoJS.enc.Utf8) +
-          "/0/buy"
-        );
-        request.send();
-      }
-    },
     async initContract() {
       localStorage.setItem("operation", "BUY");
       this.btnLoading = true;
