@@ -221,6 +221,7 @@ import VueQr from 'vue-qr'
 import moment from 'moment';
 import logoWallet from "~/assets/sources/logos/logo.svg";
 import tokens from '@/services/tokens';
+import wallet from '@/services/local-storage-user';
 // import { configNear } from "@/services/nearConfig";
 import walletUtils from '@/services/wallet';
 const { utils } = nearAPI;
@@ -283,9 +284,8 @@ export default {
   },
   mounted() {
     
-    this.address = localStorage.getItem("address");
+    this.address = wallet.getCurrentAccount().address;
     sessionStorage.removeItem("create-import-proccess")
-    // console.log('dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', this.data)
     setTimeout(() => {
        this.orderSell();
        if(this.data.length === 0){
@@ -298,7 +298,7 @@ export default {
       const maxAttempts = 5;
 
     const intervalId = setInterval(() => {
-      if (localStorage.getItem('orderId')) {
+      if (this.data.length > 0) {
         this.pendingTrades = true;
         clearInterval(intervalId);
       } else if (++counter >= maxAttempts) {
@@ -306,7 +306,7 @@ export default {
       }
     }, 5000);
 
-    }, 10000);
+    }, 5000);
 
     // localStorage.removeItem("importEmailNickname");
     // localStorage.removeItem("importEmail");
@@ -559,7 +559,7 @@ export default {
           .watchQuery({
             query: selects,
             variables: {
-              address: localStorage.getItem("address"),
+              address: wallet.getCurrentAccount().address // localStorage.getItem("address"),
             }
           })
           .subscribe(({ data }) => {
@@ -567,9 +567,6 @@ export default {
               this.data = [];
               this.data.push(value);
               this.orderId = this.data[0].order_id;
-              localStorage.setItem('orderId', this.orderId);
-              localStorage.setItem('operation', 'SELL');
-              localStorage.setItem('tokenSymbol', this.data[0].asset);
               localStorage.setItem('emailCounter', 'true');
             });
           });
@@ -603,7 +600,7 @@ export default {
           .watchQuery({
             query: selects,
             variables: {
-              address: localStorage.getItem("address"),
+              address: wallet.getCurrentAccount().address,
             }
           })
           .subscribe(({ data }) => {
@@ -611,9 +608,6 @@ export default {
               this.data = [];
               this.data.push(value);
               this.orderId = this.data[0].order_id;
-              localStorage.setItem('orderId', this.orderId);
-              localStorage.setItem('operation', 'BUY');
-              localStorage.setItem('tokenSymbol', this.data[0].asset);
               localStorage.setItem('emailCounter', 'true');
             });
           });

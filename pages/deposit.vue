@@ -157,6 +157,7 @@ import * as nearAPI from "near-api-js";
 import gql from "graphql-tag";
 import moment from "moment";
 import walletUtils from "@/services/wallet";
+import wallet from '@/services/local-storage-user'
 const { utils } = nearAPI;
 
 export default {
@@ -184,7 +185,7 @@ export default {
       tokenSymbol: "NEAR",
       btnLoading: false,
       search: "",
-      address: localStorage.getItem("address"),
+      address: wallet.getCurrentAccount().address,
       subcontract: false,
       listOffers: [],
       minLimit : 0,
@@ -290,7 +291,7 @@ export default {
         }
       }
       `;
-      const selectedFiat = localStorage.getItem('selectedFiat');
+      const selectedFiat = sessionStorage.getItem('selectedFiat');
       // const eltoken = this.selectToken;
       let paymentMethods = new Set();
       this.listOffers = [];
@@ -300,7 +301,7 @@ export default {
           variables: {
             fiat_method: selectedFiat,
             token: this.tokenSymbol,
-            address: localStorage.getItem("address"),
+            address: wallet.getCurrentAccount().address,
           },
         })
         .subscribe(({ data }) => {
@@ -333,7 +334,6 @@ export default {
         });
     },
     async initContract() {
-      localStorage.setItem("operation", "BUY");
       this.btnLoading = true;
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
       /**
@@ -355,7 +355,7 @@ export default {
       const lowestMinAmount = Math.min(...this.listOffers.map(offer => offer.min_limit));
       if (!this.filteredOffers) {
         const lowestMinAmountFormated = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(lowestMinAmount) : lowestMinAmount / 1e6;
-        this.modalNoMessage = "No hay ofertas disponibles, busque un monto superior a " + lowestMinAmountFormated + ' ' + localStorage.getItem('tokenSymbol')
+        this.modalNoMessage = "No hay ofertas disponibles, busque un monto superior a " + lowestMinAmountFormated
         this.modalNoOffers = true;
         this.btnLoading = false;
         return;
