@@ -285,14 +285,14 @@ export default {
     
     this.address = localStorage.getItem("address");
     sessionStorage.removeItem("create-import-proccess")
-
-    // setTimeout(() => {
-    //   this.orderSell();
-    //   if(this.data.length === 0){
-    //     this.orderBuy();
-    //   }
-    //   this.setOperationSymbol();
-    // }, 10000);
+    // console.log('dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', this.data)
+    setTimeout(() => {
+       this.orderSell();
+       if(this.data.length === 0){
+         this.orderBuy();
+       }
+       this.setOperationSymbol();
+     
 
     let counter = 0;
       const maxAttempts = 5;
@@ -305,6 +305,8 @@ export default {
         clearInterval(intervalId);
       }
     }, 5000);
+
+    }, 10000);
 
     // localStorage.removeItem("importEmailNickname");
     // localStorage.removeItem("importEmail");

@@ -401,7 +401,7 @@ export default {
         return
       }
       // console.log("orderConfirmation", orderConfirmation)
-      this.sendMailCancel(localStorage.getItem("orderId");
+      this.sendMailCancel(localStorage.getItem("orderId"));
       sessionStorage.clear(); // Clear all data from sessionStorage
       localStorage.removeItem('endTime');
       localStorage.removeItem('operation');
