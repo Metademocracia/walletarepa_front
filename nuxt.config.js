@@ -230,8 +230,8 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-    publicPath: "/wallet-p2p/",
-    // publicPath: development ? '/wallet-arepa/' : '/', //! commented
+    publicPath: "/wallet-arepa/",
+    // publicPath: development ? '/wallet-arepa/' : '/wallet-arepa/', //! commented
     // TODO: read about this to fix it.
     // plugins: [
     //   new webpack.ProvidePlugin({
