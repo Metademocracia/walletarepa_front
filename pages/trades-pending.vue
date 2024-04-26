@@ -85,7 +85,7 @@
         <v-icon color="var(--primary)">mdi-chevron-right</v-icon>
       </v-card>
 
-      <v-badge offset-x="10px" offset-y="10px" :value="true" content="3" style="--c: #fff">
+      <v-badge offset-x="10px" offset-y="10px" :value="unreadMessagesActive" :content="unreadMessagesCount" style="--c: #fff">
         <v-btn class="btn-icon" style="--bg: #000; --size: 35px; --br: 10px" @click="$router.push('/trades-chat')">
           <img src="@/assets/sources/icons/live-chat.svg" alt="chat icon">
         </v-btn>
@@ -175,6 +175,7 @@ import axios from 'axios';
 import encrypDecript from "@/services/encryp";
 import { formattedTime } from '@/plugins/functions'
 import walletUtils from "@/services/wallet";
+import { db } from "@/plugins/firebase";
 const { utils } = nearAPI;
 
 export default {
@@ -210,6 +211,8 @@ export default {
       topBottom: "CONFIRMACIÓN",
       intervalId: null,
       secondsLeft: 0,
+      unreadMessagesCount: 0,
+      unreadMessagesActive: false,
     }
   },
   head() {
@@ -240,6 +243,7 @@ export default {
     }
   },
   created() {
+    this.getUnreadMessagesCount();
     const endTime = localStorage.getItem('endTime');
     if (endTime) {
       const secondsLeft = Math.ceil((endTime - Date.now()) / 1000);
@@ -307,6 +311,29 @@ export default {
     
   },
   methods: {
+    getUnreadMessagesCount() {
+      try {
+        const operation = localStorage.getItem("operation");
+        const orderId = localStorage.getItem("orderId");
+
+        if(!operation || !orderId) return;
+
+        console.log(operation, `${operation}${orderId}`)
+        db
+          .collection(process.env.VUE_APP_CHAT_FIREBASE)
+          .doc(`${operation}${orderId}`)
+          .collection("MESSAGES")
+          .where("readed", "==", false)
+          .onSnapshot((snapshot) => {
+            
+            this.unreadMessagesCount = snapshot.size;
+            this.unreadMessagesActive = snapshot.size > 0;
+          });
+      } catch (error) {
+        console.error("Failed to get unread messages count:", error);
+      }
+    },
+
     selects(){
       localStorage.getItem("operation") === "SELL" ? this.orderSell() : this.orderBuy();
       localStorage.getItem("operation") === "SELL" ? this.orderHistorySell() : this.orderHistoryBuy();

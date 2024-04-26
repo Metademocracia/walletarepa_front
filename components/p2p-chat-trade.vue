@@ -23,7 +23,7 @@
         </v-card>
 
         <div
-          v-for="(msg, i) in messages" v-show="msg.text || msg.name || msg.src" :key="i"
+          v-for="(msg, i) in messages" v-show="msg?.text || msg?.name || msg?.src" :key="i"
           :class="['message', getMessageType(msg.authorId)]"
         >
           <div class="message__content">
@@ -53,7 +53,7 @@
 
             <div :class="['message__content-card', msg.type, isLastMessageGroup(msg.authorId, i) ? 'first-bubble' : '']">
               <!-- text message -->
-              <p v-if="msg.type === MessageType.text || msg.authorId === MessageSpecialId.system" v-html="msg.text" />
+              <p v-if="msg.type === MessageType.text || msg.authorId === MessageSpecialId.system" v-html="msg?.text" />
 
               <!-- image message -->
               <v-badge
@@ -216,9 +216,10 @@ export default {
       this.getMessages()
     }
   },
-  // created() {
-  //   this.getUnreadMessagesCount();
-  // },
+  created() {
+     this.getUnreadMessagesCount();
+  },
+  
   beforeDestroy() {
     clearInterval(this.polling);
   },
@@ -340,6 +341,7 @@ export default {
 
           snapshot.forEach((doc) => {
             const item = { ...doc.data(), id: doc.id};
+            // item.text = !item?.text ? null : item.text.trim() === "" ? null : item.text.trim();
             if (item.wallet === localStorage.getItem("address")) {
               item.authorId = "2"
             } else {
