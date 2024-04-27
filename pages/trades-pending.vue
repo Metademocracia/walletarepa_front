@@ -342,7 +342,7 @@ export default {
                 this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
                 sessionStorage.setItem('operationAmount', this.operationAmount);
                 this.orderId = this.data[0].order_id;
-                this.endTime = this.data[0].time * 100;
+                this.endTime = this.data[0].time * 60;
                 this.createAt = moment(this.data[0].datetime);
                 const seconsdNow = moment().diff(this.createAt, 'seconds');
                 this.seconds = this.endTime - seconsdNow;
@@ -437,7 +437,7 @@ export default {
                 this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
                 this.orderId = this.data[0].order_id;
                 localStorage.setItem('orderId', this.orderId)
-                this.endTime = this.data[0].time * 10;
+                this.endTime = this.data[0].time * 60;
                 this.createAt = moment(this.data[0].datetime);
                 const seconsdNow = moment().diff(this.createAt, 'seconds');
                 this.seconds = this.endTime - seconsdNow;
