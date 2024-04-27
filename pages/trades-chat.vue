@@ -198,51 +198,8 @@ export default {
 		clearInterval(this.polling);
 	},
   mounted() {
-    // console.log(localStorage.getItem("orderId"))
-    const time = sessionStorage.getItem('traderName') ? 100 : 3000;
-    let counter = 0;
-    const maxAttempts = 4;
-    // Info from trader
-    // this.getMessages()
-    const intervalId = setInterval(() => {
-      // In case the user open the session in other browser, will guarantee show the pending p2p
-      let selectedCoin;
-      this.selects();
-      if (this.data[0].asset === "USDT") {
-        selectedCoin = {
-          name: "Tether USD",
-          symbol: "USDT",
-          icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMic+PGcgZmlsbD0nbm9uZScgZmlsbC1ydWxlPSdldmVub2RkJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPScxNicgZmlsbD0nIzI2QTE3QicvPjxwYXRoIGZpbGw9JyNGRkYnIGQ9J00xNy45MjIgMTcuMzgzdi0uMDAyYy0uMTEuMDA4LS42NzcuMDQyLTEuOTQyLjA0Mi0xLjAxIDAtMS43MjEtLjAzLTEuOTcxLS4wNDJ2LjAwM2MtMy44ODgtLjE3MS02Ljc5LS44NDgtNi43OS0xLjY1OCAwLS44MDkgMi45MDItMS40ODYgNi43OS0xLjY2djIuNjQ0Yy4yNTQuMDE4Ljk4Mi4wNjEgMS45ODguMDYxIDEuMjA3IDAgMS44MTItLjA1IDEuOTI1LS4wNnYtMi42NDNjMy44OC4xNzMgNi43NzUuODUgNi43NzUgMS42NTggMCAuODEtMi44OTUgMS40ODUtNi43NzUgMS42NTdtMC0zLjU5di0yLjM2Nmg1LjQxNFY3LjgxOUg4LjU5NXYzLjYwOGg1LjQxNHYyLjM2NWMtNC40LjIwMi03LjcwOSAxLjA3NC03LjcwOSAyLjExOCAwIDEuMDQ0IDMuMzA5IDEuOTE1IDcuNzA5IDIuMTE4djcuNTgyaDMuOTEzdi03LjU4NGM0LjM5My0uMjAyIDcuNjk0LTEuMDczIDcuNjk0LTIuMTE2IDAtMS4wNDMtMy4zMDEtMS45MTQtNy42OTQtMi4xMTcnLz48L2c+PC9zdmc+",
-        };
-      } else {
-        selectedCoin = {
-          symbol: "NEAR",
-          icon: "/wallet-p2p/wallet-p2p/assets/sources/logos/near-icon.svg",
-        };
-      }
-      localStorage.setItem('selectedCoin', JSON.stringify(selectedCoin));
-
-      let selectedToken = localStorage.getItem("selectedCoin");
-      if (selectedToken) {
-        selectedToken = JSON.parse(selectedToken);
-        this.tokenSymbol = selectedToken.symbol;
-        this.tokenImage = selectedToken.icon;
-      }
-      this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
-      this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
-
-      counter++;
-
-      if (this.data.length > 0) {
-        clearInterval(intervalId);
-      } else if (counter >= maxAttempts) {
-        clearInterval(intervalId);
-        this.$router.push('/');
-      }
-    }, time);
-    this.pollData();
-    this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
-    this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
+    this.orderSell();
+    this.orderHistorySell();    
   },
   methods: {
     async trader( ownerId ) {
@@ -274,19 +231,8 @@ export default {
         });
       // }
     },
-    selects() {
-      this.orderSell();
-       if(this.data.length === 0){
-         this.orderBuy();
-       }
-
-      this.orderHistorySell();
-       if(this.dataCancel.length === 0){
-         this.orderHistoryBuy();
-       }
-
-    },
     orderSell() {
+      this.operation = "SELL";
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
@@ -310,13 +256,6 @@ export default {
         }
       }
       `;    
-      // if (sessionStorage.getItem('terms') && sessionStorage.getItem('exchangeRate') && sessionStorage.getItem('receiveAmount') && sessionStorage.getItem('operationAmount') && sessionStorage.getItem('orderId')) {
-      //   this.terms = sessionStorage.getItem('terms');
-      //   this.exchangeRate = sessionStorage.getItem('exchangeRate');
-      //   this.receiveAmount = sessionStorage.getItem('receiveAmount');
-      //   this.operationAmount = sessionStorage.getItem('operationAmount');
-      //   this.orderId = sessionStorage.getItem('orderId');
-      // } else {
       this.$apollo
         .watchQuery({
           query: selects,
@@ -325,24 +264,39 @@ export default {
           },
         })
         .subscribe(({ data }) => {
-            this.data = [];
-						Object.entries(data.ordersells).forEach(([key, value]) => {
-								this.data.push(value); 
-                this.operation = "SELL";
-                this.trader(this.data[0].owner_id);
-                this.terms = this.data[0].terms_conditions;
-                sessionStorage.setItem('terms', this.terms);
-                walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
-                   this.exchangeRate = this.data[0].exchange_rate * price;
-                   this.receiveAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
-                }); 
-                this.operationAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) : (this.data[0].operation_amount / 1e6);               
-                this.orderId = this.data[0].order_id;
-            });
+            if (data && data.ordersells) {
+              this.data = [];
+              Object.entries(data.ordersells).forEach(([key, value]) => {
+                  this.data.push(value); 
+                  this.trader(this.data[0].owner_id);
+                  this.terms = this.data[0].terms_conditions;
+                  sessionStorage.setItem('terms', this.terms);
+                  walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
+                    this.exchangeRate = this.data[0].exchange_rate * price;
+                    this.receiveAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
+                  }); 
+                  this.operationAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) : (this.data[0].operation_amount / 1e6);               
+                  this.orderId = this.data[0].order_id;
+                  localStorage.setItem('orderId', this.orderId)
+                  /// //////////////////////////////////////
+                  this.tokenSymbol = this.data[0].asset;
+                  this.tokenImage = this.data[0].asset === "USDT" ? "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMic+PGcgZmlsbD0nbm9uZScgZmlsbC1ydWxlPSdldmVub2RkJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPScxNicgZmlsbD0nIzI2QTE3QicvPjxwYXRoIGZpbGw9JyNGRkYnIGQ9J00xNy45MjIgMTcuMzgzdi0uMDAyYy0uMTEuMDA4LS42NzcuMDQyLTEuOTQyLjA0Mi0xLjAxIDAtMS43MjEtLjAzLTEuOTcxLS4wNDJ2LjAwM2MtMy44ODgtLjE3MS02Ljc5LS44NDgtNi43OS0xLjY1OCAwLS44MDkgMi45MDItMS40ODYgNi43OS0xLjY2djIuNjQ0Yy4yNTQuMDE4Ljk4Mi4wNjEgMS45ODguMDYxIDEuMjA3IDAgMS44MTItLjA1IDEuOTI1LS4wNnYtMi42NDNjMy44OC4xNzMgNi43NzUuODUgNi43NzUgMS42NTggMCAuODEtMi44OTUgMS40ODUtNi43NzUgMS42NTdtMC0zLjU5di0yLjM2Nmg1LjQxNFY3LjgxOUg4LjU5NXYzLjYwOGg1LjQxNHYyLjM2NWMtNC40LjIwMi03LjcwOSAxLjA3NC03LjcwOSAyLjExOCAwIDEuMDQ0IDMuMzA5IDEuOTE1IDcuNzA5IDIuMTE4djcuNTgyaDMuOTEzdi03LjU4NGM0LjM5My0uMjAyIDcuNjk0LTEuMDczIDcuNjk0LTIuMTE2IDAtMS4wNDMtMy4zMDEtMS45MTQtNy42OTQtMi4xMTcnLz48L2c+PC9zdmc+" : "/wallet-arepa/wallet-arepa/assets/sources/logos/near-icon.svg";
+                  // this.tokenImage = selectedToken.icon;
+                  this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
+                  this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
+
+                  this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
+                  this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
+
+                  this.pollData();
+              });
+            } else {
+              this.orderBuy();
+            }
         });
-      // }
     },
     orderBuy() {
+      this.operation = "BUY";
       const selects = gql`
         query MyQuery( $address : String) {
           ordersbuys(
@@ -366,13 +320,6 @@ export default {
         }
       }
       `;    
-      // if (sessionStorage.getItem('terms') && sessionStorage.getItem('exchangeRate') && sessionStorage.getItem('receiveAmount') && sessionStorage.getItem('operationAmount') && sessionStorage.getItem('orderId')) {
-      //   this.terms = sessionStorage.getItem('terms');
-      //   this.exchangeRate = sessionStorage.getItem('exchangeRate');
-      //   this.receiveAmount = sessionStorage.getItem('receiveAmount');
-      //   this.operationAmount = sessionStorage.getItem('operationAmount');
-      //   this.orderId = sessionStorage.getItem('orderId');
-      // } else {
       this.$apollo
         .watchQuery({
           query: selects,
@@ -381,22 +328,36 @@ export default {
           },
         })
         .subscribe(({ data }) => {
+          // Check if data and data.ordersells exist
+          if (data && data.orderbuys) {
             this.data = [];
-						Object.entries(data.ordersells).forEach(([key, value]) => {
+						Object.entries(data.orderbuys).forEach(([key, value]) => {
 								this.data.push(value); 
-                this.operation = "BUY";
                 this.trader(this.data[0].owner_id);
                 this.terms = this.data[0].terms_conditions;
-                sessionStorage.setItem('terms', this.terms);
                 walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
                    this.exchangeRate = this.data[0].exchange_rate * price;
                    this.receiveAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
                 }); 
                 this.operationAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) : (this.data[0].operation_amount / 1e6);               
                 this.orderId = this.data[0].order_id;
+                localStorage.setItem('orderId', this.orderId)
+                /// //////////////////////////////////////
+                this.tokenSymbol = this.data[0].asset;
+                this.tokenImage = this.data[0].asset === "USDT" ? "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMic+PGcgZmlsbD0nbm9uZScgZmlsbC1ydWxlPSdldmVub2RkJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPScxNicgZmlsbD0nIzI2QTE3QicvPjxwYXRoIGZpbGw9JyNGRkYnIGQ9J00xNy45MjIgMTcuMzgzdi0uMDAyYy0uMTEuMDA4LS42NzcuMDQyLTEuOTQyLjA0Mi0xLjAxIDAtMS43MjEtLjAzLTEuOTcxLS4wNDJ2LjAwM2MtMy44ODgtLjE3MS02Ljc5LS44NDgtNi43OS0xLjY1OCAwLS44MDkgMi45MDItMS40ODYgNi43OS0xLjY2djIuNjQ0Yy4yNTQuMDE4Ljk4Mi4wNjEgMS45ODguMDYxIDEuMjA3IDAgMS44MTItLjA1IDEuOTI1LS4wNnYtMi42NDNjMy44OC4xNzMgNi43NzUuODUgNi43NzUgMS42NTggMCAuODEtMi44OTUgMS40ODUtNi43NzUgMS42NTdtMC0zLjU5di0yLjM2Nmg1LjQxNFY3LjgxOUg4LjU5NXYzLjYwOGg1LjQxNHYyLjM2NWMtNC40LjIwMi03LjcwOSAxLjA3NC03LjcwOSAyLjExOCAwIDEuMDQ0IDMuMzA5IDEuOTE1IDcuNzA5IDIuMTE4djcuNTgyaDMuOTEzdi03LjU4NGM0LjM5My0uMjAyIDcuNjk0LTEuMDczIDcuNjk0LTIuMTE2IDAtMS4wNDMtMy4zMDEtMS45MTQtNy42OTQtMi4xMTcnLz48L2c+PC9zdmc+" : "/wallet-arepa/wallet-arepa/assets/sources/logos/near-icon.svg";
+                // this.tokenImage = selectedToken.icon;
+                this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
+                this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
+
+                this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
+                this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
+
+                this.pollData();
             });
+          } else {
+            this.orderHistorySell();
+          }
         });
-      // }
     },
     formatNumber(number) {
       return new Intl.NumberFormat('es-VE', { 
@@ -413,7 +374,7 @@ export default {
         contractId: CONTRACT_NAME,
         methodName: "order_confirmation",
         gas: "300000000000000",
-        args: { offer_type: 1, order_id: parseInt(this.data[0].order_id) },
+        args: { offer_type: 1, order_id: parseInt(this.order_id) },
         attachedDeposit: "3"
       });
       // console.log("orderConfirmation", orderConfirmation)
@@ -435,8 +396,9 @@ export default {
       if (!deleteContract || deleteContract.status.SuccessValue !== "") {
         console.log("Error borrando el contrato");
       }
-      this.sendMail('sell', this.data[0].order_id);
+      this.sendMail('sell', this.order_id);
       sessionStorage.clear(); // Clear all data from sessionStorage
+      localStorage.removeItem('orderId')
       this.btnLoading = false;
       this.$router.push({ path: "/tx-executed" });
     },
@@ -449,7 +411,7 @@ export default {
         contractId: CONTRACT_NAME,
         methodName: "cancel_order",
         gas: "300000000000000",
-        args: { offer_type: 2, order_id: parseInt(this.data[0].order_id) },
+        args: { offer_type: 2, order_id: parseInt(this.order_id) },
         attachedDeposit: "3"
       });
       // console.log("orderConfirmation", orderConfirmation)
@@ -458,8 +420,10 @@ export default {
         return
       }
       // console.log("orderConfirmation", orderConfirmation)
-      this.sendMailCancel(this.data[0].order_id);
+      this.sendMailCancel(this.order_id);
+      this.orderHistorySell();
       sessionStorage.clear(); // Clear all data from sessionStorage
+      localStorage.removeItem('orderId')
       this.btnLoading = false;
       // this.sendMail();
       this.$router.push({ path: "/tx-canceled" });
@@ -473,7 +437,7 @@ export default {
         contractId: CONTRACT_NAME,
         methodName: "order_dispute",
         gas: "300000000000000",
-        args: { offer_type: type, order_id: parseInt(this.data[0].order_id) },
+        args: { offer_type: type, order_id: parseInt(this.order_id) },
         attachedDeposit: "3"
       });
       // console.log("orderConfirmation", orderConfirmation)
@@ -482,7 +446,7 @@ export default {
         return
       }
       // console.log("orderConfirmation", orderConfirmation)
-      this.sendMailDispute(this.data[0].order_id);
+      this.sendMailDispute(this.order_id);
       this.btnLoading = false;
       // this.sendMail();
       this.$router.push({ path: "/tx-disputed" });
@@ -502,14 +466,24 @@ export default {
           .watchQuery({
             query: selects,
             variables: {
-              id: this.data[0].order_id + '|' + val,
+              id: localStorage.getItem('orderId') + '|' + val,
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            // this.data = [];
-            Object.entries(data.orderhistorysells).forEach(([key, value]) => {
-              this.dataCancel.push(value);
-            });
+            if (data && data.ordersells) {
+              this.dataCancel = [];
+              Object.entries(data.orderhistorysells).forEach(([key, value]) => {
+                this.dataCancel.push(value);
+                if(this.dataCancel[0].status === 4){
+                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  this.localStorage.removeItem('emailCounter')
+                  this.localStorage.removeItem('orddderId')
+                  this.$router.push('/tx-canceled');
+                }
+              });
+            } else {
+              this.orderHistoryBuy();
+            }  
           });
     },
     orderHistoryBuy() {
@@ -527,27 +501,24 @@ export default {
           .watchQuery({
             query: selects,
             variables: {
-              id: this.data[0].order_id + '|' + val,
+              id: localStorage.getItem('orderId') + '|' + val,
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            // this.data = [];
-            Object.entries(data.orderhistorybuys).forEach(([key, value]) => {
-              this.dataCancel.push(value);
-            });
+            if (data && data.orderhistorybuys) {
+              this.dataCancel = [];
+              Object.entries(data.orderhistorybuys).forEach(([key, value]) => {
+                this.dataCancel.push(value);
+                if(this.dataCancel[0].status === 4){
+                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  this.localStorage.removeItem('emailCounter')
+                  this.localStorage.removeItem('orderId')
+                  this.$router.push('/tx-canceled');
+                }
+              });
+             } 
           });
     },
-    pollData() {
-			this.polling = setInterval(() => {
-        if(this.dataCancel.length>0){
-          if(this.dataCancel[0].status === 4){
-            sessionStorage.clear(); // Clear all data from sessionStorage
-            this.localStorage.removeItem('emailCounter')
-            this.$router.push('/tx-canceled');
-          }
-        }
-			}, 5000);
-		},  
     async sendMailCancel(order) { 
         const data = await walletUtils.verifyWallet();
         const email = data?.data?.email;
