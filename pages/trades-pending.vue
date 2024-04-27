@@ -344,7 +344,6 @@ export default {
                 this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
 
                 walletUtils.getPrice(this.crypto, this.data[0].asset).then(price => {
-                  console.log(price)
                   this.exchangeRate = this.data[0].exchange_rate * price;
                   this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
                 });
@@ -355,10 +354,8 @@ export default {
                 this.createAt = moment(this.data[0].datetime);
                 const seconsdNow = moment().diff(this.createAt, 'seconds');
                 this.seconds = this.endTime - seconsdNow;
-                
-                
+                               
                 // console.log("fecha: ", this.data[0].datetime,this.data[0].time,  seconsdNow,  this.endTime, this.seconds);
-              
 
                 if(this.data[0].status === 3){
                    this.topText = "TRANSACCIÓN MARCADA PARA";
