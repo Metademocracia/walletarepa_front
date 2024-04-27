@@ -172,6 +172,7 @@ import * as nearAPI from "near-api-js";
 // eslint-disable-next-line import/no-named-as-default
 import gql from "graphql-tag";
 import axios from 'axios';
+import moment from "moment";
 import encrypDecript from "@/services/encryp";
 import { formattedTime } from '@/plugins/functions'
 import wallet from '@/services/local-storage-user'
@@ -186,6 +187,7 @@ export default {
       formattedTime,
       startTime: null,
       seconds: 0,
+      endTime: null,
       secondsEstimated: 300,
       address: wallet.getCurrentAccount().address,
       data: [],
@@ -227,24 +229,24 @@ export default {
     seconds: {
     handler(value) {
       if (value > 0) {
-        let endTime = localStorage.getItem('endTime');
+        /* let endTime = // localStorage.getItem('endTime');
         if (!endTime) {
           endTime = Date.now() + value * 1000;
           localStorage.setItem('endTime', endTime);
-        }
+        } */
         this.startCountdown();
       }
       },
       immediate: true
     },
-    secondsEstimated: {
+    /* secondsEstimated: {
       handler(value) {
         if (value > 0) setTimeout(() => { this.secondsEstimated-- }, 1000);
       },
       immediate: true
-    }
+    } */
   },
-  created() {
+  /* created() {
     // this.getUnreadMessagesCount();
     const endTime = localStorage.getItem('endTime');
     if (endTime) {
@@ -256,7 +258,7 @@ export default {
         this.seconds = 0;
       }
     }
-  },
+  }, */
   beforeDestroy() {
 		clearInterval(this.polling);
 	},
@@ -309,6 +311,7 @@ export default {
           operation_amount
           order_id
           status
+          datetime
         }
       }
       `;    
@@ -336,7 +339,15 @@ export default {
                 this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
                 sessionStorage.setItem('operationAmount', this.operationAmount);
                 this.orderId = this.data[0].order_id;
-                this.seconds = this.data[0].time * 1000;
+                this.endTime = this.data[0].time * 100;
+                
+                const createAt = moment(this.data[0].datetime);
+                this.seconds = moment().diff(createAt, 'seconds');
+
+                
+                
+                console.log("fecha: ", this.data[0].datetime, this.endTime, this.seconds);
+                
                 /// //////////////////////////////////////
                 this.tokenSymbol = this.data[0].asset;
                 this.tokenImage = this.data[0].asset === "USDT" ? "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMic+PGcgZmlsbD0nbm9uZScgZmlsbC1ydWxlPSdldmVub2RkJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPScxNicgZmlsbD0nIzI2QTE3QicvPjxwYXRoIGZpbGw9JyNGRkYnIGQ9J00xNy45MjIgMTcuMzgzdi0uMDAyYy0uMTEuMDA4LS42NzcuMDQyLTEuOTQyLjA0Mi0xLjAxIDAtMS43MjEtLjAzLTEuOTcxLS4wNDJ2LjAwM2MtMy44ODgtLjE3MS02Ljc5LS44NDgtNi43OS0xLjY1OCAwLS44MDkgMi45MDItMS40ODYgNi43OS0xLjY2djIuNjQ0Yy4yNTQuMDE4Ljk4Mi4wNjEgMS45ODguMDYxIDEuMjA3IDAgMS44MTItLjA1IDEuOTI1LS4wNnYtMi42NDNjMy44OC4xNzMgNi43NzUuODUgNi43NzUgMS42NTggMCAuODEtMi44OTUgMS40ODUtNi43NzUgMS42NTdtMC0zLjU5di0yLjM2Nmg1LjQxNFY3LjgxOUg4LjU5NXYzLjYwOGg1LjQxNHYyLjM2NWMtNC40LjIwMi03LjcwOSAxLjA3NC03LjcwOSAyLjExOCAwIDEuMDQ0IDMuMzA5IDEuOTE1IDcuNzA5IDIuMTE4djcuNTgyaDMuOTEzdi03LjU4NGM0LjM5My0uMjAyIDcuNjk0LTEuMDczIDcuNjk0LTIuMTE2IDAtMS4wNDMtMy4zMDEtMS45MTQtNy42OTQtMi4xMTcnLz48L2c+PC9zdmc+" : "/wallet-arepa/wallet-arepa/assets/sources/logos/near-icon.svg";
@@ -349,8 +360,8 @@ export default {
                    this.topBottom = "DISPUTA";
                    this.stopCountdown();
                    this.seconds = 0;
-                   localStorage.removeItem('endTime');
-                   localStorage.removeItem('startTime');
+                   // localStorage.removeItem('endTime');
+                   // localStorage.removeItem('startTime');
                 }  
                 this.pollData();
 
@@ -396,6 +407,7 @@ export default {
           time
           operation_amount
           order_id
+          datetime
         }
       }
       `;    
@@ -545,8 +557,8 @@ export default {
     },
     startCountdown() {
       this.intervalId = setInterval(() => {
-        const endTime = localStorage.getItem('endTime');
-        if (endTime) {
+        // const endTime = localStorage.getItem('endTime');
+        if (this.endTime) {
            this.secondsLeft = Math.ceil((endTime - Date.now()) / 1000);
           if (this.secondsLeft > 0) {
             this.seconds = this.secondsLeft;
