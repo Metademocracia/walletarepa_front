@@ -585,11 +585,11 @@ export default {
         // const endTime = localStorage.getItem('endTime');
         if (this.endTime) {
           const seconsdNow = moment().diff(this.createAt, 'seconds');
-          console.log(seconsdNow, this.endTime, this.createAt);
+          // console.log(seconsdNow, this.endTime, this.createAt);
            // this.secondsLeft = Math.ceil((endTime - Date.now()) / 1000);
           if (seconsdNow <= this.endTime) {
             this.seconds = this.endTime - seconsdNow;
-            console.log("seconds: ", this.seconds)
+            // console.log("seconds: ", this.seconds)
           } else {
             this.seconds = 0;
             // this.secondsLeft = 0;
