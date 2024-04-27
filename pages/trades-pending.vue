@@ -365,7 +365,7 @@ export default {
                    // localStorage.removeItem('endTime');
                    // localStorage.removeItem('startTime');
                 }  
-                // this.pollData();
+                // 
 
                 if(this.operation === "SELL"){
                    this.traderNameTitle = "Nombre de comprador:";
@@ -457,7 +457,7 @@ export default {
                    // localStorage.removeItem('endTime');
                    // localStorage.removeItem('startTime');
                 }  
-                this.pollData();
+                
 
                 if(this.operation === "SELL"){
                    this.traderNameTitle = "Nombre de comprador:";
