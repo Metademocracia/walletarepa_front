@@ -188,7 +188,8 @@ export default {
       startTime: null,
       seconds: 0,
       endTime: null,
-      secondsEstimated: 300,
+      createAt: null,
+      // secondsEstimated: 300,
       address: wallet.getCurrentAccount().address,
       data: [],
       dataCancel: [],
@@ -213,7 +214,7 @@ export default {
       topText: "EN ESPERA DE",
       topBottom: "CONFIRMACIÓN",
       intervalId: null,
-      secondsLeft: 0,
+      // secondsLeft: 0,
       unreadMessagesCount: 0,
       unreadMessagesActive: false,
       operation: "",
@@ -341,10 +342,9 @@ export default {
                 sessionStorage.setItem('operationAmount', this.operationAmount);
                 this.orderId = this.data[0].order_id;
                 this.endTime = this.data[0].time * 100;
-                
-                const createAt = moment(this.data[0].datetime);
-                this.seconds = moment().diff(createAt, 'seconds');
-
+                this.createAt = moment(this.data[0].datetime);
+                const seconsdNow = moment().diff(this.createAt, 'seconds');
+                this.seconds = this.createAt - seconsdNow;
                 
                 
                 console.log("fecha: ", this.data[0].datetime, this.endTime, this.seconds);
@@ -364,7 +364,7 @@ export default {
                    // localStorage.removeItem('endTime');
                    // localStorage.removeItem('startTime');
                 }  
-                this.pollData();
+                // this.pollData();
 
                 if(this.operation === "SELL"){
                    this.traderNameTitle = "Nombre de comprador:";
@@ -435,7 +435,10 @@ export default {
                 this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
                 this.orderId = this.data[0].order_id;
                 localStorage.setItem('orderId', this.orderId)
-                this.seconds = this.data[0].time * 1000;
+                this.endTime = this.data[0].time * 100;
+                this.createAt = moment(this.data[0].datetime);
+                const seconsdNow = moment().diff(this.createAt, 'seconds');
+                this.seconds = this.createAt - seconsdNow;
 
                 /// //////////////////////////////////////
                 this.tokenSymbol = this.data[0].asset;
@@ -449,10 +452,10 @@ export default {
                    this.topBottom = "DISPUTA";
                    this.stopCountdown();
                    this.seconds = 0;
-                   localStorage.removeItem('endTime');
-                   localStorage.removeItem('startTime');
+                   // localStorage.removeItem('endTime');
+                   // localStorage.removeItem('startTime');
                 }  
-                this.pollData();
+                // this.pollData();
 
                 if(this.operation === "SELL"){
                    this.traderNameTitle = "Nombre de comprador:";
@@ -579,16 +582,19 @@ export default {
     },
     startCountdown() {
       this.intervalId = setInterval(() => {
-        const endTime = localStorage.getItem('endTime');
+        // const endTime = localStorage.getItem('endTime');
         if (this.endTime) {
-           this.secondsLeft = Math.ceil((endTime - Date.now()) / 1000);
-          if (this.secondsLeft > 0) {
-            this.seconds = this.secondsLeft;
+          const seconsdNow = moment().diff(this.createAt, 'seconds');
+          console.log(seconsdNow, this.endTime, this.createAt);
+           // this.secondsLeft = Math.ceil((endTime - Date.now()) / 1000);
+          if (seconsdNow <= this.endTime) {
+            this.seconds = this.endTime - seconsdNow;
+            console.log("seconds: ", this.seconds)
           } else {
             this.seconds = 0;
-            this.secondsLeft = 0;
-            localStorage.removeItem('endTime');
-            localStorage.removeItem('startTime');
+            // this.secondsLeft = 0;
+            // localStorage.removeItem('endTime');
+            // localStorage.removeItem('startTime');
             this.stopCountdown();
           }
         } else {
@@ -600,7 +606,7 @@ export default {
       if (this.intervalId) {
         clearInterval(this.intervalId);
         this.intervalId = null;
-        localStorage.removeItem('endTime');
+        // localStorage.removeItem('endTime');
       }
     },
     yoctoNEARNEAR(yoctoNEAR) {
