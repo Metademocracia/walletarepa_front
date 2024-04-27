@@ -283,6 +283,15 @@ export default {
     }
   },
   mounted() {
+    let maxRetries = 0; // Corrected variable name
+    const interval = setInterval(() => {
+      this.orderSell(); // Call orderSell function
+      maxRetries++; // Increment the retry count
+      if (maxRetries >= 3) {
+        clearInterval(interval); // Stop the interval after the third execution
+      }
+    }, 5000);
+
     this.orderSell();
     this.address = wallet.getCurrentAccount().address;
     sessionStorage.removeItem("create-import-proccess");
@@ -330,6 +339,7 @@ export default {
     navigateToExternalLink(url) {
       window.open(url, '_blank');
     },
+
     /**
      * Loads tokens and balance data from session storage.
      */
