@@ -283,30 +283,9 @@ export default {
     }
   },
   mounted() {
-    
+    this.orderSell();
     this.address = wallet.getCurrentAccount().address;
-    sessionStorage.removeItem("create-import-proccess")
-    setTimeout(() => {
-       this.orderSell();
-       if(this.data.length === 0){
-         this.orderBuy();
-       }
-       this.setOperationSymbol();
-     
-
-    let counter = 0;
-      const maxAttempts = 5;
-
-    const intervalId = setInterval(() => {
-      if (this.data.length > 0) {
-        this.pendingTrades = true;
-        clearInterval(intervalId);
-      } else if (++counter >= maxAttempts) {
-        clearInterval(intervalId);
-      }
-    }, 5000);
-
-    }, 5000);
+    sessionStorage.removeItem("create-import-proccess");
 
     // localStorage.removeItem("importEmailNickname");
     // localStorage.removeItem("importEmail");
@@ -522,8 +501,8 @@ export default {
 
       })
     },
-    setOperationSymbol() {
-      const tokenSymbol = localStorage.getItem('tokenSymbol');
+    setOperationSymbol(symbol) {
+      const tokenSymbol = symbol;
       if (tokenSymbol === "USDT") {
         this.operationSymbol = require("@/assets/sources/tokens/usdt.svg");
       } else {
@@ -563,13 +542,17 @@ export default {
             }
           })
           .subscribe(({ data }) => {
-            Object.entries(data.ordersells).forEach(([key, value]) => {
-              this.data = [];
-              this.data.push(value);
-              this.orderId = this.data[0].order_id;
-              sessionStorage.setItem('dataOrder', this.data.length);
-              localStorage.setItem('emailCounter', 'true');
-            });
+            if (data && data.ordersells) {
+              Object.entries(data.ordersells).forEach(([key, value]) => {
+                this.data = [];
+                this.data.push(value);
+                this.pendingTrades = true;
+                this.setOperationSymbol(this.data[0].asset);
+                localStorage.setItem('emailCounter', 'true');
+              });
+            } else {
+              this.orderBuy();
+            }
           });
     },
     orderBuy() {
@@ -605,13 +588,15 @@ export default {
             }
           })
           .subscribe(({ data }) => {
-            Object.entries(data.orderbuys).forEach(([key, value]) => {
-              this.data = [];
-              this.data.push(value);
-              this.orderId = this.data[0].order_id;
-              sessionStorage.setItem('dataOrder', this.data.length);
-              localStorage.setItem('emailCounter', 'true');
-            });
+            if (data && data.orderbuys) {
+              Object.entries(data.orderbuys).forEach(([key, value]) => {
+                this.data = [];
+                this.data.push(value);
+                this.pendingTrades = true;
+                this.setOperationSymbol(this.data[0].asset);
+                localStorage.setItem('emailCounter', 'true');
+              });
+            }
           });
     },
   }

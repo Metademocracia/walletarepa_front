@@ -5,7 +5,7 @@ export default async function(context) {
   const data = sessionStorage.getItem('data') ? sessionStorage.getItem('data') : 0;
   try {
     const utilsdata = await walletUtils.verifyWallet();
-    if (!utilsdata || utilsdata?.utilsdata?.email || utilsdata?.utilsdata?.cedula || utilsdata?.utilsdata?.name || utilsdata?.utilsdata?.walletname) {
+    if (!utilsdata || !(utilsdata?.data?.email && utilsdata?.data?.cedula && utilsdata?.data?.name && utilsdata?.data?.walletname)) {
       return context.redirect('/user-profile');
     } else if (data>0) {
       return context.redirect('/trades-pending');

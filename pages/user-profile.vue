@@ -101,11 +101,11 @@ import axios from 'axios';
 // import utils from '~/services/utils';
 // import localStorageUser from '~/services/local-storage-user';
 import { ALERT_TYPE } from '~/plugins/dictionary';
+import wallet from '@/services/local-storage-user'
 
 export default {
   name: "CreateProfile",
   layout: "auth-layout",
-  middleware: ["verify-user-profile"],
   data() {
     return {
       loading: false,
@@ -139,7 +139,7 @@ export default {
         { email: this.emailImput, 
           cedula: this.cedulaImput, 
           name: this.nameInput, 
-          walletname: localStorage.getItem('address') 
+          walletname: wallet.getCurrentAccount().address,
         }, {
           headers: {
             'accept': 'application/json',

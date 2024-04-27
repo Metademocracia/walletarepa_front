@@ -139,7 +139,7 @@
         <span class="mb-0" style="font-weight: 700 !important; font-size: 16px !important">{{ fiatSymbol }} {{ formatNumber(receiveAmount) }}</span>
       </div>
       <div class="d-flex justify-space-between align-center mb-2">
-        <p class="mb-0">Price:</p>
+        <p class="mb-0">Precio:</p>
         <p class="mb-0" style="font-weight: 700 !important;">{{ fiatSymbol }} {{ formatNumber(exchangeRate) }}</p>
       </div>
       <div class="d-flex justify-space-between align-center mb-2">
@@ -245,7 +245,7 @@ export default {
     }
   },
   created() {
-    this.getUnreadMessagesCount();
+    // this.getUnreadMessagesCount();
     const endTime = localStorage.getItem('endTime');
     if (endTime) {
       const secondsLeft = Math.ceil((endTime - Date.now()) / 1000);
@@ -261,68 +261,17 @@ export default {
 		clearInterval(this.polling);
 	},
   mounted() {
-    const time = sessionStorage.getItem('traderName') ? 100 : 3000;
-    let counter = 0;
-    const maxAttempts = 4;
-    // Info from trader
-    const intervalId = setInterval(() => {
-      this.selects();
-      let selectedToken =  this.data[0].asset; // localStorage.getItem("selectedCoin");
-      if (selectedToken) {
-        selectedToken = JSON.parse(selectedToken);
-        this.tokenSymbol = selectedToken.symbol;
-        this.tokenImage = selectedToken.icon;
-        localStorage.setItem('tokenSymbol', this.tokenSymbol);
-      }
-      this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
-      this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
-
-      counter++;
-
-      if (this.data.length > 0) {
-        clearInterval(intervalId);
-        this.sendMail();
-      } else if (counter >= maxAttempts) {
-         localStorage.removeItem('endTime');
-         localStorage.removeItem('startTime');
-         clearInterval(intervalId);
-         this.$router.push('/');
-      }
-    }, time);
-    this.pollData();
-
-    if(this.data[0].status === 3){
-          this.topText = "TRANSACCIÓN MARCADA PARA";
-          this.topBottom = "DISPUTA";
-          this.stopCountdown();
-          this.seconds = 0;
-          clearInterval(this.polling);
-          localStorage.removeItem('endTime');
-          localStorage.removeItem('startTime');
-     }  
-
-    if(this.operation === "SELL"){
-      this.traderNameTitle = "Nombre de comprador:";
-      this.typeOffer = "VENDER"
-      this.amountTittle = "Monto a Recibir:";
-      this.cryptoTittle = "Crypto a Vender:";
-    } else {
-      this.traderNameTitle = "Nombre de vendedor:";
-      this.typeOffer = "COMPRAR";
-      this.amountTittle = "Monto a Pagar:";
-      this.cryptoTittle = "Crypto a Recibir:";
-    }
-    
+    this.orderSell();
   },
   methods: {
-    getUnreadMessagesCount() {
+    getUnreadMessagesCount(porderid, poperation) {
       try {
-        const operation = this.operation;
-        const orderId = this.data[0].order_id;
+        const operation = poperation;
+        const orderId = porderid;
 
         if(!operation || !orderId) return;
 
-        console.log(operation, `${operation}${orderId}`)
+        // console.log(operation, `${operation}${orderId}`)
         db
           .collection(process.env.VUE_APP_CHAT_FIREBASE)
           .doc(`${operation}${orderId}`)
@@ -336,18 +285,6 @@ export default {
       } catch (error) {
         console.error("Failed to get unread messages count:", error);
       }
-    },
-
-    selects(){
-      this.orderSell();
-       if(this.data.length === 0){
-         this.orderBuy();
-       }
-     
-      this.orderHistorySell();
-       if(this.dataCancel.length === 0){
-         this.orderHistoryBuy();
-       }
     },
     async orderSell() {
       const selects = gql`
@@ -375,43 +312,67 @@ export default {
         }
       }
       `;    
-      // if (sessionStorage.getItem('terms') && sessionStorage.getItem('exchangeRate') && sessionStorage.getItem('receiveAmount') && sessionStorage.getItem('operationAmount') && sessionStorage.getItem('orderId') && sessionStorage.getItem('seconds') && sessionStorage.getItem('traderName')) {
-      //   this.terms = sessionStorage.getItem('terms');
-      //   this.exchangeRate = sessionStorage.getItem('exchangeRate');
-      //   this.receiveAmount = sessionStorage.getItem('receiveAmount');
-      //   this.operationAmount = sessionStorage.getItem('operationAmount');
-      //   this.orderId = sessionStorage.getItem('orderId');
-      //   this.seconds = sessionStorage.getItem('seconds');
-      //   this.traderName = sessionStorage.getItem('traderName');
-      // } else {
         await this.$apollo
           .watchQuery({
             query: selects,
             variables: {
-              address: localStorage.getItem("address"),
+              address: wallet.getCurrentAccount().address,
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            // this.data = [];
-            Object.entries(data.ordersells).forEach(([key, value]) => {
-              this.data = [];
-              this.data.push(value);
-              this.operation = "SELL";
-              this.trader(this.data[0].owner_id);
-              this.terms = this.data[0].terms_conditions;
-              sessionStorage.setItem('terms', this.terms);
-              walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
-                this.exchangeRate = this.data[0].exchange_rate * price;
-                this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
+            // Check if data and data.ordersells exist
+            if (data && data.ordersells) {
+              // this.data = [];
+              Object.entries(data.ordersells).forEach(([key, value]) => {
+                this.data = [];
+                this.data.push(value);
+                this.operation = "SELL";
+                this.trader(this.data[0].owner_id);
+                this.terms = this.data[0].terms_conditions;
+                walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
+                  this.exchangeRate = this.data[0].exchange_rate * price;
+                  this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
+                });
+                this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
+                sessionStorage.setItem('operationAmount', this.operationAmount);
+                this.orderId = this.data[0].order_id;
+                this.seconds = this.data[0].time * 1000;
+                /// //////////////////////////////////////
+                this.tokenSymbol = this.data[0].asset;
+                this.tokenImage = this.data[0].asset === "USDT" ? "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMic+PGcgZmlsbD0nbm9uZScgZmlsbC1ydWxlPSdldmVub2RkJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPScxNicgZmlsbD0nIzI2QTE3QicvPjxwYXRoIGZpbGw9JyNGRkYnIGQ9J00xNy45MjIgMTcuMzgzdi0uMDAyYy0uMTEuMDA4LS42NzcuMDQyLTEuOTQyLjA0Mi0xLjAxIDAtMS43MjEtLjAzLTEuOTcxLS4wNDJ2LjAwM2MtMy44ODgtLjE3MS02Ljc5LS44NDgtNi43OS0xLjY1OCAwLS44MDkgMi45MDItMS40ODYgNi43OS0xLjY2djIuNjQ0Yy4yNTQuMDE4Ljk4Mi4wNjEgMS45ODguMDYxIDEuMjA3IDAgMS44MTItLjA1IDEuOTI1LS4wNnYtMi42NDNjMy44OC4xNzMgNi43NzUuODUgNi43NzUgMS42NTggMCAuODEtMi44OTUgMS40ODUtNi43NzUgMS42NTdtMC0zLjU5di0yLjM2Nmg1LjQxNFY3LjgxOUg4LjU5NXYzLjYwOGg1LjQxNHYyLjM2NWMtNC40LjIwMi03LjcwOSAxLjA3NC03LjcwOSAyLjExOCAwIDEuMDQ0IDMuMzA5IDEuOTE1IDcuNzA5IDIuMTE4djcuNTgyaDMuOTEzdi03LjU4NGM0LjM5My0uMjAyIDcuNjk0LTEuMDczIDcuNjk0LTIuMTE2IDAtMS4wNDMtMy4zMDEtMS45MTQtNy42OTQtMi4xMTcnLz48L2c+PC9zdmc+" : "/wallet-arepa/wallet-arepa/assets/sources/logos/near-icon.svg";
+                // this.tokenImage = selectedToken.icon;
+                this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
+                this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
+
+                if(this.data[0].status === 3){
+                   this.topText = "TRANSACCIÓN MARCADA PARA";
+                   this.topBottom = "DISPUTA";
+                   this.stopCountdown();
+                   this.seconds = 0;
+                   localStorage.removeItem('endTime');
+                   localStorage.removeItem('startTime');
+                }  
+                this.pollData();
+
+                if(this.operation === "SELL"){
+                   this.traderNameTitle = "Nombre de comprador:";
+                   this.typeOffer = "VENDER"
+                   this.amountTittle = "Monto a Recibir:";
+                   this.cryptoTittle = "Crypto a Vender:";
+                } else {
+                   this.traderNameTitle = "Nombre de vendedor:";
+                   this.typeOffer = "COMPRAR";
+                   this.amountTittle = "Monto a Pagar:";
+                   this.cryptoTittle = "Crypto a Recibir:";
+                }
+                this.getUnreadMessagesCount(this.data[0].order_id, this.operation);
+                this.sendMail();
+
               });
-              this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
-              sessionStorage.setItem('operationAmount', this.operationAmount);
-              this.orderId = this.data[0].order_id;
-              this.seconds = this.data[0].time * 1000;
-              this.sendMail();
-            });
+            } else {
+              this.orderBuy();
+            }
           });
-       // }
     },
     async orderBuy() {
       const selects = gql`
@@ -438,44 +399,63 @@ export default {
         }
       }
       `;    
-      // if (sessionStorage.getItem('terms') && sessionStorage.getItem('exchangeRate') && sessionStorage.getItem('receiveAmount') && sessionStorage.getItem('operationAmount') && sessionStorage.getItem('orderId') && sessionStorage.getItem('seconds') && sessionStorage.getItem('traderName')) {
-      //   this.terms = sessionStorage.getItem('terms');
-      //   this.exchangeRate = sessionStorage.getItem('exchangeRate');
-      //   this.receiveAmount = sessionStorage.getItem('receiveAmount');
-      //   this.operationAmount = sessionStorage.getItem('operationAmount');
-      //   this.orderId = sessionStorage.getItem('orderId');
-      //   this.seconds = sessionStorage.getItem('seconds');
-      //   this.traderName = sessionStorage.getItem('traderName');
-      // } else {
         await this.$apollo
           .watchQuery({
             query: selects,
             variables: {
-              address: localStorage.getItem("address"),
+              address: wallet.getCurrentAccount().address,
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            this.data = [];
-            Object.entries(data.orderbuys).forEach(([key, value]) => {
-              this.data = [];
-              this.data.push(value);
-              this.operation = "BUY";
-              this.trader(this.data[0].owner_id);
-              this.terms = this.data[0].terms_conditions;
-              localStorage.setItem('terms', this.terms);
-              sessionStorage.setItem('terms', this.terms);
-              walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
-                this.exchangeRate = this.data[0].exchange_rate * price;
-                sessionStorage.setItem('exchangeRate', this.exchangeRate);
-                this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
+            if (data && data.orderbuys) {
+              Object.entries(data.orderbuys).forEach(([key, value]) => {
+                this.data = [];
+                this.data.push(value);
+                this.operation = "BUY";
+                this.trader(this.data[0].owner_id);
+                this.terms = this.data[0].terms_conditions;
+                walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
+                  this.exchangeRate = this.data[0].exchange_rate * price;
+                  sessionStorage.setItem('exchangeRate', this.exchangeRate);
+                  this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
+                });
+                this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
+                this.orderId = this.data[0].order_id;
+                this.seconds = this.data[0].time * 1000;
+
+                /// //////////////////////////////////////
+                this.tokenSymbol = this.data[0].asset;
+                this.tokenImage = this.data[0].asset === "USDT" ? "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMic+PGcgZmlsbD0nbm9uZScgZmlsbC1ydWxlPSdldmVub2RkJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPScxNicgZmlsbD0nIzI2QTE3QicvPjxwYXRoIGZpbGw9JyNGRkYnIGQ9J00xNy45MjIgMTcuMzgzdi0uMDAyYy0uMTEuMDA4LS42NzcuMDQyLTEuOTQyLjA0Mi0xLjAxIDAtMS43MjEtLjAzLTEuOTcxLS4wNDJ2LjAwM2MtMy44ODgtLjE3MS02Ljc5LS44NDgtNi43OS0xLjY1OCAwLS44MDkgMi45MDItMS40ODYgNi43OS0xLjY2djIuNjQ0Yy4yNTQuMDE4Ljk4Mi4wNjEgMS45ODguMDYxIDEuMjA3IDAgMS44MTItLjA1IDEuOTI1LS4wNnYtMi42NDNjMy44OC4xNzMgNi43NzUuODUgNi43NzUgMS42NTggMCAuODEtMi44OTUgMS40ODUtNi43NzUgMS42NTdtMC0zLjU5di0yLjM2Nmg1LjQxNFY3LjgxOUg4LjU5NXYzLjYwOGg1LjQxNHYyLjM2NWMtNC40LjIwMi03LjcwOSAxLjA3NC03LjcwOSAyLjExOCAwIDEuMDQ0IDMuMzA5IDEuOTE1IDcuNzA5IDIuMTE4djcuNTgyaDMuOTEzdi03LjU4NGM0LjM5My0uMjAyIDcuNjk0LTEuMDczIDcuNjk0LTIuMTE2IDAtMS4wNDMtMy4zMDEtMS45MTQtNy42OTQtMi4xMTcnLz48L2c+PC9zdmc+" : "/wallet-arepa/wallet-arepa/assets/sources/logos/near-icon.svg";
+                
+                this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
+                this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
+
+                if(this.data[0].status === 3){
+                   this.topText = "TRANSACCIÓN MARCADA PARA";
+                   this.topBottom = "DISPUTA";
+                   this.stopCountdown();
+                   this.seconds = 0;
+                   localStorage.removeItem('endTime');
+                   localStorage.removeItem('startTime');
+                }  
+                this.pollData();
+
+                if(this.operation === "SELL"){
+                   this.traderNameTitle = "Nombre de comprador:";
+                   this.typeOffer = "VENDER"
+                   this.amountTittle = "Monto a Recibir:";
+                   this.cryptoTittle = "Crypto a Vender:";
+                } else {
+                   this.traderNameTitle = "Nombre de vendedor:";
+                   this.typeOffer = "COMPRAR";
+                   this.amountTittle = "Monto a Pagar:";
+                   this.cryptoTittle = "Crypto a Recibir:";
+                }
+                this.getUnreadMessagesCount(this.data[0].order_id, this.operation);
+                this.sendMail();
               });
-              this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
-              this.orderId = this.data[0].order_id;
-              this.seconds = this.data[0].time * 1000;
-              this.sendMail();
-            });
+           }
           });
-       // }
     },
     async orderHistorySell() {
       const val = this.operation === "SELL" ? "1" : "2";
@@ -492,7 +472,7 @@ export default {
           .watchQuery({
             query: selects,
             variables: {
-              id: this.data[0].order_id + '|' + val,
+              id: this.orderId + '|' + val,
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
@@ -517,7 +497,7 @@ export default {
           .watchQuery({
             query: selects,
             variables: {
-              id: localStorage.getItem("orderId") + '|' + val,
+              id: this.orderId + '|' + val,
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
@@ -537,9 +517,6 @@ export default {
         }
       }
       `;
-      // if (sessionStorage.getItem('traderName')) {
-      //   this.traderName = sessionStorage.getItem('traderName');
-      // } else {
       await this.$apollo
         .watchQuery({
           query: selects,

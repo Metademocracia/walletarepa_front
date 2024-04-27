@@ -23,13 +23,10 @@
         <div class="payment-card__wrapper">
           <v-list>
             <v-list-item 
-            v-for="(payment, i) in otherPayments" :key="i"
-              class="font-weight-bold"
+            v-for="(payment, i) in otherPayments" :key="i" class="font-weight-bold"
               @click="selectPaymentDialog(payment)">
               {{ payment }}
-              <img 
-              v-if="selectedPayment == payment" src="@/assets/sources/icons/checked.svg"
-                alt="checked icon" />
+              <img v-if="selectedPayment == payment" src="@/assets/sources/icons/checked.svg" alt="checked icon" />
               <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon" />
             </v-list-item>
           </v-list>
@@ -112,8 +109,8 @@
       </v-list>
       <h5 v-if="modalNoOffers" style="color: red !important;">{{ modalNoMessage }}</h5>
       <v-card 
-      v-if="moreBanks" class="btn-outlined space" style="--bg: var(--secondary); --b-color: #d1c4e8; padding: 0 23px"
-        @click="modelPayments = true">
+      v-if="moreBanks" class="btn-outlined space"
+        style="--bg: var(--secondary); --b-color: #d1c4e8; padding: 0 23px" @click="modelPayments = true">
         <h5 class="mb-0">BUSCAR OTRO MÉTODO</h5>
 
         <div class="center" style="gap: 6px">
@@ -186,9 +183,9 @@ export default {
       btnLoading: false,
       search: "",
       address: wallet.getCurrentAccount().address,
-      subcontract: false,
+      subcontract: {},
       listOffers: [],
-      minLimit : 0,
+      minLimit: 0,
       modalNoOffers: false,
       modalNoMessage: false,
     };
@@ -306,15 +303,15 @@ export default {
         })
         .subscribe(({ data }) => {
           data.offerssells.forEach(offer => {
-              offer.payment_method.forEach(method => {
-                paymentMethods.add(method.payment_method);
-              });
+            offer.payment_method.forEach(method => {
+              paymentMethods.add(method.payment_method);
+            });
           });
           Object.entries(data.offerssells).forEach(
-								([key, value]) => {
-                  this.listOffers.push(value);
-								}
-							);
+            ([key, value]) => {
+              this.listOffers.push(value);
+            }
+          );
           paymentMethods = Array.from(paymentMethods);
           paymentMethods.length > 3 ? this.moreBanks = true : this.moreBanks = false;
           /**
@@ -326,9 +323,9 @@ export default {
             paymentMethods = paymentMethods.filter(method => method !== "Pago Móvil");
             paymentMethods.unshift("Pago Móvil");
           }
-          
+
           this.payments = paymentMethods.slice(0, 3);
-          
+
           this.otherPayments = paymentMethods.filter(item => !this.payments.includes(item));
           this.originalPayments = paymentMethods;
         });
@@ -345,16 +342,16 @@ export default {
        * If the token symbol is "NEAR", the amount is multiplied by 1e24.
        * If the token symbol is not "NEAR", the amount is multiplied by 1e6.
        */
-      const orderAmount = this.tokenSymbol === "NEAR" ? this.NEARyoctoNEAR(this.amount): (this.amount * 1e6).toString();
+      const orderAmount = this.tokenSymbol === "NEAR" ? this.NEARyoctoNEAR(this.amount) : (this.amount * 1e6).toString();
       // Filtering the list by payment method and the highest exchange rate
       // and the remaining amount is greater than the order amount
       // and the prder amount is greater than the min limit
       this.filteredOffers = this.listOffers
-      .filter(offer => offer.payment_method.some(method => method.payment_method === this.selectedPayment))
-      .filter(offer => parseFloat(offer.remaining_amount) >= parseFloat(orderAmount))
-      .filter(offer => parseFloat(offer.min_limit) <= parseFloat(orderAmount))
-      .sort((a, b) => b.exchange_rate - a.exchange_rate)
-      .find(() => true);
+        .filter(offer => offer.payment_method.some(method => method.payment_method === this.selectedPayment))
+        .filter(offer => parseFloat(offer.remaining_amount) >= parseFloat(orderAmount))
+        .filter(offer => parseFloat(offer.min_limit) <= parseFloat(orderAmount))
+        .sort((a, b) => b.exchange_rate - a.exchange_rate)
+        .find(() => true);
       const lowestMinAmount = Math.min(...this.listOffers.map(offer => offer.min_limit));
       if (!this.filteredOffers) {
         const lowestMinAmountFormated = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(lowestMinAmount) : lowestMinAmount / 1e6;
@@ -365,49 +362,26 @@ export default {
       }
       // Filter paymet method as per selected payment
       const filteredPaymentMethod = this.filteredOffers.payment_method.find(method => method.payment_method === this.selectedPayment);
-      console.log('PASO 1 get_token_activo')
-      const account = await walletUtils.nearConnection();
-      const getTokenActivo = await account.viewFunctionV1(
-        CONTRACT_NAME,
-        "get_token_activo",
-        { user_id: `${this.address.split(".")[0]}.${CONTRACT_NAME}`, ft_token: "USDT" }
-      );
-      console.log('PASO 2 get_subcontract')
-      this.subcontract = await account.viewFunctionV1(
-        CONTRACT_NAME,
-        "get_subcontract",
-        { user_id: this.address }
-      );
 
-      let vldeposit = "100000000000000000000000";
-      console.log('PASO 3 activar_subcuenta_ft')
-      if (getTokenActivo) {
-        vldeposit = "1";
-      } else {
-        vldeposit = "100000000000000000000000";
-        const activarSubcuenta = await account.functionCall({
-          contractId: CONTRACT_NAME,
-          methodName: "activar_subcuenta_ft",
-          args: { subaccount_id: this.address, asset: "USDT" },
-          attachedDeposit: vldeposit
-        });
+      try {
+        const account = await walletUtils.nearConnection();
+        this.subcontract = await account.viewFunctionV1(
+          CONTRACT_NAME,
+          "get_subcontract",
+          { user_id: this.address }
+        );
+        const now = moment()
+          .format("YYYY-MM-DD HH:mm:ss")
+          .toString();
 
-        if (!activarSubcuenta || !activarSubcuenta.status.SuccessValue !== "") {
-          console.log("Subcuenta ya activa, procede con el siguiente paso");
-        }
-      }
-      console.log('PASO 4 create_subcontract_user')
-      const now = moment()
-        .format("YYYY-MM-DD HH:mm:ss")
-        .toString();
-      if (!this.subcontract) {
-        try {
+        if (this.subcontract === null) {
+          this.subcontract = { contract: `${this.address.split(".")[0]}.${CONTRACT_NAME}` };
           const createSubCobtractUser = await account.functionCall({
             contractId: CONTRACT_NAME,
             methodName: "create_subcontract_user",
             gas: "80000000000000",
-            args: { subaccount_id: this.address.split(".")[0] + "." + CONTRACT_NAME, asset: "USDT" },
-            attachedDeposit: vldeposit
+            args: { subaccount_id: this.subcontract.contract, asset: "USDT" },
+            attachedDeposit: "1"
           });
           // console.log(createSubCobtractUser)
           if (!createSubCobtractUser || createSubCobtractUser.status.SuccessValue !== "") {
@@ -415,117 +389,67 @@ export default {
             this.btnLoading = false;
             return
           }
-          
-          console.log('PASO 5 ft_transfer')
-          const ftTransfer = await account.functionCall({
-            contractId: CONTRACT_NAME_USDT,
-            methodName: "ft_transfer",
-            gas: "80000000000000",
-            args: { receiver_id: this.address.split(".")[0] + "." + CONTRACT_NAME, amount: orderAmount },
-            attachedDeposit: vldeposit
-          });
-
-          if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
-            console.log("error al transferir token");
-            this.btnLoading = false;
-            return
-          }
-          console.log('PASO 6 accept_offer')
-          const acceptOffer = await account.functionCall({
-            contractId: CONTRACT_NAME,
-            methodName: "accept_offer",
-            gas: "300000000000000",
-            args: {
-              offer_type: 1,
-              offer_id: parseInt(this.filteredOffers.id),
-              amount: orderAmount,
-              payment_method: parseInt(filteredPaymentMethod.payment_method_id),
-              datetime: now,
-              rate: parseFloat(this.filteredOffers.exchange_rate)
-            },
-            attachedDeposit: "1"
-          });
-
-          if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
-            console.log("error al aceptar la oferta", acceptOffer);
-            this.btnLoading = false;
-            return
-          }
-        } catch (error) {
-          console.error(error.message);
-          return;
         }
-      }
-      else if (this.subcontract) {
-        try {
-          const ftTransfer = await account.functionCall({
-            contractId: CONTRACT_NAME_USDT,
-            methodName: "ft_transfer",
-            gas: "80000000000000",
-            args: { receiver_id: this.address.split(".")[0] + "." + CONTRACT_NAME, amount: orderAmount },
-            attachedDeposit: vldeposit
-          });
 
-          if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
-            console.log("error al transferir token", ftTransfer);
-            this.btnLoading = false;
-            return
-          }
-
-          const acceptOffer = await account.functionCall({
+        const getTokenActivo = await account.viewFunctionV1(
+          CONTRACT_NAME,
+          "get_token_activo",
+          { user_id: this.subcontract.contract, ft_token: "USDT" }
+        );
+        if (!getTokenActivo) {
+          const activarSubcuenta = await account.functionCall({
             contractId: CONTRACT_NAME,
-            methodName: "accept_offer",
-            gas: "300000000000000",
-            args: {
-              offer_type: 1,
-              offer_id: parseInt(this.filteredOffers.id),
-              amount: orderAmount,
-              payment_method: parseInt(filteredPaymentMethod.payment_method_id),
-              datetime: now,
-              rate: parseFloat(this.filteredOffers.exchange_rate)
-            },
-            attachedDeposit: "1"
+            methodName: "activar_subcuenta_ft",
+            args: { subaccount_id: this.subcontract.contract, asset: "USDT" },
+            attachedDeposit: "100000000000000000000000"
           });
 
-          if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
-            console.log("error al aceptar la oferta", acceptOffer);
-            this.btnLoading = false;
-            return
+          if (!activarSubcuenta || !activarSubcuenta.status.SuccessValue !== "") {
+            console.log("Subcuenta ya activa, procede con el siguiente paso");
           }
-        } catch (error) {
-          console.error(error.message);
-          return;
         }
-      }
-      else {
-        try {
-          const acceptOffer = await account.functionCall({
-            contractId: CONTRACT_NAME,
-            methodName: "accept_offer",
-            gas: "300000000000000",
-            args: {
-              offer_type: 1,
-              offer_id: parseInt(this.filteredOffers.id),
-              amount: orderAmount,
-              payment_method: parseInt(filteredPaymentMethod.payment_method_id),
-              datetime: now,
-              rate: parseFloat(this.filteredOffers.exchange_rate)
-            },
-            attachedDeposit: "1"
-          });
 
-          if (!acceptOffer || !acceptOffer.status.SuccessValue !== "") {
-            console.log("error al aceptar la oferta", acceptOffer);
-            this.btnLoading = false;
-            return
-          }
-        } catch (error) {
-          console.error(error.message);
-          return;
+        const ftTransfer = await account.functionCall({
+          contractId: CONTRACT_NAME_USDT,
+          methodName: "ft_transfer",
+          gas: "80000000000000",
+          args: { receiver_id: this.subcontract.contract, amount: orderAmount },
+          attachedDeposit: "1"
+        });
+        if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
+          console.log("error al transferir token");
+          this.btnLoading = false;
+          return
         }
+        const acceptOffer = await account.functionCall({
+          contractId: CONTRACT_NAME,
+          methodName: "accept_offer",
+          gas: "300000000000000",
+          args: {
+            offer_type: 1,
+            offer_id: parseInt(this.filteredOffers.id),
+            amount: orderAmount,
+            payment_method: parseInt(filteredPaymentMethod.payment_method_id),
+            datetime: now,
+            rate: parseFloat(this.filteredOffers.exchange_rate)
+          },
+          attachedDeposit: "1"
+        });
+
+        if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
+          console.log("error al aceptar la oferta", acceptOffer);
+          this.btnLoading = false;
+          return
+        }
+      } catch (error) {
+        this.subcontract = {};
+        this.btnLoading = false;
+        console.error(error.message);
+        return;
       }
+
+
       this.btnLoading = false;
-      // this.sendMail();
       this.$router.push({ path: "/trades-pending" });
     },
     async initContractNEAR() {
@@ -536,16 +460,16 @@ export default {
        * If the token symbol is "NEAR", the amount is multiplied by 1e24.
        * If the token symbol is not "NEAR", the amount is multiplied by 1e6.
        */
-      const orderAmount = this.tokenSymbol === "NEAR" ? this.NEARyoctoNEAR(this.amount): (this.amount * 1e6).toString();
+      const orderAmount = this.tokenSymbol === "NEAR" ? this.NEARyoctoNEAR(this.amount) : (this.amount * 1e6).toString();
 
       // Filtering the list by payment method and the highest exchange rate
       // and the remaining amount is greater than the order amount
       this.filteredOffers = this.listOffers
-      .filter(offer => offer.payment_method.some(method => method.payment_method === this.selectedPayment))
-      .filter(offer => parseFloat(offer.remaining_amount) >= parseFloat(orderAmount))
-      .filter(offer => parseFloat(offer.min_limit) <= parseFloat(orderAmount))
-      .sort((a, b) => b.exchange_rate - a.exchange_rate)
-      .find(() => true);
+        .filter(offer => offer.payment_method.some(method => method.payment_method === this.selectedPayment))
+        .filter(offer => parseFloat(offer.remaining_amount) >= parseFloat(orderAmount))
+        .filter(offer => parseFloat(offer.min_limit) <= parseFloat(orderAmount))
+        .sort((a, b) => b.exchange_rate - a.exchange_rate)
+        .find(() => true);
       const lowestMinAmount = Math.min(...this.listOffers.map(offer => offer.min_limit));
       if (!this.filteredOffers) {
         const lowestMinAmountFormated = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(lowestMinAmount) : lowestMinAmount / 1e6;
@@ -559,25 +483,25 @@ export default {
 
       const account = await walletUtils.nearConnection();
 
+      try {
+        this.subcontract = await account.viewFunctionV1(
+          CONTRACT_NAME,
+          "get_subcontract",
+          { user_id: this.address }
+        );
 
-      this.subcontract = await account.viewFunctionV1(
-        CONTRACT_NAME,
-        "get_subcontract",
-        { user_id: this.address }
-      );
+        const vldeposit = "100000000000000000000000";
 
-      const vldeposit = "100000000000000000000000";
-
-      const now = moment()
-        .format("YYYY-MM-DD HH:mm:ss")
-        .toString();
-      if (!this.subcontract) {
-        try {
+        const now = moment()
+          .format("YYYY-MM-DD HH:mm:ss")
+          .toString();
+        if (this.subcontract !== null) {
+          this.subcontract = { contract: `${this.address.split(".")[0]}.${CONTRACT_NAME}` };;
           const createSubCobtractUser = await account.functionCall({
             contractId: CONTRACT_NAME,
             methodName: "create_subcontract_user",
             gas: "80000000000000",
-            args: { },
+            args: {},
             attachedDeposit: vldeposit
           });
           // console.log(createSubCobtractUser)
@@ -586,129 +510,62 @@ export default {
             this.btnLoading = false;
             return
           }
-          
-
-          const ftTransfer = await account.functionCall({
-            contractId: CONTRACT_NAME,
-            methodName: "deposit",
-            gas: "300000000000000",
-            args: { sub_contract: this.address.split(".")[0] + "." + CONTRACT_NAME },
-            attachedDeposit: orderAmount
-          });
-
-          if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
-            console.log("error al transferir token");
-            this.btnLoading = false;
-            return
-          }
-
-          const acceptOffer = await account.functionCall({
-            contractId: CONTRACT_NAME,
-            methodName: "accept_offer",
-            gas: "300000000000000",
-            args: {
-              offer_type: 1,
-              offer_id: parseInt(this.filteredOffers.id),
-              amount: orderAmount,
-              payment_method: parseInt(filteredPaymentMethod.payment_method_id),
-              datetime: now,
-              rate: parseFloat(this.filteredOffers.exchange_rate)
-            },
-            attachedDeposit: "1"
-          });
-
-          if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
-            console.log("error al aceptar la oferta", acceptOffer);
-            this.btnLoading = false;
-            return
-          }
-        } catch (error) {
-          console.error(error.message);
-          return;
         }
-      }
-      else if (this.subcontract) {
-        try {
-          const ftTransfer = await account.functionCall({
-            contractId: CONTRACT_NAME,
-            methodName: "deposit",
-            gas: "300000000000000",
-            args: { sub_contract: this.address.split(".")[0] + "." + CONTRACT_NAME },
-            attachedDeposit: orderAmount
-          });
 
-          if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
-            console.log("error al transferir token", ftTransfer);
-            this.btnLoading = false;
-            return
-          }
 
-          const acceptOffer = await account.functionCall({
-            contractId: CONTRACT_NAME,
-            methodName: "accept_offer",
-            gas: "300000000000000",
-            args: {
-              offer_type: 1,
-              offer_id: parseInt(this.filteredOffers.id),
-              amount: orderAmount,
-              payment_method: parseInt(filteredPaymentMethod.payment_method_id),
-              datetime: now,
-              rate: parseFloat(this.filteredOffers.exchange_rate)
-            },
-            attachedDeposit: "1"
-          });
+        const ftTransfer = await account.functionCall({
+          contractId: CONTRACT_NAME,
+          methodName: "deposit",
+          gas: "300000000000000",
+          args: { sub_contract: this.subcontract.contract },
+          attachedDeposit: orderAmount
+        });
 
-          if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
-            console.log("error al aceptar la oferta", acceptOffer);
-            this.btnLoading = false;
-            return
-          }
-        } catch (error) {
-          console.error(error.message);
-          return;
+        if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
+          console.log("error al transferir token");
+          this.btnLoading = false;
+          return
         }
-      }
-      else {
-        try {
-          const acceptOffer = await account.functionCall({
-            contractId: CONTRACT_NAME,
-            methodName: "accept_offer",
-            gas: "300000000000000",
-            args: {
-              offer_type: 1,
-              offer_id: parseInt(this.filteredOffers.id),
-              amount: orderAmount,
-              payment_method: parseInt(filteredPaymentMethod.payment_method_id),
-              datetime: now,
-              rate: parseFloat(this.filteredOffers.exchange_rate)
-            },
-            attachedDeposit: "1"
-          });
 
-          if (!acceptOffer || !acceptOffer.status.SuccessValue !== "") {
-            console.log("error al aceptar la oferta", acceptOffer);
-            this.btnLoading = false;
-            return
-          }
-        } catch (error) {
-          console.error(error.message);
-          return;
+        const acceptOffer = await account.functionCall({
+          contractId: CONTRACT_NAME,
+          methodName: "accept_offer",
+          gas: "300000000000000",
+          args: {
+            offer_type: 1,
+            offer_id: parseInt(this.filteredOffers.id),
+            amount: orderAmount,
+            payment_method: parseInt(filteredPaymentMethod.payment_method_id),
+            datetime: now,
+            rate: parseFloat(this.filteredOffers.exchange_rate)
+          },
+          attachedDeposit: "1"
+        });
+
+        if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
+          console.log("error al aceptar la oferta", acceptOffer);
+          this.btnLoading = false;
+          return
         }
+      } catch (error) {
+        this.subcontract = {};
+        this.btnLoading = false;
+        console.error(error.message);
+        return;
       }
       this.btnLoading = false;
-      // this.sendMail();
       this.$router.push({ path: "/trades-pending" });
     },
     yoctoNEARNEAR(yoctoNEAR) {
-				const amountInNEAR = utils.format.formatNearAmount(yoctoNEAR);
-				// console.log(amountInNEAR);
-				return amountInNEAR.toString();
-			},
-		NEARyoctoNEAR(NEARyocto) {
-				const amountInYocto = utils.format.parseNearAmount(NEARyocto);
-				// console.log('',amountInYocto);
-				return amountInYocto.toString();
-			},
+      const amountInNEAR = utils.format.formatNearAmount(yoctoNEAR);
+      // console.log(amountInNEAR);
+      return amountInNEAR.toString();
+    },
+    NEARyoctoNEAR(NEARyocto) {
+      const amountInYocto = utils.format.parseNearAmount(NEARyocto);
+      // console.log('',amountInYocto);
+      return amountInYocto.toString();
+    },
   },
 };
 </script>
