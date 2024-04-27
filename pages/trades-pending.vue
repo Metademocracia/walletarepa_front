@@ -344,10 +344,10 @@ export default {
                 this.endTime = this.data[0].time * 100;
                 this.createAt = moment(this.data[0].datetime);
                 const seconsdNow = moment().diff(this.createAt, 'seconds');
-                this.seconds = this.createAt - seconsdNow;
+                this.seconds = this.endTime - seconsdNow;
                 
                 
-                console.log("fecha: ", this.data[0].datetime, this.endTime, this.seconds);
+                console.log("fecha: ", this.data[0].datetime,this.data[0].time,  seconsdNow,  this.endTime, this.seconds);
                 
                 /// //////////////////////////////////////
                 this.tokenSymbol = this.data[0].asset;
@@ -435,10 +435,10 @@ export default {
                 this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
                 this.orderId = this.data[0].order_id;
                 localStorage.setItem('orderId', this.orderId)
-                this.endTime = this.data[0].time * 100;
+                this.endTime = this.data[0].time * 10;
                 this.createAt = moment(this.data[0].datetime);
                 const seconsdNow = moment().diff(this.createAt, 'seconds');
-                this.seconds = this.createAt - seconsdNow;
+                this.seconds = this.endTime - seconsdNow;
 
                 /// //////////////////////////////////////
                 this.tokenSymbol = this.data[0].asset;
