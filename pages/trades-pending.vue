@@ -353,7 +353,8 @@ export default {
                 this.endTime = this.data[0].time * 60;
                 this.createAt = moment(this.data[0].datetime);
                 const seconsdNow = moment().diff(this.createAt, 'seconds');
-                this.seconds = this.endTime - seconsdNow;
+                const secondsFinal = this.endTime - seconsdNow;
+                this.seconds = secondsFinal <= 0 ? 0 : secondsFinal;
                                
                 // console.log("fecha: ", this.data[0].datetime,this.data[0].time,  seconsdNow,  this.endTime, this.seconds);
 
@@ -448,7 +449,8 @@ export default {
                 this.endTime = this.data[0].time * 60;
                 this.createAt = moment(this.data[0].datetime);
                 const seconsdNow = moment().diff(this.createAt, 'seconds');
-                this.seconds = this.endTime - seconsdNow;
+                const secondsFinal = this.endTime - seconsdNow;
+                this.seconds = secondsFinal <= 0 ? 0 : secondsFinal;
 
                 if(this.data[0].status === 3){
                    this.topText = "TRANSACCIÓN MARCADA PARA";
