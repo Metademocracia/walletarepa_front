@@ -557,7 +557,7 @@ export default {
     },
     startCountdown() {
       this.intervalId = setInterval(() => {
-        // const endTime = localStorage.getItem('endTime');
+        const endTime = localStorage.getItem('endTime');
         if (this.endTime) {
            this.secondsLeft = Math.ceil((endTime - Date.now()) / 1000);
           if (this.secondsLeft > 0) {
