@@ -354,6 +354,8 @@ export default {
 
                 this.pollData();
             });
+          } else {
+            this.orderHistorySell();
           }
         });
     },
@@ -419,6 +421,7 @@ export default {
       }
       // console.log("orderConfirmation", orderConfirmation)
       this.sendMailCancel(this.order_id);
+      this.orderHistorySell();
       sessionStorage.clear(); // Clear all data from sessionStorage
       localStorage.removeItem('orderId')
       this.btnLoading = false;
@@ -468,9 +471,15 @@ export default {
           })
           .subscribe(({ data }) => {
             if (data && data.ordersells) {
-              // this.data = [];
+              this.dataCancel = [];
               Object.entries(data.orderhistorysells).forEach(([key, value]) => {
                 this.dataCancel.push(value);
+                if(this.dataCancel[0].status === 4){
+                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  this.localStorage.removeItem('emailCounter')
+                  this.localStorage.removeItem('orddderId')
+                  this.$router.push('/tx-canceled');
+                }
               });
             } else {
               this.orderHistoryBuy();
@@ -496,23 +505,20 @@ export default {
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            // this.data = [];
-            Object.entries(data.orderhistorybuys).forEach(([key, value]) => {
-              this.dataCancel.push(value);
-            });
+            if (data && data.orderhistorybuys) {
+              this.dataCancel = [];
+              Object.entries(data.orderhistorybuys).forEach(([key, value]) => {
+                this.dataCancel.push(value);
+                if(this.dataCancel[0].status === 4){
+                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  this.localStorage.removeItem('emailCounter')
+                  this.localStorage.removeItem('orderId')
+                  this.$router.push('/tx-canceled');
+                }
+              });
+             } 
           });
     },
-    pollData() {
-			this.polling = setInterval(() => {
-        if(this.dataCancel.length>0){
-          if(this.dataCancel[0].status === 4){
-            sessionStorage.clear(); // Clear all data from sessionStorage
-            this.localStorage.removeItem('emailCounter')
-            this.$router.push('/tx-canceled');
-          }
-        }
-			}, 5000);
-		},  
     async sendMailCancel(order) { 
         const data = await walletUtils.verifyWallet();
         const email = data?.data?.email;
