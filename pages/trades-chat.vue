@@ -186,6 +186,7 @@ export default {
       cancelVisible: false,
       disputeDiabled: false,
       operation: "",
+      deleteContract: null,
     }
   },
   head() {
@@ -288,7 +289,6 @@ export default {
                   this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
                   this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
 
-                  this.pollData();
               });
             } else {
               this.orderBuy();
@@ -352,7 +352,6 @@ export default {
                 this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
                 this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
 
-                this.pollData();
             });
           } else {
             this.orderHistorySell();
@@ -374,9 +373,9 @@ export default {
         contractId: CONTRACT_NAME,
         methodName: "order_confirmation",
         gas: "300000000000000",
-        args: { offer_type: 1, order_id: parseInt(this.order_id) },
+        args: { offer_type: 1, order_id: parseInt(this.orderId) },
         attachedDeposit: "3"
-      });
+      }) 
       // console.log("orderConfirmation", orderConfirmation)
       if (!orderConfirmation || orderConfirmation.status.SuccessValue !== "") {
         console.log("Error confirmando la orden");
@@ -384,21 +383,29 @@ export default {
       }
       // console.log("orderConfirmation", orderConfirmation)
 
-      const deleteContract = await account.functionCall({
-        contractId: CONTRACT_NAME,
-        methodName: "delete_contract",
-        gas: "300000000000000",
-        args: {},     
-      });
+      const contract = await account.viewFunctionV1(
+        CONTRACT_NAME,
+        "get_subcontract_type",
+        { user_id: this.address }
+      );
+      if(contract !== 1){
+          this.deleteContract = await account.functionCall({
+          contractId: CONTRACT_NAME,
+          methodName: "delete_contract",
+          gas: "300000000000000",
+          args: {},     
+        });
+      }
 
       // console.log("deleteContract", deleteContract)
 
-      if (!deleteContract || deleteContract.status.SuccessValue !== "") {
+      if (!this.deleteContract || this.deleteContract.status.SuccessValue !== "") {
         console.log("Error borrando el contrato");
       }
-      this.sendMail('sell', this.order_id);
       sessionStorage.clear(); // Clear all data from sessionStorage
-      localStorage.removeItem('orderId')
+      this.sendMail('sell', localStorage.getItem('orderId'));
+      localStorage.removeItem('orderId');
+      localStorage.removeItem('emailCounter');
       this.btnLoading = false;
       this.$router.push({ path: "/tx-executed" });
     },
@@ -411,7 +418,7 @@ export default {
         contractId: CONTRACT_NAME,
         methodName: "cancel_order",
         gas: "300000000000000",
-        args: { offer_type: 2, order_id: parseInt(this.order_id) },
+        args: { offer_type: 2, order_id: parseInt(this.orderId) },
         attachedDeposit: "3"
       });
       // console.log("orderConfirmation", orderConfirmation)
@@ -420,10 +427,11 @@ export default {
         return
       }
       // console.log("orderConfirmation", orderConfirmation)
-      this.sendMailCancel(this.order_id);
+      this.sendMailCancel(localStorage.getItem('orderId'));
       this.orderHistorySell();
       sessionStorage.clear(); // Clear all data from sessionStorage
-      localStorage.removeItem('orderId')
+      localStorage.removeItem('orderId');
+      localStorage.removeItem('emailCounter');
       this.btnLoading = false;
       // this.sendMail();
       this.$router.push({ path: "/tx-canceled" });
@@ -437,7 +445,7 @@ export default {
         contractId: CONTRACT_NAME,
         methodName: "order_dispute",
         gas: "300000000000000",
-        args: { offer_type: type, order_id: parseInt(this.order_id) },
+        args: { offer_type: type, order_id: parseInt(this.orderId) },
         attachedDeposit: "3"
       });
       // console.log("orderConfirmation", orderConfirmation)
@@ -446,7 +454,7 @@ export default {
         return
       }
       // console.log("orderConfirmation", orderConfirmation)
-      this.sendMailDispute(this.order_id);
+      this.sendMailDispute(localStorage.getItem('orderId'));
       this.btnLoading = false;
       // this.sendMail();
       this.$router.push({ path: "/tx-disputed" });

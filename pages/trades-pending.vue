@@ -332,6 +332,7 @@ export default {
               Object.entries(data.ordersells).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
+                sessionStorage.setItem('data', this.data.length);
                 this.trader(this.data[0].owner_id);
                 this.terms = this.data[0].terms_conditions;
                 walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
@@ -425,6 +426,7 @@ export default {
               Object.entries(data.orderbuys).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
+                sessionStorage.setItem('data', this.data.length);
                 this.trader(this.data[0].owner_id);
                 this.terms = this.data[0].terms_conditions;
                 walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
@@ -455,7 +457,7 @@ export default {
                    // localStorage.removeItem('endTime');
                    // localStorage.removeItem('startTime');
                 }  
-                // this.pollData();
+                this.pollData();
 
                 if(this.operation === "SELL"){
                    this.traderNameTitle = "Nombre de comprador:";

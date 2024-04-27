@@ -546,6 +546,7 @@ export default {
               Object.entries(data.ordersells).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
+                sessionStorage.setItem('data', this.data.length);
                 this.pendingTrades = true;
                 this.setOperationSymbol(this.data[0].asset);
                 localStorage.setItem('emailCounter', 'true');
@@ -592,6 +593,7 @@ export default {
               Object.entries(data.orderbuys).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
+                sessionStorage.setItem('data', this.data.length);
                 this.pendingTrades = true;
                 this.setOperationSymbol(this.data[0].asset);
                 localStorage.setItem('emailCounter', 'true');

@@ -155,13 +155,7 @@ export default {
     this.getBalance();
     this.selects();
     // If not session storage with data orden will verify
-    const data = sessionStorage.getItem('data');
-    if(data === 0){
-      this.orderSell();
-        if(this.data.length === 0){
-          this.orderBuy();
-        }
-    }
+    this.orderSell();
   },
 
   methods: {
@@ -269,13 +263,18 @@ export default {
             }
           })
           .subscribe(({ data }) => {
-            Object.entries(data.ordersells).forEach(([key, value]) => {
-              this.data = [];
-              this.data.push(value);
-              this.orderId = this.data[0].order_id;
-              sessionStorage.setItem('dataOrder', this.data.length);
-              localStorage.setItem('emailCounter', 'true');
-            });
+            if (data && data.ordersells) {
+              Object.entries(data.ordersells).forEach(([key, value]) => {
+                this.data = [];
+                this.data.push(value);
+                sessionStorage.setItem('data', this.data.length);
+                this.orderId = this.data[0].order_id;
+                sessionStorage.setItem('data', this.data.length);
+                localStorage.setItem('emailCounter', 'true');
+              });
+            } else {
+              this.orderBuy();
+            }
           });
     },
     orderBuy() {
@@ -311,13 +310,16 @@ export default {
             }
           })
           .subscribe(({ data }) => {
-            Object.entries(data.orderbuys).forEach(([key, value]) => {
-              this.data = [];
-              this.data.push(value);
-              this.orderId = this.data[0].order_id;
-              sessionStorage.setItem('dataOrder', this.data.length);
-              localStorage.setItem('emailCounter', 'true');
-            });
+            if (data && data.orderbuys) {
+              Object.entries(data.orderbuys).forEach(([key, value]) => {
+                this.data = [];
+                this.data.push(value);
+                sessionStorage.setItem('data', this.data.length);
+                this.orderId = this.data[0].order_id;
+                sessionStorage.setItem('data', this.data.length);
+                localStorage.setItem('emailCounter', 'true');
+              });
+            }
           });
     },
   },
