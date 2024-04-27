@@ -262,6 +262,7 @@ export default {
 	},
   mounted() {
     this.orderSell();
+    this.orderHistorySell();
   },
   methods: {
     getUnreadMessagesCount(porderid, poperation) {
@@ -287,6 +288,7 @@ export default {
       }
     },
     async orderSell() {
+      this.operation = "SELL";
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
@@ -326,7 +328,6 @@ export default {
               Object.entries(data.ordersells).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
-                this.operation = "SELL";
                 this.trader(this.data[0].owner_id);
                 this.terms = this.data[0].terms_conditions;
                 walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
@@ -375,6 +376,7 @@ export default {
           });
     },
     async orderBuy() {
+      this.operation = "BUY";
       const selects = gql`
         query MyQuery( $address : String) {
           orderbuys(
@@ -411,7 +413,6 @@ export default {
               Object.entries(data.orderbuys).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
-                this.operation = "BUY";
                 this.trader(this.data[0].owner_id);
                 this.terms = this.data[0].terms_conditions;
                 walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
@@ -476,10 +477,14 @@ export default {
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            this.dataCancel = [];
-            Object.entries(data.orderhistorysells).forEach(([key, value]) => {
-              this.dataCancel.push(value);
-            });
+            if (data && data.orderhistorysells) {
+              this.dataCancel = [];
+              Object.entries(data.orderhistorysells).forEach(([key, value]) => {
+                this.dataCancel.push(value);
+              });
+            } else {
+              this.orderHistoryBuy();
+            }
           });
     },
     async orderHistoryBuy() {
@@ -587,15 +592,6 @@ export default {
             this.$router.push('/tx-canceled');
           }
         }
-        if(this.data.length>0){
-          if(this.data[0].status === 3){
-            this.topText = "TRANSACCIÓN MARCADA PARA";
-            this.topBottom = "DISPUTA";
-            this.stopCountdown();
-            this.seconds = 0;
-            clearInterval(this.polling);
-          }
-        }  
 			}, 5000);
 		},  
     async sendMail() { 
