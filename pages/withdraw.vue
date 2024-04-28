@@ -21,30 +21,34 @@
 
       <v-card class="payment-card">
         <div class="payment-card__wrapper">
-          <v-list>
+          <!-- <v-list>
             <v-list-item 
             v-for="(payment, i) in otherPayments" :key="i" class="font-weight-bold"
               @click="selectPaymentDialog(payment)">
-              {{ payment }}
+              <div style="display: flex; align-items: center;">
+                <img :src="getFlag(payment)" alt="checked icon" style="margin-right: 10px;" />
+                <span>{{ payment }}</span>
+              </div>
               <img v-if="selectedPayment == payment" src="@/assets/sources/icons/checked.svg" alt="checked icon" />
               <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon" />
             </v-list-item>
-          </v-list>
-          <!-- <v-card
+          </v-list> -->
+          <v-card
             v-for="(item, i) in otherPayments" :key="i"
             color="transparent"
             class="payment-card-coin space"
-            @click="onSelected(item)"
-          > -->
-          <!-- <div class="center" style="gap: 14px;">
-              <h5 class="mb-0">{{ item.payment_method }}</h5>
-            </div> -->
+            @click="selectPaymentDialog(item)"
+          > 
+          <div class="center" style="gap: 14px;">
+            <img :src="getFlag(item)" alt="checked icon" style="margin-right: 10px; height: 14px;" />
+              <h5 class="mb-0">{{ item }}</h5>
+          </div> 
 
           <!-- <div class="d-flex flex-column">
               <span>{{ item.balance }} {{ item.coin }}</span>
               <span>${{ item.balance_usd }}</span>
             </div> -->
-          <!-- </v-card> -->
+          </v-card> 
         </div>
       </v-card>
     </v-dialog>
@@ -102,7 +106,7 @@
 
       <v-list>
         <v-list-item v-for="(payment, i) in payments" :key="i" @click="selectPayment(payment)">
-          {{ payment }}
+            {{ payment }}
           <img v-if="selectedPayment == payment" src="@/assets/sources/icons/checked.svg" alt="checked icon" />
           <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon" />
         </v-list-item>
@@ -169,6 +173,7 @@ export default {
       moreBanks: false,
       otherPayments: [],
       originalPayments: [],
+      listFlags: [],
       required: [
         (v) => !!v || "Campo requerido",
         (v) => Number(v) <= Number(this.balance) || "Saldo insuficiente",
@@ -197,6 +202,11 @@ export default {
     };
   },
   mounted() {
+    if(sessionStorage.getItem("flags")) {
+      this.listFlags = JSON.parse(sessionStorage.getItem("flags"));
+    } else {
+      this.flagscdn();
+    }
     this.getBalance();
     this.selects();
   },
@@ -204,7 +214,7 @@ export default {
   methods: {
     searchPayments(search) {
       this.otherPayments = this.originalPayments.filter((item) =>
-        item.payment_method.toLowerCase().includes(search.toLowerCase())
+        item.toLowerCase().includes(search.toLowerCase())
       );
     },
     selectPayment(payment) {
@@ -261,11 +271,40 @@ export default {
       // clearTimeout(this.timer)
       // this.timer = setTimeout(this.previewWithdraw, 1000)
     },
-    selects() {
+    getFlag(payment) {
+      const flag = this.listFlags.find((item) => item.payment_method === payment);
+      return flag.input1 === "" ?  "https://flagcdn.com/ve.svg" : flag.input1;
+    },
+    async flagscdn() {
       const selects = gql`
-      query MyQuery( $fiat_method: String, $token: String, $address: String ) {
+      query MyQuery {
+        paymentmethods {
+          payment_method
+          input1
+        }
+      }
+      `;
+      await this.$apollo
+        .watchQuery({
+          query: selects,
+          fetchPolicy: 'network-only',
+          pollInterval: 5000,
+        })
+        .subscribe(({ data }) => {
+          this.listFlags = [];
+          Object.entries(data.paymentmethods).forEach(
+            ([key, value]) => {
+              this.listFlags.push(value);
+            }
+          );
+          sessionStorage.setItem("flags", JSON.stringify(this.listFlags));
+        });
+    },
+    async selects() {
+      const selects = gql`
+      query MyQuery( $token: String, $address: String ) {
         offerssells(
-          where: {fiat_method: $fiat_method, asset_contains: $token, owner_id_not: $address, is_pause: false}
+          where: {asset_contains: $token, owner_id_not: $address, is_pause: false}
           orderBy: exchange_rate
           orderDirection: desc
         ) {
@@ -288,18 +327,18 @@ export default {
         }
       }
       `;
-      const selectedFiat = sessionStorage.getItem('selectedFiat');
       // const eltoken = this.selectToken;
       let paymentMethods = new Set();
       this.listOffers = [];
-      this.$apollo
+      await this.$apollo
         .watchQuery({
           query: selects,
+          fetchPolicy: 'network-only',
+          pollInterval: 5000,
           variables: {
-            fiat_method: selectedFiat,
             token: this.tokenSymbol,
             address: wallet.getCurrentAccount().address,
-          }, pollInterval: 3000
+          }
         })
         .subscribe(({ data }) => {
           data.offerssells.forEach(offer => {

@@ -9,9 +9,7 @@ export default async function(context) {
       return context.redirect('/user-profile');
     } else if (data>0) {
       return context.redirect('/trades-pending');
-    } else if(!sessionStorage.getItem('selectedFiat')){
-      return context.redirect('/send');
-    }
+    } 
   } catch (error) {
     console.error(error);
     // Handle the error as needed

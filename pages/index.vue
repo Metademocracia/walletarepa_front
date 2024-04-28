@@ -261,7 +261,7 @@ export default {
         {
           icon: require("@/assets/sources/icons/plus.svg"),
           text: "recargar",
-          action: () => { window.open("https://t.me/nearp2p", "_blank") },
+          action: () => { this.$router.push({ path: "/deposit" }) },
         },
         {
           icon: require("@/assets/sources/icons/arrow-down.svg"),
@@ -282,10 +282,8 @@ export default {
       title,
     }
   },
-  created() {
-    this.orderSell(); // Call orderSell function
-  },
   mounted() {
+    this.orderSell(); // Call orderSell function
 
     // this.orderSell();
     this.address = wallet.getCurrentAccount().address;
@@ -514,8 +512,8 @@ export default {
         this.operationSymbol = require("@/assets/sources/tokens/near.svg");
       }
     },
-    orderSell() {
-      console.log('entro', wallet.getCurrentAccount().address);
+    async orderSell() {
+      // console.log('entro', wallet.getCurrentAccount().address);
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
@@ -540,12 +538,14 @@ export default {
         }
       }
       `;    
-       this.$apollo
+      await this.$apollo
           .watchQuery({
             query: selects,
+            fetchPolicy: 'network-only',
+            pollInterval: 5000,
             variables: {
               address: wallet.getCurrentAccount().address // localStorage.getItem("address"),
-            }, pollInterval: 3000
+            }
           })
           .subscribe(({ data }) => {
             if (data.ordersells.length > 0) {
@@ -563,7 +563,7 @@ export default {
             }
           });
     },
-    orderBuy() {
+    async orderBuy() {
       const selects = gql`
         query MyQuery( $address : String) {
           orderbuys(
@@ -588,12 +588,14 @@ export default {
         }
       }
       `;    
-       this.$apollo
+      await this.$apollo
           .watchQuery({
             query: selects,
+            fetchPolicy: 'network-only',
+            pollInterval: 5000,
             variables: {
               address: wallet.getCurrentAccount().address,
-            }, pollInterval: 3000
+            }
           })
           .subscribe(({ data }) => {
             // console.log(data.orderbuys)

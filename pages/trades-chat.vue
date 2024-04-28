@@ -27,7 +27,7 @@
       ref="aproveModal"
     >
       <template #action>
-        <v-btn class="btn-outlined-2 mt-6" @click="$refs.aproveModal.model = false">
+        <v-btn class="btn-outlined-2 mt-6" :loading="btnLoading" @click="$refs.aproveModal.model = false">
           VOLVER
         </v-btn>
       </template>
@@ -54,7 +54,7 @@
       ref="warningModal"
     >
       <template #action>
-        <v-btn class="btn-outlined-2 mt-6" @click="$refs.warningModal.model = false">
+        <v-btn class="btn-outlined-2 mt-6" :loading="btnLoading" @click="$refs.warningModal.model = false">
           VOLVER
         </v-btn>
       </template>
@@ -220,6 +220,8 @@ export default {
       await this.$apollo
         .watchQuery({
           query: selects,
+          fetchPolicy: 'network-only',
+          pollInterval: 5000,
           variables: {
             address: ownerId,
           },
@@ -233,7 +235,7 @@ export default {
         });
       // }
     },
-    orderSell() {
+    async orderSell() {
       this.operation = "SELL";
       localStorage.setItem('operation', this.operation);
       const selects = gql`
@@ -260,12 +262,14 @@ export default {
         }
       }
       `;    
-      this.$apollo
+      await this.$apollo
         .watchQuery({
           query: selects,
+          fetchPolicy: 'network-only',
+          pollInterval: 5000,
           variables: {
             address: wallet.getCurrentAccount().address,
-          }, pollInterval: 3000
+          }
         })
         .subscribe(({ data }) => {
             if (data.ordersells.length > 0) {
@@ -302,7 +306,7 @@ export default {
             }
         });
     },
-    orderBuy() {
+    async orderBuy() {
       this.operation = "BUY";
       localStorage.setItem('operation', this.operation);
       const selects = gql`
@@ -329,12 +333,14 @@ export default {
         }
       }
       `;    
-      this.$apollo
+      await this.$apollo
         .watchQuery({
           query: selects,
+          fetchPolicy: 'network-only',
+          pollInterval: 5000,
           variables: {
             address: wallet.getCurrentAccount().address,
-          }, pollInterval: 3000
+          }
         })
         .subscribe(({ data }) => {
           // Check if data and data.ordersells exist
@@ -424,7 +430,9 @@ export default {
       localStorage.removeItem('emailCounter');
       localStorage.removeItem('orderId');
       localStorage.removeItem('operation');
-
+      this.data = [];
+      this.dataTrader = [];
+      this.dataCancel = [];
       
       this.$router.push({ path: "/tx-executed" });
       this.btnLoading = false;
@@ -453,6 +461,9 @@ export default {
       localStorage.removeItem('emailCounter');
       localStorage.removeItem('operation');
       this.btnLoading = false;
+      this.data = [];
+      this.dataTrader = [];
+      this.dataCancel = [];
       // this.sendMail();
       this.$router.push({ path: "/tx-canceled" });
     },
@@ -479,7 +490,7 @@ export default {
       // this.sendMail();
       this.$router.push({ path: "/tx-disputed" });
     },
-    orderHistorySell(porderId) {
+    async orderHistorySell(porderId) {
       const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
@@ -490,12 +501,14 @@ export default {
         }
       }
       `;    
-        this.$apollo
+        await this.$apollo
           .watchQuery({
             query: selects,
+            fetchPolicy: 'network-only',
+            pollInterval: 5000,
             variables: {
               id: porderId + '|' + val,
-            }, pollInterval: 3000
+            }
           })
           .subscribe(({ data }) => {
             // console.log('History', data.orderhistorysells.length)
@@ -519,7 +532,7 @@ export default {
               }); 
           });
     },
-    orderHistoryBuy(porderId) {
+    async orderHistoryBuy(porderId) {
       const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
@@ -530,12 +543,14 @@ export default {
         }
       }
       `;    
-        this.$apollo
+      await  this.$apollo
           .watchQuery({
             query: selects,
+            fetchPolicy: 'network-only',
+            pollInterval: 5000,
             variables: {
               id: porderId + '|' + val,
-            }, pollInterval: 3000
+            }
           })
           .subscribe(({ data }) => {
               this.dataCancel = [];

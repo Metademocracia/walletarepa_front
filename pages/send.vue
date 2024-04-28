@@ -89,7 +89,7 @@
 
       <v-card class="card-outline pa-4 mt-16 d-flex flex-column justify-center align-center" style="--bg: var(--card-2)">
         <p class="text-center" style="--fs: 9px; width: min(100%, 192px)">PARA RETIRAR HACIA BANCO TRADICIONAL</p>
-        <v-select
+        <!-- <v-select
           v-model="selectedFiat"
           :items="listFiats"
           label="RETIRAR FIAT"
@@ -106,9 +106,8 @@
               <span id="text-inside">{{ item.fiat_method.trim() }}</span>
             </div>
           </template>
-        </v-select>
+        </v-select> -->
         <v-btn
-          :disabled="!selectedFiat"
           :loading="loading"
           class="btn-outlined flex-grow-1"
           style="--h: 34px; width: min(100%, 192px)"
@@ -203,7 +202,7 @@ export default {
       }
     },
 
-    selects() {
+    async selects() {
       const selects = gql`
         query MyQuery {
           fiatmethods(orderBy: id) {
@@ -214,7 +213,7 @@ export default {
         }
       `;
 
-      this.$apollo
+     await this.$apollo
         .mutate({
           mutation: selects,
         })
@@ -230,7 +229,7 @@ export default {
           console.log("Error", err);
         });
     },
-    orderSell() {
+    async orderSell() {
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
@@ -255,12 +254,14 @@ export default {
         }
       }
       `;    
-       this.$apollo
+       await this.$apollo
           .watchQuery({
             query: selects,
+            fetchPolicy: 'network-only',
+            pollInterval: 5000,
             variables: {
               address: wallet.getCurrentAccount().address // localStorage.getItem("address"),
-            }, pollInterval: 3000
+            }
           })
           .subscribe(({ data }) => {
             if (data.ordersells.length > 0) {
@@ -278,7 +279,7 @@ export default {
             }
           });
     },
-    orderBuy() {
+    async orderBuy() {
       const selects = gql`
         query MyQuery( $address : String) {
           orderbuys(
@@ -303,12 +304,14 @@ export default {
         }
       }
       `;    
-       this.$apollo
+      await this.$apollo
           .watchQuery({
             query: selects,
+            fetchPolicy: 'network-only',
+            pollInterval: 5000,
             variables: {
               address: wallet.getCurrentAccount().address,
-            }, pollInterval: 3000
+            }
           })
           .subscribe(({ data }) => {
             if (data.orderbuys.length > 0) {

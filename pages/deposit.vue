@@ -264,7 +264,7 @@ export default {
       // clearTimeout(this.timer)
       // this.timer = setTimeout(this.previewWithdraw, 1000)
     },
-    selects() {
+    async selects() {
       const selects = gql`
       query MyQuery( $fiat_method: String, $token: String, $address: String ) {
         offersbuys(
@@ -295,9 +295,11 @@ export default {
       // const eltoken = this.selectToken;
       let paymentMethods = new Set();
       this.listOffers = [];
-      this.$apollo
+      await this.$apollo
         .watchQuery({
           query: selects,
+          fetchPolicy: 'network-only',
+          pollInterval: 5000,
           variables: {
             fiat_method: selectedFiat,
             token: this.tokenSymbol,
