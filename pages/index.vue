@@ -49,7 +49,7 @@
           class="btn-icon"
           @click="$router.push('trades-pending')"
         >
-        <img :src="operationSymbol" style="height: 20px;" alt="plus">
+        <v-icon class="ml-1">mdi-information</v-icon>
         </v-btn>
       </div>
       <div v-if="pendingTrades">
@@ -282,17 +282,10 @@ export default {
       title,
     }
   },
+  created() {
+    this.orderSell(); // Call orderSell function
+  },
   mounted() {
-    let maxRetries = 0; // Corrected variable name
-    const interval = setInterval(() => {
-      if(this.data.length === 0){
-        this.orderSell(); // Call orderSell function
-      }
-      maxRetries++; // Increment the retry count
-      if (maxRetries >= 3) {
-        clearInterval(interval); // Stop the interval after the third execution
-      }
-    }, 5000);
 
     // this.orderSell();
     this.address = wallet.getCurrentAccount().address;
@@ -522,6 +515,7 @@ export default {
       }
     },
     orderSell() {
+      console.log('entro', wallet.getCurrentAccount().address);
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
@@ -551,19 +545,20 @@ export default {
             query: selects,
             variables: {
               address: wallet.getCurrentAccount().address // localStorage.getItem("address"),
-            }
+            }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            if (data && data.ordersells) {
+            if (data.ordersells.length > 0) {
               Object.entries(data.ordersells).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
-                sessionStorage.setItem('data', this.data.length);
                 this.pendingTrades = true;
-                this.setOperationSymbol(this.data[0].asset);
-                localStorage.setItem('emailCounter', 'true');
               });
             } else {
+              localStorage.removeItem('emailCounter');
+              localStorage.removeItem('orderId');
+              localStorage.removeItem('operation');
+              this.pendingTrades = false;
               this.orderBuy();
             }
           });
@@ -598,18 +593,22 @@ export default {
             query: selects,
             variables: {
               address: wallet.getCurrentAccount().address,
-            }
+            }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            if (data && data.orderbuys) {
+            // console.log(data.orderbuys)
+            if (data.orderbuys.length > 0) {
+              // console.log('Paso por aqui');
               Object.entries(data.orderbuys).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
-                sessionStorage.setItem('data', this.data.length);
                 this.pendingTrades = true;
-                this.setOperationSymbol(this.data[0].asset);
-                localStorage.setItem('emailCounter', 'true');
               });
+            } else {
+                localStorage.removeItem('emailCounter');
+                localStorage.removeItem('orderId');
+                localStorage.removeItem('operation');
+                this.pendingTrades = false;
             }
           });
     },

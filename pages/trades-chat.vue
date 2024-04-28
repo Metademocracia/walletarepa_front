@@ -156,12 +156,14 @@
 
 
 <script>
+import * as nearAPI from "near-api-js";
 import axios from 'axios';
 // eslint-disable-next-line import/no-named-as-default
 import gql from "graphql-tag";
 import encrypDecript from "@/services/encryp";
 import wallet from '@/services/local-storage-user'
 import walletUtils from "@/services/wallet";
+const { utils } = nearAPI;
 
 export default {
   name: "TradesChatPage",
@@ -199,8 +201,7 @@ export default {
 		clearInterval(this.polling);
 	},
   mounted() {
-    this.orderSell();
-    this.orderHistorySell();    
+    this.orderSell();  
   },
   methods: {
     async trader( ownerId ) {
@@ -234,6 +235,7 @@ export default {
     },
     orderSell() {
       this.operation = "SELL";
+      localStorage.setItem('operation', this.operation);
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
@@ -254,6 +256,7 @@ export default {
           time
           operation_amount
           order_id
+          status
         }
       }
       `;    
@@ -262,32 +265,36 @@ export default {
           query: selects,
           variables: {
             address: wallet.getCurrentAccount().address,
-          },
+          }, pollInterval: 3000
         })
         .subscribe(({ data }) => {
-            if (data && data.ordersells) {
+            if (data.ordersells.length > 0) {
               this.data = [];
               Object.entries(data.ordersells).forEach(([key, value]) => {
                   this.data.push(value); 
+                  sessionStorage.setItem('data', this.data.length);
                   this.trader(this.data[0].owner_id);
                   this.terms = this.data[0].terms_conditions;
                   sessionStorage.setItem('terms', this.terms);
-                  walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
-                    this.exchangeRate = this.data[0].exchange_rate * price;
-                    this.receiveAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
-                  }); 
-                  this.operationAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) : (this.data[0].operation_amount / 1e6);               
-                  this.orderId = this.data[0].order_id;
-                  localStorage.setItem('orderId', this.orderId)
                   /// //////////////////////////////////////
                   this.tokenSymbol = this.data[0].asset;
                   this.tokenImage = this.data[0].asset === "USDT" ? "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMic+PGcgZmlsbD0nbm9uZScgZmlsbC1ydWxlPSdldmVub2RkJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPScxNicgZmlsbD0nIzI2QTE3QicvPjxwYXRoIGZpbGw9JyNGRkYnIGQ9J00xNy45MjIgMTcuMzgzdi0uMDAyYy0uMTEuMDA4LS42NzcuMDQyLTEuOTQyLjA0Mi0xLjAxIDAtMS43MjEtLjAzLTEuOTcxLS4wNDJ2LjAwM2MtMy44ODgtLjE3MS02Ljc5LS44NDgtNi43OS0xLjY1OCAwLS44MDkgMi45MDItMS40ODYgNi43OS0xLjY2djIuNjQ0Yy4yNTQuMDE4Ljk4Mi4wNjEgMS45ODguMDYxIDEuMjA3IDAgMS44MTItLjA1IDEuOTI1LS4wNnYtMi42NDNjMy44OC4xNzMgNi43NzUuODUgNi43NzUgMS42NTggMCAuODEtMi44OTUgMS40ODUtNi43NzUgMS42NTdtMC0zLjU5di0yLjM2Nmg1LjQxNFY3LjgxOUg4LjU5NXYzLjYwOGg1LjQxNHYyLjM2NWMtNC40LjIwMi03LjcwOSAxLjA3NC03LjcwOSAyLjExOCAwIDEuMDQ0IDMuMzA5IDEuOTE1IDcuNzA5IDIuMTE4djcuNTgyaDMuOTEzdi03LjU4NGM0LjM5My0uMjAyIDcuNjk0LTEuMDczIDcuNjk0LTIuMTE2IDAtMS4wNDMtMy4zMDEtMS45MTQtNy42OTQtMi4xMTcnLz48L2c+PC9zdmc+" : "/wallet-arepa/wallet-arepa/assets/sources/logos/near-icon.svg";
                   // this.tokenImage = selectedToken.icon;
                   this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
                   this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
+                  
+                  walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
+                    this.exchangeRate = this.data[0].exchange_rate * price;
+                    this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
+                  }); 
+                  this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6); 
+                  // console.log(this.data[0].operation_amount, this.tokenSymbol)              
+                  this.orderId = this.data[0].order_id;
+                  localStorage.setItem('orderId', this.orderId)
 
                   this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
                   this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
+                  this.orderHistorySell(this.orderId);
 
               });
             } else {
@@ -297,9 +304,10 @@ export default {
     },
     orderBuy() {
       this.operation = "BUY";
+      localStorage.setItem('operation', this.operation);
       const selects = gql`
         query MyQuery( $address : String) {
-          ordersbuys(
+          orderbuys(
             where: {signer_id: $address}
           orderBy: id
           orderDirection: desc
@@ -317,6 +325,7 @@ export default {
           time
           operation_amount
           order_id
+          status
         }
       }
       `;    
@@ -325,23 +334,17 @@ export default {
           query: selects,
           variables: {
             address: wallet.getCurrentAccount().address,
-          },
+          }, pollInterval: 3000
         })
         .subscribe(({ data }) => {
           // Check if data and data.ordersells exist
-          if (data && data.orderbuys) {
+          if (data.orderbuys.length > 0) {
             this.data = [];
 						Object.entries(data.orderbuys).forEach(([key, value]) => {
 								this.data.push(value); 
+                sessionStorage.setItem('data', this.data.length);
                 this.trader(this.data[0].owner_id);
                 this.terms = this.data[0].terms_conditions;
-                walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
-                   this.exchangeRate = this.data[0].exchange_rate * price;
-                   this.receiveAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
-                }); 
-                this.operationAmount = this.tokenSymbol === "NEAR" ? (this.data[0].operation_amount / 1e24) : (this.data[0].operation_amount / 1e6);               
-                this.orderId = this.data[0].order_id;
-                localStorage.setItem('orderId', this.orderId)
                 /// //////////////////////////////////////
                 this.tokenSymbol = this.data[0].asset;
                 this.tokenImage = this.data[0].asset === "USDT" ? "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMic+PGcgZmlsbD0nbm9uZScgZmlsbC1ydWxlPSdldmVub2RkJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPScxNicgZmlsbD0nIzI2QTE3QicvPjxwYXRoIGZpbGw9JyNGRkYnIGQ9J00xNy45MjIgMTcuMzgzdi0uMDAyYy0uMTEuMDA4LS42NzcuMDQyLTEuOTQyLjA0Mi0xLjAxIDAtMS43MjEtLjAzLTEuOTcxLS4wNDJ2LjAwM2MtMy44ODgtLjE3MS02Ljc5LS44NDgtNi43OS0xLjY1OCAwLS44MDkgMi45MDItMS40ODYgNi43OS0xLjY2djIuNjQ0Yy4yNTQuMDE4Ljk4Mi4wNjEgMS45ODguMDYxIDEuMjA3IDAgMS44MTItLjA1IDEuOTI1LS4wNnYtMi42NDNjMy44OC4xNzMgNi43NzUuODUgNi43NzUgMS42NTggMCAuODEtMi44OTUgMS40ODUtNi43NzUgMS42NTdtMC0zLjU5di0yLjM2Nmg1LjQxNFY3LjgxOUg4LjU5NXYzLjYwOGg1LjQxNHYyLjM2NWMtNC40LjIwMi03LjcwOSAxLjA3NC03LjcwOSAyLjExOCAwIDEuMDQ0IDMuMzA5IDEuOTE1IDcuNzA5IDIuMTE4djcuNTgyaDMuOTEzdi03LjU4NGM0LjM5My0uMjAyIDcuNjk0LTEuMDczIDcuNjk0LTIuMTE2IDAtMS4wNDMtMy4zMDEtMS45MTQtNy42OTQtMi4xMTcnLz48L2c+PC9zdmc+" : "/wallet-arepa/wallet-arepa/assets/sources/logos/near-icon.svg";
@@ -349,13 +352,25 @@ export default {
                 this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
                 this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
 
+                walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
+                   this.exchangeRate = this.data[0].exchange_rate * price;
+                   this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
+                }); 
+                this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);               
+                this.orderId = this.data[0].order_id;
+                localStorage.setItem('orderId', this.orderId)
+
+
                 this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
                 this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
+                this.orderHistoryBuy(this.orderId);
 
             });
-          } else {
-            this.orderHistorySell();
           }
+          // } else {
+          //   // console.log('Busco en el historico')
+          //   this.orderHistorySell();
+          // }
         });
     },
     formatNumber(number) {
@@ -367,13 +382,14 @@ export default {
     },
     async aprove() {
       this.btnLoading = true;
+      const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
       const account = await walletUtils.nearConnection();
       const orderConfirmation = await account.functionCall({
         contractId: CONTRACT_NAME,
         methodName: "order_confirmation",
         gas: "300000000000000",
-        args: { offer_type: 1, order_id: parseInt(this.orderId) },
+        args: { offer_type: parseInt(val), order_id: parseInt(this.orderId) },
         attachedDeposit: "3"
       }) 
       // console.log("orderConfirmation", orderConfirmation)
@@ -388,26 +404,30 @@ export default {
         "get_subcontract_type",
         { user_id: this.address }
       );
-      if(contract !== 1){
-          this.deleteContract = await account.functionCall({
+      if(contract !== 1 && val === "1"){
+        this.deleteContract = await account.functionCall({
           contractId: CONTRACT_NAME,
           methodName: "delete_contract",
           gas: "300000000000000",
           args: {},     
         });
+      
+        // console.log("deleteContract", deleteContract)
+
+        if (!this.deleteContract || this.deleteContract.status.SuccessValue !== "") {
+          console.log("Error borrando el contrato");
+        }
       }
 
-      // console.log("deleteContract", deleteContract)
-
-      if (!this.deleteContract || this.deleteContract.status.SuccessValue !== "") {
-        console.log("Error borrando el contrato");
-      }
       sessionStorage.clear(); // Clear all data from sessionStorage
       this.sendMail('sell', localStorage.getItem('orderId'));
-      localStorage.removeItem('orderId');
       localStorage.removeItem('emailCounter');
-      this.btnLoading = false;
+      localStorage.removeItem('orderId');
+      localStorage.removeItem('operation');
+
+      
       this.$router.push({ path: "/tx-executed" });
+      this.btnLoading = false;
     },
     async cancel() {
       this.btnLoading = true;
@@ -428,10 +448,10 @@ export default {
       }
       // console.log("orderConfirmation", orderConfirmation)
       this.sendMailCancel(localStorage.getItem('orderId'));
-      this.orderHistorySell();
       sessionStorage.clear(); // Clear all data from sessionStorage
       localStorage.removeItem('orderId');
       localStorage.removeItem('emailCounter');
+      localStorage.removeItem('operation');
       this.btnLoading = false;
       // this.sendMail();
       this.$router.push({ path: "/tx-canceled" });
@@ -459,8 +479,8 @@ export default {
       // this.sendMail();
       this.$router.push({ path: "/tx-disputed" });
     },
-    orderHistorySell() {
-      const val = this.operation === "SELL" ? "1" : "2";
+    orderHistorySell(porderId) {
+      const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
           orderhistorysells(
@@ -474,28 +494,33 @@ export default {
           .watchQuery({
             query: selects,
             variables: {
-              id: localStorage.getItem('orderId') + '|' + val,
+              id: porderId + '|' + val,
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            if (data && data.ordersells) {
+            // console.log('History', data.orderhistorysells.length)
               this.dataCancel = [];
               Object.entries(data.orderhistorysells).forEach(([key, value]) => {
                 this.dataCancel.push(value);
                 if(this.dataCancel[0].status === 4){
                   sessionStorage.clear(); // Clear all data from sessionStorage
-                  this.localStorage.removeItem('emailCounter')
-                  this.localStorage.removeItem('orddderId')
+                  localStorage.removeItem('emailCounter');
+                  localStorage.removeItem('orderId');
+                  localStorage.removeItem('operation');
                   this.$router.push('/tx-canceled');
                 }
-              });
-            } else {
-              this.orderHistoryBuy();
-            }  
+                if(this.dataCancel[0].status === 2){
+                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  localStorage.removeItem('emailCounter');
+                  localStorage.removeItem('orderId');
+                  localStorage.removeItem('operation');
+                    this.$router.push('/tx-executed');
+                }
+              }); 
           });
     },
-    orderHistoryBuy() {
-      const val = this.operation === "SELL" ? "1" : "2";
+    orderHistoryBuy(porderId) {
+      const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
           orderhistorybuys(
@@ -509,22 +534,28 @@ export default {
           .watchQuery({
             query: selects,
             variables: {
-              id: localStorage.getItem('orderId') + '|' + val,
+              id: porderId + '|' + val,
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            if (data && data.orderhistorybuys) {
               this.dataCancel = [];
               Object.entries(data.orderhistorybuys).forEach(([key, value]) => {
                 this.dataCancel.push(value);
                 if(this.dataCancel[0].status === 4){
                   sessionStorage.clear(); // Clear all data from sessionStorage
-                  this.localStorage.removeItem('emailCounter')
-                  this.localStorage.removeItem('orderId')
+                  localStorage.removeItem('emailCounter');
+                  localStorage.removeItem('orderId');
+                  localStorage.removeItem('operation');
                   this.$router.push('/tx-canceled');
                 }
+                if(this.dataCancel[0].status === 2){
+                    sessionStorage.clear(); // Clear all data from sessionStorage
+                    localStorage.removeItem('emailCounter');
+                    localStorage.removeItem('orderId');
+                    localStorage.removeItem('operation');
+                    this.$router.push('/tx-executed');
+                }
               });
-             } 
           });
     },
     async sendMailCancel(order) { 
@@ -569,6 +600,38 @@ export default {
           }
        }
 		},
+    // pollData() {
+		// 	this.polling = setInterval(() => {
+    //     if(this.data.length > 0 && this.data[0].status === 3){
+    //         this.topText = "TRANSACCIÓN MARCADA PARA";
+    //         this.topBottom = "DISPUTA";
+    //         this.stopCountdown();
+    //         this.seconds = 0;
+    //     }  
+    //     if(this.dataCancel.length > 0 && this.dataCancel[0].status === 3){
+    //         sessionStorage.clear(); // Clear all data from sessionStorage
+    //         localStorage.removeItem('emailCounter')
+    //         localStorage.removeItem('orddderId')
+    //         this.$router.push('/tx-executed');
+    //     }
+    //     if(this.dataCancel.length > 0 && this.dataCancel[0].status === 4){
+    //         sessionStorage.clear(); // Clear all data from sessionStorage
+    //         localStorage.removeItem('emailCounter')
+    //         localStorage.removeItem('orddderId')
+    //         this.$router.push('/tx-canceled');
+    //     }
+		// 	}, 5000);
+		// },
+    yoctoNEARNEAR(yoctoNEAR) {
+				const amountInNEAR = utils.format.formatNearAmount(yoctoNEAR);
+				// console.log(amountInNEAR);
+				return amountInNEAR.toString();
+			},
+		NEARyoctoNEAR(NEARyocto) {
+				const amountInYocto = utils.format.parseNearAmount(NEARyocto);
+				// console.log('',amountInYocto);
+				return amountInYocto.toString();
+			},  
   }
 };
 </script>

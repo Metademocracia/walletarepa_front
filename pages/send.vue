@@ -260,10 +260,10 @@ export default {
             query: selects,
             variables: {
               address: wallet.getCurrentAccount().address // localStorage.getItem("address"),
-            }
+            }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            if (data && data.ordersells) {
+            if (data.ordersells.length > 0) {
               Object.entries(data.ordersells).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
@@ -271,6 +271,7 @@ export default {
                 this.orderId = this.data[0].order_id;
                 sessionStorage.setItem('data', this.data.length);
                 localStorage.setItem('emailCounter', 'true');
+                localStorage.setItem('orderId', this.data[0].order_id);
               });
             } else {
               this.orderBuy();
@@ -307,10 +308,10 @@ export default {
             query: selects,
             variables: {
               address: wallet.getCurrentAccount().address,
-            }
+            }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            if (data && data.orderbuys) {
+            if (data.orderbuys.length > 0) {
               Object.entries(data.orderbuys).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
@@ -318,6 +319,7 @@ export default {
                 this.orderId = this.data[0].order_id;
                 sessionStorage.setItem('data', this.data.length);
                 localStorage.setItem('emailCounter', 'true');
+                localStorage.setItem('orderId', this.data[0].order_id);
               });
             }
           });

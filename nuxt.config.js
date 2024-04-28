@@ -131,6 +131,7 @@ export default {
     clientConfigs: {
       default: {
         httpEndpoint: process.env.GRAPH_URL,
+        fetchPolicy: 'network-only', // Add this line
       },
     },
   },

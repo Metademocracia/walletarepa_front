@@ -264,8 +264,8 @@ export default {
 		clearInterval(this.polling);
 	},
   mounted() {
-    this.orderSell();
-    this.orderHistorySell();
+     this.orderSell();
+    // this.pollData();
   },
   methods: {
     getUnreadMessagesCount(porderid, poperation) {
@@ -292,6 +292,7 @@ export default {
     },
     async orderSell() {
       this.operation = "SELL";
+      localStorage.setItem('operation', this.operation);
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
@@ -327,7 +328,7 @@ export default {
           })
           .subscribe(({ data }) => {
             // Check if data and data.ordersells exist
-            if (data && data.ordersells) {
+            if (data.ordersells.length > 0) {
               // this.data = [];
               Object.entries(data.ordersells).forEach(([key, value]) => {
                 this.data = [];
@@ -350,6 +351,7 @@ export default {
                 this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
                 sessionStorage.setItem('operationAmount', this.operationAmount);
                 this.orderId = this.data[0].order_id;
+                localStorage.setItem('orderId', this.orderId)
                 this.endTime = this.data[0].time * 60;
                 this.createAt = moment(this.data[0].datetime);
                 const seconsdNow = moment().diff(this.createAt, 'seconds');
@@ -380,6 +382,7 @@ export default {
                    this.cryptoTittle = "Crypto a Recibir:";
                 }
                 this.getUnreadMessagesCount(this.data[0].order_id, this.operation);
+                this.orderHistorySell(this.orderId);
                 this.sendMail();
 
               });
@@ -390,6 +393,7 @@ export default {
     },
     async orderBuy() {
       this.operation = "BUY";
+      localStorage.setItem('operation', this.operation);
       const selects = gql`
         query MyQuery( $address : String) {
           orderbuys(
@@ -412,6 +416,7 @@ export default {
           operation_amount
           order_id
           datetime
+          status
         }
       }
       `;    
@@ -423,7 +428,7 @@ export default {
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            if (data && data.orderbuys) {
+            if (data.orderbuys.length > 0) {
               Object.entries(data.orderbuys).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
@@ -474,13 +479,14 @@ export default {
                    this.cryptoTittle = "Crypto a Recibir:";
                 }
                 this.getUnreadMessagesCount(this.data[0].order_id, this.operation);
+                this.orderHistoryBuy(this.orderId);
                 this.sendMail();
               });
            }
           });
     },
-    async orderHistorySell() {
-      const val = this.operation === "SELL" ? "1" : "2";
+    async orderHistorySell(porderId) {
+      const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
           orderhistorysells(
@@ -494,28 +500,32 @@ export default {
           .watchQuery({
             query: selects,
             variables: {
-              id: localStorage.getItem('orderId') + '|' + val,
+              id: porderId + '|' + val,
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            if (data && data.ordersells) {
               this.dataCancel = [];
               Object.entries(data.orderhistorysells).forEach(([key, value]) => {
                 this.dataCancel.push(value);
                 if(this.dataCancel[0].status === 4){
                   sessionStorage.clear(); // Clear all data from sessionStorage
-                  this.localStorage.removeItem('emailCounter')
-                  this.localStorage.removeItem('orddderId')
+                  localStorage.removeItem('emailCounter')
+                  localStorage.removeItem('orderId')
+                  localStorage.removeItem('operation')
                   this.$router.push('/tx-canceled');
                 }
+                if(this.dataCancel[0].status === 2){
+                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  localStorage.removeItem('emailCounter')
+                  localStorage.removeItem('orderId')
+                  localStorage.removeItem('operation')
+                  this.$router.push('/tx-executed');
+                }
               });
-            } else {
-               this.orderHistoryBuy();
-            }  
           });
     },
-    async orderHistoryBuy() {
-      const val = this.operation === "SELL" ? "1" : "2";
+    async orderHistoryBuy(porderId) {
+      const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
           orderhistorybuys(
@@ -529,24 +539,28 @@ export default {
           .watchQuery({
             query: selects,
             variables: {
-              id: localStorage.getItem('orderId') + '|' + val,
+              id: porderId + '|' + val,
             }, pollInterval: 3000
           })
           .subscribe(({ data }) => {
-            if (data && data.orderhistorybuys) {
               this.dataCancel = [];
               Object.entries(data.orderhistorybuys).forEach(([key, value]) => {
                 this.dataCancel.push(value);
                 if(this.dataCancel[0].status === 4){
                   sessionStorage.clear(); // Clear all data from sessionStorage
-                  this.localStorage.removeItem('emailCounter')
-                  this.localStorage.removeItem('orderId')
+                  localStorage.removeItem('emailCounter')
+                  localStorage.removeItem('orderId')
+                  localStorage.removeItem('operation')
                   this.$router.push('/tx-canceled');
                 }
+                if(this.dataCancel[0].status === 2){
+                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  localStorage.removeItem('emailCounter')
+                  localStorage.removeItem('orderId')
+                  localStorage.removeItem('operation')
+                    this.$router.push('/tx-executed');
+                }
               });
-            } else {
-              this.orderHistorySell();
-            }
           });
     },
     async trader( ownerId ) {
@@ -641,6 +655,28 @@ export default {
           }
        }
 		},
+    // pollData() {
+		// 	this.polling = setInterval(() => {
+    //     if(this.data.length > 0 && this.data[0].status === 3){
+    //         this.topText = "TRANSACCIÓN MARCADA PARA";
+    //         this.topBottom = "DISPUTA";
+    //         this.stopCountdown();
+    //         this.seconds = 0;
+    //     }  
+    //     if(this.dataCancel.length > 0 && this.dataCancel[0].status === 3){
+    //         sessionStorage.clear(); // Clear all data from sessionStorage
+    //         localStorage.removeItem('emailCounter')
+    //         localStorage.removeItem('orddderId')
+    //         this.$router.push('/tx-executed');
+    //     }
+    //     if(this.dataCancel.length > 0 && this.dataCancel[0].status === 4){
+    //         sessionStorage.clear(); // Clear all data from sessionStorage
+    //         localStorage.removeItem('emailCounter')
+    //         localStorage.removeItem('orddderId')
+    //         this.$router.push('/tx-canceled');
+    //     }
+		// 	}, 5000);
+		// },  
     
   }
 };

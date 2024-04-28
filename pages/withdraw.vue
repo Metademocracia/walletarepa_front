@@ -122,7 +122,7 @@
       </v-card>
 
       <div class="d-flex mt-4" style="gap: 10px">
-        <v-btn class="btn-outlined flex-grow-1" style="--bg: var(--card-2)" @click="$router.back()">
+        <v-btn class="btn-outlined flex-grow-1" :loading="btnLoading" style="--bg: var(--card-2)" @click="$router.back()">
           CANCELAR
         </v-btn>
 
@@ -299,7 +299,7 @@ export default {
             fiat_method: selectedFiat,
             token: this.tokenSymbol,
             address: wallet.getCurrentAccount().address,
-          },
+          }, pollInterval: 3000
         })
         .subscribe(({ data }) => {
           data.offerssells.forEach(offer => {
@@ -495,7 +495,7 @@ export default {
         const now = moment()
           .format("YYYY-MM-DD HH:mm:ss")
           .toString();
-        if (this.subcontract !== null) {
+        if (this.subcontract === null) {
           this.subcontract = { contract: `${this.address.split(".")[0]}.${CONTRACT_NAME}` };;
           const createSubCobtractUser = await account.functionCall({
             contractId: CONTRACT_NAME,

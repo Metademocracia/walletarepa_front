@@ -125,7 +125,7 @@
       </v-card>
 
       <div class="d-flex mt-4" style="gap: 10px">
-        <v-btn class="btn-outlined flex-grow-1" style="--bg: var(--card-2)" @click="$router.back()">
+        <v-btn class="btn-outlined flex-grow-1" :loading="btnLoading" style="--bg: var(--card-2)" @click="$router.back()">
           CANCELAR
         </v-btn>
 
