@@ -20,20 +20,20 @@
       </aside>
 
       <v-card class="payment-card">
-        <div class="payment-card__wrapper">
-          <!-- <v-list>
+        <div class="payment-card__wrapper" >
+          <v-list class="grid-list">
             <v-list-item 
-            v-for="(payment, i) in otherPayments" :key="i" class="font-weight-bold"
+            v-for="(payment, i) in otherPayments" :key="i" class="payment-card-coin space"
               @click="selectPaymentDialog(payment)">
               <div style="display: flex; align-items: center;">
-                <img :src="getFlag(payment)" alt="checked icon" style="margin-right: 10px;" />
-                <span>{{ payment }}</span>
+                <img :src="getFlag(payment)" alt="checked icon" style="margin-right: 10px; height: 14px;" />
+                <span class="font-weight-bold">{{ payment }}</span>
               </div>
               <img v-if="selectedPayment == payment" src="@/assets/sources/icons/checked.svg" alt="checked icon" />
               <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon" />
             </v-list-item>
-          </v-list> -->
-          <v-card
+          </v-list>
+          <!-- <v-card
             v-for="(item, i) in otherPayments" :key="i"
             color="transparent"
             class="payment-card-coin space"
@@ -44,11 +44,11 @@
               <h5 class="mb-0">{{ item }}</h5>
           </div> 
 
-          <!-- <div class="d-flex flex-column">
+           <div class="d-flex flex-column">
               <span>{{ item.balance }} {{ item.coin }}</span>
               <span>${{ item.balance_usd }}</span>
             </div> -->
-          </v-card> 
+          <!--</v-card>  -->
         </div>
       </v-card>
     </v-dialog>

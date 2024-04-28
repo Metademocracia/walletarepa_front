@@ -21,15 +21,15 @@
 
       <v-card class="payment-card">
         <div class="payment-card__wrapper">
-          <v-list>
+          <v-list class="grid-list">
             <v-list-item 
-            v-for="(payment, i) in otherPayments" :key="i"
-              class="font-weight-bold"
+            v-for="(payment, i) in otherPayments" :key="i" class="payment-card-coin space"
               @click="selectPaymentDialog(payment)">
-              {{ payment }}
-              <img 
-              v-if="selectedPayment == payment" src="@/assets/sources/icons/checked.svg"
-                alt="checked icon" />
+              <div style="display: flex; align-items: center;">
+                <img :src="getFlag(payment)" alt="checked icon" style="margin-right: 10px; height: 14px;" />
+                <span class="font-weight-bold">{{ payment }}</span>
+              </div>
+              <img v-if="selectedPayment == payment" src="@/assets/sources/icons/checked.svg" alt="checked icon" />
               <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon" />
             </v-list-item>
           </v-list>
@@ -200,6 +200,11 @@ export default {
     };
   },
   mounted() {
+    if(sessionStorage.getItem("flags")) {
+      this.listFlags = JSON.parse(sessionStorage.getItem("flags"));
+    } else {
+      this.flagscdn();
+    }
     this.getBalance();
     this.selects();
   },
@@ -263,6 +268,35 @@ export default {
       this.disabledContinue();
       // clearTimeout(this.timer)
       // this.timer = setTimeout(this.previewWithdraw, 1000)
+    },
+    getFlag(payment) {
+      const flag = this.listFlags.find((item) => item.payment_method === payment);
+      return flag.input1 === "" ?  "https://flagcdn.com/ve.svg" : flag.input1;
+    },
+    async flagscdn() {
+      const selects = gql`
+      query MyQuery {
+        paymentmethods {
+          payment_method
+          input1
+        }
+      }
+      `;
+      await this.$apollo
+        .watchQuery({
+          query: selects,
+          fetchPolicy: 'network-only',
+          pollInterval: 5000,
+        })
+        .subscribe(({ data }) => {
+          this.listFlags = [];
+          Object.entries(data.paymentmethods).forEach(
+            ([key, value]) => {
+              this.listFlags.push(value);
+            }
+          );
+          sessionStorage.setItem("flags", JSON.stringify(this.listFlags));
+        });
     },
     async selects() {
       const selects = gql`
