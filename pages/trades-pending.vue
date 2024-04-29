@@ -361,20 +361,16 @@ export default {
           })
           .subscribe((response) => {
             // Check if data and data.ordersells exist
-            console.log("esta ajecutando ", response)
             if(!response.data?.ordersells || !response.data?.orderbuys) return
-            console.log("esta ajecutando 2")
 
             const orderBuys = response.data.orderbuys;
-            console.log("esta ajecutando 3")
             const orderSells = response.data.ordersells;
-            console.log("esta ajecutando 4")
+
             
             const data = orderSells.length > 0 ? orderSells :  orderBuys;
-            console.log("esta ajecutando 5")
 
             this.operation = orderSells.length > 0 ? "SELL" : "BUY";
-            localStorage.setItem('operation', this.operation);
+   
             console.log("esta ajecutando 6", data)
             if(data.length <= 0) return;
             console.log("esta ajecutando 7")
