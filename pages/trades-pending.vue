@@ -299,7 +299,6 @@ export default {
       }
     },
     getOrders() {
-      console.log("aqui paso ")
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
@@ -349,8 +348,6 @@ export default {
         }
       }
       `;
-
-      console.log("aqui paso 2", selects)
       
       this.poolOrders = this.$apollo
           .watchQuery({
@@ -376,7 +373,7 @@ export default {
             const data = orderSells.length > 0 ? orderSells :  orderBuys;
             console.log("esta ajecutando 5")
 
-            this.operation = orderSells > 0 ? "SELL" : "BUY";
+            this.operation = orderSells.length > 0 ? "SELL" : "BUY";
             localStorage.setItem('operation', this.operation);
             console.log("esta ajecutando 6", data)
             if(data.length <= 0) return;
