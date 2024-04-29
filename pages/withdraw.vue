@@ -152,6 +152,7 @@
 </template>
 
 <script>
+import '@/assets/styles/components/payments.scss';
 // import axios from 'axios'
 import * as nearAPI from "near-api-js";
 // eslint-disable-next-line import/no-named-as-default

@@ -3,7 +3,7 @@
     v-model="model"
     max-width="max-content"
     :overlay-opacity=".9"
-    content-class="modal-cryptos"
+    content-class="modal-payments"
   >
     <aside class="d-flex justify-end mb-5">
       <v-text-field
@@ -17,22 +17,22 @@
     </aside>
 
 
-    <v-card class="cryptos-card">
+    <v-card class="payments-card">
       <div
         v-if="loading"
-        class="cryptos-card__wrapper"
+        class="payments-card__wrapper"
         style="text-align: center;"
       >
       Cargando....
       </div>
       <div
         v-else
-        class="cryptos-card__wrapper"
+        class="payments-card__wrapper"
       >
         <v-card
           v-for="(item, i) in dataTokensFinal" :key="i"
           color="transparent"
-          class="cryptos-card-coin space"
+          class="payments-card-coin space"
           @click="onSelected(item)"
         >
           <div class="center" style="gap: 14px;">
@@ -226,7 +226,7 @@ export default {
 </script>
 
 <style lang="scss">
-.modal-cryptos {
+.modal-payments {
 
   .v-input {
     flex-grow: 1;
@@ -253,7 +253,7 @@ export default {
   }
 
 
-  .cryptos-card {
+  .payments-card {
     --height: 600px;
     --padding-block: 29px;
 
@@ -265,7 +265,7 @@ export default {
     padding-block: var(--padding-block);
     padding-right: 2px;
 
-    .cryptos-card__wrapper {
+    .payments-card__wrapper {
       display: flex;
       flex-direction: column;
       scrollbar-gutter: stable;
