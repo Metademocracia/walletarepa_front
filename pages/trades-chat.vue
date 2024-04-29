@@ -189,6 +189,8 @@ export default {
       disputeDiabled: false,
       operation: "",
       deleteContract: null,
+      poolOrders: null,
+      poolOrderHistory: null,
     }
   },
   head() {
@@ -198,10 +200,15 @@ export default {
     }
   },
   beforeDestroy() {
-		clearInterval(this.polling);
+    if(this.poolOrders) {
+  		this.poolOrders.stop();
+    }
+    if(this.poolOrderHistory) {
+      this.poolOrderHistory.stop();
+    }
 	},
   mounted() {
-    this.orderSell();  
+    this.getOrders();  
   },
   methods: {
     async trader( ownerId ) {
@@ -220,7 +227,7 @@ export default {
       await this.$apollo
         .watchQuery({
           query: selects,
-          fetchPolicy: 'network-only',
+          // fetchPolicy: 'network-only',
           pollInterval: 5000,
           variables: {
             address: ownerId,
@@ -235,7 +242,7 @@ export default {
         });
       // }
     },
-    async orderSell() {
+    async getOrders() {
       this.operation = "SELL";
       localStorage.setItem('operation', this.operation);
       const selects = gql`
@@ -260,58 +267,8 @@ export default {
           order_id
           status
         }
-      }
-      `;    
-      await this.$apollo
-        .watchQuery({
-          query: selects,
-          fetchPolicy: 'network-only',
-          pollInterval: 5000,
-          variables: {
-            address: wallet.getCurrentAccount().address,
-          }
-        })
-        .subscribe(({ data }) => {
-            if (data.ordersells.length > 0) {
-              this.data = [];
-              Object.entries(data.ordersells).forEach(([key, value]) => {
-                  this.data.push(value); 
-                  sessionStorage.setItem('data', this.data.length);
-                  this.trader(this.data[0].owner_id);
-                  this.terms = this.data[0].terms_conditions;
-                  sessionStorage.setItem('terms', this.terms);
-                  /// //////////////////////////////////////
-                  this.tokenSymbol = this.data[0].asset;
-                  this.tokenImage = this.data[0].asset === "USDT" ? "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMic+PGcgZmlsbD0nbm9uZScgZmlsbC1ydWxlPSdldmVub2RkJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPScxNicgZmlsbD0nIzI2QTE3QicvPjxwYXRoIGZpbGw9JyNGRkYnIGQ9J00xNy45MjIgMTcuMzgzdi0uMDAyYy0uMTEuMDA4LS42NzcuMDQyLTEuOTQyLjA0Mi0xLjAxIDAtMS43MjEtLjAzLTEuOTcxLS4wNDJ2LjAwM2MtMy44ODgtLjE3MS02Ljc5LS44NDgtNi43OS0xLjY1OCAwLS44MDkgMi45MDItMS40ODYgNi43OS0xLjY2djIuNjQ0Yy4yNTQuMDE4Ljk4Mi4wNjEgMS45ODguMDYxIDEuMjA3IDAgMS44MTItLjA1IDEuOTI1LS4wNnYtMi42NDNjMy44OC4xNzMgNi43NzUuODUgNi43NzUgMS42NTggMCAuODEtMi44OTUgMS40ODUtNi43NzUgMS42NTdtMC0zLjU5di0yLjM2Nmg1LjQxNFY3LjgxOUg4LjU5NXYzLjYwOGg1LjQxNHYyLjM2NWMtNC40LjIwMi03LjcwOSAxLjA3NC03LjcwOSAyLjExOCAwIDEuMDQ0IDMuMzA5IDEuOTE1IDcuNzA5IDIuMTE4djcuNTgyaDMuOTEzdi03LjU4NGM0LjM5My0uMjAyIDcuNjk0LTEuMDczIDcuNjk0LTIuMTE2IDAtMS4wNDMtMy4zMDEtMS45MTQtNy42OTQtMi4xMTcnLz48L2c+PC9zdmc+" : "/wallet-arepa/wallet-arepa/assets/sources/logos/near-icon.svg";
-                  // this.tokenImage = selectedToken.icon;
-                  this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
-                  this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
-                  
-                  walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
-                    this.exchangeRate = this.data[0].exchange_rate * price;
-                    this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
-                  }); 
-                  this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6); 
-                  // console.log(this.data[0].operation_amount, this.tokenSymbol)              
-                  this.orderId = this.data[0].order_id;
-                  localStorage.setItem('orderId', this.orderId)
 
-                  this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
-                  this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
-                  this.orderHistorySell(this.orderId);
-
-              });
-            } else {
-              this.orderBuy();
-            }
-        });
-    },
-    async orderBuy() {
-      this.operation = "BUY";
-      localStorage.setItem('operation', this.operation);
-      const selects = gql`
-        query MyQuery( $address : String) {
-          orderbuys(
+        orderbuys(
             where: {signer_id: $address}
           orderBy: id
           orderDirection: desc
@@ -333,52 +290,130 @@ export default {
         }
       }
       `;    
-      await this.$apollo
+      this.poolOrders = await this.$apollo
         .watchQuery({
           query: selects,
-          fetchPolicy: 'network-only',
+          // fetchPolicy: 'network-only',
           pollInterval: 5000,
           variables: {
             address: wallet.getCurrentAccount().address,
           }
         })
-        .subscribe(({ data }) => {
-          // Check if data and data.ordersells exist
-          if (data.orderbuys.length > 0) {
-            this.data = [];
-						Object.entries(data.orderbuys).forEach(([key, value]) => {
-								this.data.push(value); 
-                sessionStorage.setItem('data', this.data.length);
-                this.trader(this.data[0].owner_id);
-                this.terms = this.data[0].terms_conditions;
-                /// //////////////////////////////////////
-                this.tokenSymbol = this.data[0].asset;
-                this.tokenImage = this.data[0].asset === "USDT" ? "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMic+PGcgZmlsbD0nbm9uZScgZmlsbC1ydWxlPSdldmVub2RkJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPScxNicgZmlsbD0nIzI2QTE3QicvPjxwYXRoIGZpbGw9JyNGRkYnIGQ9J00xNy45MjIgMTcuMzgzdi0uMDAyYy0uMTEuMDA4LS42NzcuMDQyLTEuOTQyLjA0Mi0xLjAxIDAtMS43MjEtLjAzLTEuOTcxLS4wNDJ2LjAwM2MtMy44ODgtLjE3MS02Ljc5LS44NDgtNi43OS0xLjY1OCAwLS44MDkgMi45MDItMS40ODYgNi43OS0xLjY2djIuNjQ0Yy4yNTQuMDE4Ljk4Mi4wNjEgMS45ODguMDYxIDEuMjA3IDAgMS44MTItLjA1IDEuOTI1LS4wNnYtMi42NDNjMy44OC4xNzMgNi43NzUuODUgNi43NzUgMS42NTggMCAuODEtMi44OTUgMS40ODUtNi43NzUgMS42NTdtMC0zLjU5di0yLjM2Nmg1LjQxNFY3LjgxOUg4LjU5NXYzLjYwOGg1LjQxNHYyLjM2NWMtNC40LjIwMi03LjcwOSAxLjA3NC03LjcwOSAyLjExOCAwIDEuMDQ0IDMuMzA5IDEuOTE1IDcuNzA5IDIuMTE4djcuNTgyaDMuOTEzdi03LjU4NGM0LjM5My0uMjAyIDcuNjk0LTEuMDczIDcuNjk0LTIuMTE2IDAtMS4wNDMtMy4zMDEtMS45MTQtNy42OTQtMi4xMTcnLz48L2c+PC9zdmc+" : "/wallet-arepa/wallet-arepa/assets/sources/logos/near-icon.svg";
-                // this.tokenImage = selectedToken.icon;
-                this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
-                this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
+        .subscribe(({ response }) => {
+            if(!response.data?.ordersells || !response.data?.orderbuys) return
 
-                walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
-                   this.exchangeRate = this.data[0].exchange_rate * price;
-                   this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
-                }); 
-                this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);               
-                this.orderId = this.data[0].order_id;
-                localStorage.setItem('orderId', this.orderId)
+              const orderBuys = response.data.orderbuys;
+              const orderSells = response.data.ordersells;
+              const data = orderSells.length > 0 ? orderSells :  orderBuys;
+              this.operation = orderSells > 0 ? "SELL" : "BUY";
+              localStorage.setItem('operation', this.operation);
+              if(data.length <= 0) return;
 
+              Object.entries(data.ordersells).forEach(([key, value]) => {
+                  this.data.push(value); 
+                  sessionStorage.setItem('data', this.data.length);
+                  this.trader(this.data[0].owner_id);
+                  this.terms = this.data[0].terms_conditions;
+                  sessionStorage.setItem('terms', this.terms);
+                  /// //////////////////////////////////////
+                  this.tokenSymbol = this.data[0].asset;
+                  this.tokenImage = this.data[0].asset === "USDT" ? "https://nearp2p.com/dv/portal/usdt.svg" : "https://nearp2p.com/dv/portal/near-wallet-icon.svg";
+                  // this.tokenImage = selectedToken.icon;
+                  this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
+                  this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
+                  
+                  walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
+                    this.exchangeRate = this.data[0].exchange_rate * price;
+                    this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
+                  }); 
+                  this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6); 
+                  // console.log(this.data[0].operation_amount, this.tokenSymbol)              
+                  this.orderId = this.data[0].order_id;
+                  localStorage.setItem('orderId', this.orderId)
 
-                this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
-                this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
-                this.orderHistoryBuy(this.orderId);
+                  this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
+                  this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
 
-            });
-          }
-          // } else {
-          //   // console.log('Busco en el historico')
-          //   this.orderHistorySell();
-          // }
+                  if(!this.poolOrderHistory) {
+                    this.orderHistory(this.orderId, this.operation);
+                  }
+
+              });
         });
     },
+    // async orderBuy() {
+    //   this.operation = "BUY";
+    //   localStorage.setItem('operation', this.operation);
+    //   const selects = gql`
+    //     query MyQuery( $address : String) {
+    //       orderbuys(
+    //         where: {signer_id: $address}
+    //       orderBy: id
+    //       orderDirection: desc
+    //       ) {
+    //       id
+    //       amount_delivered
+    //       asset
+    //       exchange_rate
+    //       fee_deducted
+    //       fiat_method
+    //       owner_id
+    //       payment_method
+    //       signer_id
+    //       terms_conditions
+    //       time
+    //       operation_amount
+    //       order_id
+    //       status
+    //     }
+    //   }
+    //   `;    
+    //   await this.$apollo
+    //     .watchQuery({
+    //       query: selects,
+    //       fetchPolicy: 'network-only',
+    //       pollInterval: 5000,
+    //       variables: {
+    //         address: wallet.getCurrentAccount().address,
+    //       }
+    //     })
+    //     .subscribe(({ data }) => {
+    //       // Check if data and data.ordersells exist
+    //       if (data.orderbuys.length > 0) {
+    //         this.data = [];
+		// 				Object.entries(data.orderbuys).forEach(([key, value]) => {
+		// 						this.data.push(value); 
+    //             sessionStorage.setItem('data', this.data.length);
+    //             this.trader(this.data[0].owner_id);
+    //             this.terms = this.data[0].terms_conditions;
+    //             /// //////////////////////////////////////
+    //             this.tokenSymbol = this.data[0].asset;
+    //             this.tokenImage = this.data[0].asset === "USDT" ? "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMic+PGcgZmlsbD0nbm9uZScgZmlsbC1ydWxlPSdldmVub2RkJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPScxNicgZmlsbD0nIzI2QTE3QicvPjxwYXRoIGZpbGw9JyNGRkYnIGQ9J00xNy45MjIgMTcuMzgzdi0uMDAyYy0uMTEuMDA4LS42NzcuMDQyLTEuOTQyLjA0Mi0xLjAxIDAtMS43MjEtLjAzLTEuOTcxLS4wNDJ2LjAwM2MtMy44ODgtLjE3MS02Ljc5LS44NDgtNi43OS0xLjY1OCAwLS44MDkgMi45MDItMS40ODYgNi43OS0xLjY2djIuNjQ0Yy4yNTQuMDE4Ljk4Mi4wNjEgMS45ODguMDYxIDEuMjA3IDAgMS44MTItLjA1IDEuOTI1LS4wNnYtMi42NDNjMy44OC4xNzMgNi43NzUuODUgNi43NzUgMS42NTggMCAuODEtMi44OTUgMS40ODUtNi43NzUgMS42NTdtMC0zLjU5di0yLjM2Nmg1LjQxNFY3LjgxOUg4LjU5NXYzLjYwOGg1LjQxNHYyLjM2NWMtNC40LjIwMi03LjcwOSAxLjA3NC03LjcwOSAyLjExOCAwIDEuMDQ0IDMuMzA5IDEuOTE1IDcuNzA5IDIuMTE4djcuNTgyaDMuOTEzdi03LjU4NGM0LjM5My0uMjAyIDcuNjk0LTEuMDczIDcuNjk0LTIuMTE2IDAtMS4wNDMtMy4zMDEtMS45MTQtNy42OTQtMi4xMTcnLz48L2c+PC9zdmc+" : "/wallet-arepa/wallet-arepa/assets/sources/logos/near-icon.svg";
+    //             // this.tokenImage = selectedToken.icon;
+    //             this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
+    //             this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
+
+    //             walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
+    //                this.exchangeRate = this.data[0].exchange_rate * price;
+    //                this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
+    //             }); 
+    //             this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);               
+    //             this.orderId = this.data[0].order_id;
+    //             localStorage.setItem('orderId', this.orderId)
+
+
+    //             this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
+    //             this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
+    //             this.orderHistoryBuy(this.orderId);
+
+    //         });
+    //       }
+    //       // } else {
+    //       //   // console.log('Busco en el historico')
+    //       //   this.orderHistorySell();
+    //       // }
+    //     });
+    // },
     formatNumber(number) {
       return new Intl.NumberFormat('es-VE', { 
         style: 'decimal', 
@@ -490,27 +525,43 @@ export default {
       // this.sendMail();
       this.$router.push({ path: "/tx-disputed" });
     },
-    async orderHistorySell(porderId) {
-      const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
+    async orderHistory(porderId, operation) {
+      const val = operation === "SELL" ? "1" : "2";
       const selects = gql`
-        query MyQuery( $id : String) {
+      query MyQuery( $id : String) {
           orderhistorysells(
             where: {id: $id}
           ) {
-          status
-        }
+            status
+          }
+
+          orderhistorybuys(
+            where: {id: $id}
+          ) {
+            status
+          }
       }
       `;    
-        await this.$apollo
+      this.poolOrderHistory = await this.$apollo
           .watchQuery({
             query: selects,
-            fetchPolicy: 'network-only',
+            // fetchPolicy: 'network-only',
             pollInterval: 5000,
             variables: {
               id: porderId + '|' + val,
             }
           })
-          .subscribe(({ data }) => {
+          .subscribe(({ response }) => {
+              if(!response.data?.orderhistorysells || !response.data?.orderhistorybuys) return
+
+              const orderHistorySells = response.data.orderhistorysells;
+              const orderHistoryBuys = response.data.orderhistorybuys;
+              
+              const data = operation === 'SELL' ? orderHistorySells : orderHistoryBuys;
+
+              if(data.length <= 0) return;
+
+              this.dataCancel = [];
             // console.log('History', data.orderhistorysells.length)
               this.dataCancel = [];
               Object.entries(data.orderhistorysells).forEach(([key, value]) => {
@@ -532,47 +583,47 @@ export default {
               }); 
           });
     },
-    async orderHistoryBuy(porderId) {
-      const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
-      const selects = gql`
-        query MyQuery( $id : String) {
-          orderhistorybuys(
-            where: {id: $id}
-          ) {
-          status
-        }
-      }
-      `;    
-      await  this.$apollo
-          .watchQuery({
-            query: selects,
-            fetchPolicy: 'network-only',
-            pollInterval: 5000,
-            variables: {
-              id: porderId + '|' + val,
-            }
-          })
-          .subscribe(({ data }) => {
-              this.dataCancel = [];
-              Object.entries(data.orderhistorybuys).forEach(([key, value]) => {
-                this.dataCancel.push(value);
-                if(this.dataCancel[0].status === 4){
-                  sessionStorage.clear(); // Clear all data from sessionStorage
-                  localStorage.removeItem('emailCounter');
-                  localStorage.removeItem('orderId');
-                  localStorage.removeItem('operation');
-                  this.$router.push('/tx-canceled');
-                }
-                if(this.dataCancel[0].status === 2){
-                    sessionStorage.clear(); // Clear all data from sessionStorage
-                    localStorage.removeItem('emailCounter');
-                    localStorage.removeItem('orderId');
-                    localStorage.removeItem('operation');
-                    this.$router.push('/tx-executed');
-                }
-              });
-          });
-    },
+    // async orderHistoryBuy(porderId) {
+    //   const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
+    //   const selects = gql`
+    //     query MyQuery( $id : String) {
+    //       orderhistorybuys(
+    //         where: {id: $id}
+    //       ) {
+    //       status
+    //     }
+    //   }
+    //   `;    
+    //   await  this.$apollo
+    //       .watchQuery({
+    //         query: selects,
+    //         fetchPolicy: 'network-only',
+    //         pollInterval: 5000,
+    //         variables: {
+    //           id: porderId + '|' + val,
+    //         }
+    //       })
+    //       .subscribe(({ data }) => {
+    //           this.dataCancel = [];
+    //           Object.entries(data.orderhistorybuys).forEach(([key, value]) => {
+    //             this.dataCancel.push(value);
+    //             if(this.dataCancel[0].status === 4){
+    //               sessionStorage.clear(); // Clear all data from sessionStorage
+    //               localStorage.removeItem('emailCounter');
+    //               localStorage.removeItem('orderId');
+    //               localStorage.removeItem('operation');
+    //               this.$router.push('/tx-canceled');
+    //             }
+    //             if(this.dataCancel[0].status === 2){
+    //                 sessionStorage.clear(); // Clear all data from sessionStorage
+    //                 localStorage.removeItem('emailCounter');
+    //                 localStorage.removeItem('orderId');
+    //                 localStorage.removeItem('operation');
+    //                 this.$router.push('/tx-executed');
+    //             }
+    //           });
+    //       });
+    // },
     async sendMailCancel(order) { 
         const data = await walletUtils.verifyWallet();
         const email = data?.data?.email;

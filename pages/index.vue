@@ -274,6 +274,7 @@ export default {
       operationSymbol: "",
       pendingTrades: false,
       data: [],
+      poolOrders: null,
     }
   },
   head() {
@@ -282,8 +283,13 @@ export default {
       title,
     }
   },
+  beforeDestroy() {
+    if(this.poolOrders) {
+  		this.poolOrders.stop();
+    }
+	},
   mounted() {
-    this.orderSell(); // Call orderSell function
+    this.getOrders(); // Call orderSell function
 
     // this.orderSell();
     this.address = wallet.getCurrentAccount().address;
@@ -512,7 +518,7 @@ export default {
         this.operationSymbol = require("@/assets/sources/tokens/near.svg");
       }
     },
-    async orderSell() {
+    async getOrders() {
       // console.log('entro', wallet.getCurrentAccount().address);
       const selects = gql`
         query MyQuery( $address : String) {
@@ -536,37 +542,8 @@ export default {
           operation_amount
           order_id
         }
-      }
-      `;    
-      await this.$apollo
-          .watchQuery({
-            query: selects,
-            fetchPolicy: 'network-only',
-            pollInterval: 5000,
-            variables: {
-              address: wallet.getCurrentAccount().address // localStorage.getItem("address"),
-            }
-          })
-          .subscribe(({ data }) => {
-            if (data.ordersells.length > 0) {
-              Object.entries(data.ordersells).forEach(([key, value]) => {
-                this.data = [];
-                this.data.push(value);
-                this.pendingTrades = true;
-              });
-            } else {
-              localStorage.removeItem('emailCounter');
-              localStorage.removeItem('orderId');
-              localStorage.removeItem('operation');
-              this.pendingTrades = false;
-              this.orderBuy();
-            }
-          });
-    },
-    async orderBuy() {
-      const selects = gql`
-        query MyQuery( $address : String) {
-          orderbuys(
+
+        orderbuys(
             where: {signer_id: $address}
           orderBy: id
           orderDirection: desc
@@ -588,32 +565,89 @@ export default {
         }
       }
       `;    
-      await this.$apollo
+      this.poolOrders = await this.$apollo
           .watchQuery({
             query: selects,
-            fetchPolicy: 'network-only',
+            // fetchPolicy: 'network-only',
             pollInterval: 5000,
             variables: {
-              address: wallet.getCurrentAccount().address,
+              address: wallet.getCurrentAccount().address // localStorage.getItem("address"),
             }
           })
-          .subscribe(({ data }) => {
-            // console.log(data.orderbuys)
-            if (data.orderbuys.length > 0) {
-              // console.log('Paso por aqui');
-              Object.entries(data.orderbuys).forEach(([key, value]) => {
-                this.data = [];
-                this.data.push(value);
-                this.pendingTrades = true;
-              });
-            } else {
+          .subscribe(({ response }) => {
+            if(!response.data?.ordersells || !response.data?.orderbuys) return
+
+              const orderBuys = response.data.orderbuys;
+              const orderSells = response.data.ordersells;
+              const data = orderSells.length > 0 ? orderSells :  orderBuys;
+              this.operation = orderSells > 0 ? "SELL" : "BUY";
+              localStorage.setItem('operation', this.operation);
+              if(data.length <= 0){
                 localStorage.removeItem('emailCounter');
                 localStorage.removeItem('orderId');
                 localStorage.removeItem('operation');
                 this.pendingTrades = false;
-            }
+                return;
+              } 
+
+              Object.entries(data.ordersells).forEach(([key, value]) => {
+                this.data = [];
+                this.data.push(value);
+                this.pendingTrades = true;
+              });
           });
     },
+    // async orderBuy() {
+    //   const selects = gql`
+    //     query MyQuery( $address : String) {
+    //       orderbuys(
+    //         where: {signer_id: $address}
+    //       orderBy: id
+    //       orderDirection: desc
+    //       first: 1
+    //       ) {
+    //       id
+    //       amount_delivered
+    //       asset
+    //       exchange_rate
+    //       fee_deducted
+    //       fiat_method
+    //       owner_id
+    //       payment_method
+    //       signer_id
+    //       terms_conditions
+    //       time
+    //       operation_amount
+    //       order_id
+    //     }
+    //   }
+    //   `;    
+    //   await this.$apollo
+    //       .watchQuery({
+    //         query: selects,
+    //         fetchPolicy: 'network-only',
+    //         pollInterval: 5000,
+    //         variables: {
+    //           address: wallet.getCurrentAccount().address,
+    //         }
+    //       })
+    //       .subscribe(({ data }) => {
+    //         // console.log(data.orderbuys)
+    //         if (data.orderbuys.length > 0) {
+    //           // console.log('Paso por aqui');
+    //           Object.entries(data.orderbuys).forEach(([key, value]) => {
+    //             this.data = [];
+    //             this.data.push(value);
+    //             this.pendingTrades = true;
+    //           });
+    //         } else {
+    //             localStorage.removeItem('emailCounter');
+    //             localStorage.removeItem('orderId');
+    //             localStorage.removeItem('operation');
+    //             this.pendingTrades = false;
+    //         }
+    //       });
+    // },
   }
 };
 </script>

@@ -194,6 +194,7 @@ export default {
       minLimit: 0,
       modalNoOffers: false,
       modalNoMessage: false,
+      poolOrders: null,
     };
   },
   head() {
@@ -202,6 +203,11 @@ export default {
       title,
     };
   },
+  beforeDestroy() {
+    if(this.poolOrders) {
+  		this.poolOrders.stop();
+    }
+	},
   mounted() {
     if(sessionStorage.getItem("flags")) {
       this.listFlags = JSON.parse(sessionStorage.getItem("flags"));
@@ -288,7 +294,7 @@ export default {
       await this.$apollo
         .watchQuery({
           query: selects,
-          fetchPolicy: 'network-only',
+          // fetchPolicy: 'network-only',
           pollInterval: 5000,
         })
         .subscribe(({ data }) => {
@@ -331,10 +337,10 @@ export default {
       // const eltoken = this.selectToken;
       let paymentMethods = new Set();
       this.listOffers = [];
-      await this.$apollo
+      this.poolOrders = await this.$apollo
         .watchQuery({
           query: selects,
-          fetchPolicy: 'network-only',
+          // fetchPolicy: 'network-only',
           pollInterval: 5000,
           variables: {
             token: this.tokenSymbol,

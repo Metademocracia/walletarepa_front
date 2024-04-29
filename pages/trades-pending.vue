@@ -714,7 +714,7 @@ export default {
     }, */
 
 
-    async orderHistoryBuy(porderId) {
+    /* async orderHistoryBuy(porderId) {
       const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
@@ -754,7 +754,7 @@ export default {
                 }
               });
           });
-    },
+    }, */
     async trader( ownerId ) {
       const selects = gql`
         query MyQuery( $address : String) {
@@ -768,7 +768,7 @@ export default {
       await this.$apollo
         .watchQuery({
           query: selects,
-          fetchPolicy: 'network-only',
+          // fetchPolicy: 'network-only',
           pollInterval: 5000,
           variables: {
             address: ownerId,
