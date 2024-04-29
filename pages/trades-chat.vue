@@ -311,7 +311,7 @@ export default {
               localStorage.setItem('operation', this.operation);
               if(data.length <= 0) return;
 
-              Object.entries(data.ordersells).forEach(([key, value]) => {
+              Object.entries(data).forEach(([key, value]) => {
                   this.data.push(value); 
                   sessionStorage.setItem('data', this.data.length);
                   this.trader(this.data[0].owner_id);
@@ -566,7 +566,7 @@ export default {
               this.dataCancel = [];
             // console.log('History', data.orderhistorysells.length)
               this.dataCancel = [];
-              Object.entries(data.orderhistorysells).forEach(([key, value]) => {
+              Object.entries(data).forEach(([key, value]) => {
                 this.dataCancel.push(value);
                 if(this.dataCancel[0].status === 4){
                   sessionStorage.clear(); // Clear all data from sessionStorage
