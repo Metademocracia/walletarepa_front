@@ -218,6 +218,8 @@ export default {
       unreadMessagesCount: 0,
       unreadMessagesActive: false,
       operation: "",
+      poolOrders: null,
+      poolOrderHistory: null,
     }
   },
   head() {
@@ -260,12 +262,18 @@ export default {
       }
     }
   }, */
+  
   beforeDestroy() {
-		clearInterval(this.polling);
+    if(this.poolOrders) {
+  		this.poolOrders.stop();
+    }
+    if(this.poolOrderHistory) {
+      this.poolOrderHistory.stop();
+    }
 	},
+
   mounted() {
-     this.orderSell();
-    // this.pollData();
+     this.getOrders();
   },
   methods: {
     getUnreadMessagesCount(porderid, poperation) {
@@ -290,9 +298,8 @@ export default {
         console.error("Failed to get unread messages count:", error);
       }
     },
-    async orderSell() {
-      this.operation = "SELL";
-      localStorage.setItem('operation', this.operation);
+    async getOrders() {
+      console.log("aqui paso ")
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
@@ -317,9 +324,145 @@ export default {
           status
           datetime
         }
+
+        orderbuys(
+            where: {signer_id: $address}
+          orderBy: id
+          orderDirection: desc
+          first: 1
+          ) {
+          id
+          amount_delivered
+          asset
+          exchange_rate
+          fee_deducted
+          fiat_method
+          owner_id
+          payment_method
+          signer_id
+          terms_conditions
+          time
+          operation_amount
+          order_id
+          datetime
+          status
+        }
       }
-      `;    
-        await this.$apollo
+      `;
+      /*
+      orderbuys(
+            where: {signer_id: $address}
+          orderBy: id
+          orderDirection: desc
+          first: 1
+          ) {
+          id
+          amount_delivered
+          asset
+          exchange_rate
+          fee_deducted
+          fiat_method
+          owner_id
+          payment_method
+          signer_id
+          terms_conditions
+          time
+          operation_amount
+          order_id
+          datetime
+          status
+        }
+      */
+
+      console.log("aqui paso 2", selects)
+      
+      this.poolOrders = await this.$apollo
+          .watchQuery({
+            query: selects,
+            // fetchPolicy: 'network-only',
+            pollInterval: 5000,
+            variables: {
+              address: wallet.getCurrentAccount().address,
+            }
+          })
+          .subscribe((response) => {
+            // Check if data and data.ordersells exist
+            console.log("esta ajecutando ", response)
+            if(!response.data?.ordersells || !response.data?.orderbuys) return
+            console.log("esta ajecutando 2")
+
+            const orderBuys = response.data.orderbuys;
+            console.log("esta ajecutando 3")
+            const orderSells = response.data.ordersells;
+            console.log("esta ajecutando 4")
+            
+            const data = orderSells.length > 0 ? orderSells :  orderBuys;
+            console.log("esta ajecutando 5")
+
+            this.operation = orderSells > 0 ? "SELL" : "BUY";
+            localStorage.setItem('operation', this.operation);
+            console.log("esta ajecutando 6", data)
+            if(data.length <= 0) return;
+            console.log("esta ajecutando 7")
+              // this.data = [];
+            Object.entries(data).forEach(([key, value]) => {
+              this.data = [];
+              this.data.push(value);
+              sessionStorage.setItem('data', this.data.length);
+              this.trader(this.data[0].owner_id);
+              this.terms = this.data[0].terms_conditions;
+              // console.log(this.crypto, this.data[0].asset)
+              /// //////////////////////////////////////
+              this.tokenSymbol = this.data[0].asset;
+              this.tokenImage = this.data[0].asset === "USDT" ? "https://nearp2p.com/dv/portal/usdt.svg" : "https://nearp2p.com/dv/portal/near-wallet-icon.svg";
+              // this.tokenImage = selectedToken.icon;
+              this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
+              this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
+
+              walletUtils.getPrice(this.crypto, this.data[0].asset).then(price => {
+                this.exchangeRate = this.data[0].exchange_rate * price;
+                this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
+              });
+              this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
+              sessionStorage.setItem('operationAmount', this.operationAmount);
+              this.orderId = this.data[0].order_id;
+              localStorage.setItem('orderId', this.orderId)
+              this.endTime = this.data[0].time * 60;
+              this.createAt = moment(this.data[0].datetime);
+              const seconsdNow = moment().diff(this.createAt, 'seconds');
+              const secondsFinal = this.endTime - seconsdNow;
+              this.seconds = secondsFinal <= 0 ? 0 : secondsFinal;
+
+              if(this.data[0].status === 3){
+                this.topText = "TRANSACCIÓN MARCADA PARA";
+                this.topBottom = "DISPUTA";
+                this.stopCountdown();
+                this.seconds = 0;
+              }
+
+              if(this.operation === "SELL"){
+                this.traderNameTitle = "Nombre de comprador:";
+                this.typeOffer = "VENDER"
+                this.amountTittle = "Monto a Recibir:";
+                this.cryptoTittle = "Crypto a Vender:";
+              } else {
+                this.traderNameTitle = "Nombre de vendedor:";
+                this.typeOffer = "COMPRAR";
+                this.amountTittle = "Monto a Pagar:";
+                this.cryptoTittle = "Crypto a Recibir:";
+              }
+              this.getUnreadMessagesCount(this.data[0].order_id, this.operation);
+              
+              if(!this.poolOrderHistory) {
+                this.orderHistory(this.orderId, this.operation);
+              }
+              
+              this.sendMail();
+
+              });
+          });
+
+        /* await this.$apollo
           .watchQuery({
             query: selects,
             fetchPolicy: 'network-only',
@@ -391,9 +534,9 @@ export default {
             } else {
               this.orderBuy();
             }
-          });
+          }); */
     },
-    async orderBuy() {
+    /* async orderBuy() {
       this.operation = "BUY";
       localStorage.setItem('operation', this.operation);
       const selects = gql`
@@ -488,8 +631,67 @@ export default {
               });
            }
           });
+    }, */
+    
+    async orderHistory(porderId, operation) {
+      const val = operation === "SELL" ? "1" : "2";
+      const selects = gql`
+        query MyQuery( $id : String) {
+          orderhistorysells(
+            where: {id: $id}
+          ) {
+            status
+          }
+
+          orderhistorybuys(
+            where: {id: $id}
+          ) {
+            status
+          }
+      }
+      `;    
+        this.poolOrderHistory = await this.$apollo
+          .watchQuery({
+            query: selects,
+            // fetchPolicy: 'network-only',
+            pollInterval: 5000,
+            variables: {
+              id: porderId + '|' + val,
+            }
+          })
+          .subscribe(( response ) => {
+            if(!response.data?.orderhistorysells || !response.data?.orderhistorybuys) return
+
+            const orderHistorySells = response.data.orderhistorysells;
+            const orderHistoryBuys = response.data.orderhistorybuys;
+            
+            const data = operation === 'SELL' ? orderHistorySells : orderHistoryBuys;
+
+            if(data.length <= 0) return;
+
+              this.dataCancel = [];
+              Object.entries(data).forEach(([key, value]) => {
+                this.dataCancel.push(value);
+                if(this.dataCancel[0].status === 4){
+                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  localStorage.removeItem('emailCounter')
+                  localStorage.removeItem('orderId')
+                  localStorage.removeItem('operation')
+                  this.$router.push('/tx-canceled');
+                }
+                if(this.dataCancel[0].status === 2){
+                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  localStorage.removeItem('emailCounter')
+                  localStorage.removeItem('orderId')
+                  localStorage.removeItem('operation')
+                  this.$router.push('/tx-executed');
+                }
+              });
+          });
     },
-    async orderHistorySell(porderId) {
+    
+    
+    /* async orderHistorySell(porderId) {
       const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
@@ -529,7 +731,9 @@ export default {
                 }
               });
           });
-    },
+    }, */
+
+
     async orderHistoryBuy(porderId) {
       const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
       const selects = gql`
