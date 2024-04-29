@@ -574,7 +574,7 @@ export default {
               address: wallet.getCurrentAccount().address // localStorage.getItem("address"),
             }
           })
-          .subscribe(({ response }) => {
+          .subscribe(( response ) => {
             if(!response.data?.ordersells || !response.data?.orderbuys) return
 
               const orderBuys = response.data.orderbuys;
@@ -590,7 +590,7 @@ export default {
                 return;
               } 
 
-              Object.entries(data.ordersells).forEach(([key, value]) => {
+              Object.entries(data).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
                 this.pendingTrades = true;
