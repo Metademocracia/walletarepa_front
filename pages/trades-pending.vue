@@ -265,14 +265,14 @@ export default {
   
   beforeDestroy() {
     if(this.poolOrders) {
-  		this.poolOrders.stop();
+  		this.poolOrders.unsubscribe();
     }
     if(this.poolOrderHistory) {
-      this.poolOrderHistory.stop();
+      this.poolOrderHistory.unsubscribe();
     }
 	},
 
-  mounted() {
+  created() {
      this.getOrders();
   },
   methods: {
@@ -298,7 +298,7 @@ export default {
         console.error("Failed to get unread messages count:", error);
       }
     },
-    async getOrders() {
+    getOrders() {
       console.log("aqui paso ")
       const selects = gql`
         query MyQuery( $address : String) {
@@ -349,37 +349,14 @@ export default {
         }
       }
       `;
-      /*
-      orderbuys(
-            where: {signer_id: $address}
-          orderBy: id
-          orderDirection: desc
-          first: 1
-          ) {
-          id
-          amount_delivered
-          asset
-          exchange_rate
-          fee_deducted
-          fiat_method
-          owner_id
-          payment_method
-          signer_id
-          terms_conditions
-          time
-          operation_amount
-          order_id
-          datetime
-          status
-        }
-      */
 
       console.log("aqui paso 2", selects)
       
-      this.poolOrders = await this.$apollo
+      this.poolOrders = this.$apollo
           .watchQuery({
             query: selects,
             // fetchPolicy: 'network-only',
+            // fetchPolicy: 'cache-and-network',
             pollInterval: 5000,
             variables: {
               address: wallet.getCurrentAccount().address,
@@ -633,7 +610,8 @@ export default {
           });
     }, */
     
-    async orderHistory(porderId, operation) {
+    orderHistory(porderId, operation) {
+      console.log("aqui paso order history 1")
       const val = operation === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
@@ -649,8 +627,9 @@ export default {
             status
           }
       }
-      `;    
-        this.poolOrderHistory = await this.$apollo
+      `;
+      console.log("aqui paso order history 2")
+        this.poolOrderHistory = this.$apollo
           .watchQuery({
             query: selects,
             // fetchPolicy: 'network-only',
@@ -660,6 +639,7 @@ export default {
             }
           })
           .subscribe(( response ) => {
+            console.log("aqui paso order history 3")
             if(!response.data?.orderhistorysells || !response.data?.orderhistorybuys) return
 
             const orderHistorySells = response.data.orderhistorysells;
