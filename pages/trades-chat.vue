@@ -251,6 +251,7 @@ export default {
             where: {signer_id: $address}
           orderBy: id
           orderDirection: desc
+          first: 1
           ) {
           id
           amount_delivered
@@ -272,6 +273,7 @@ export default {
             where: {signer_id: $address}
           orderBy: id
           orderDirection: desc
+          first: 1
           ) {
           id
           amount_delivered
