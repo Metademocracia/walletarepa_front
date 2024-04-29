@@ -290,7 +290,7 @@ export default {
               address: wallet.getCurrentAccount().address // localStorage.getItem("address"),
             }
           })
-          .subscribe(({ response }) => {
+          .subscribe(( response ) => {
 
             if(!response.data?.ordersells || !response.data?.orderbuys) return
 
