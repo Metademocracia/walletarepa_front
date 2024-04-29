@@ -201,10 +201,10 @@ export default {
   },
   beforeDestroy() {
     if(this.poolOrders) {
-  		this.poolOrders.stop();
+  		this.poolOrders.unsubscribe();
     }
     if(this.poolOrderHistory) {
-      this.poolOrderHistory.stop();
+      this.poolOrderHistory.unsubscribe();
     }
 	},
   mounted() {
@@ -301,13 +301,13 @@ export default {
             address: wallet.getCurrentAccount().address,
           }
         })
-        .subscribe(({ response }) => {
+        .subscribe(( response ) => {
             if(!response.data?.ordersells || !response.data?.orderbuys) return
 
               const orderBuys = response.data.orderbuys;
               const orderSells = response.data.ordersells;
               const data = orderSells.length > 0 ? orderSells :  orderBuys;
-              this.operation = orderSells > 0 ? "SELL" : "BUY";
+              this.operation = orderSells.length > 0 ? "SELL" : "BUY";
               localStorage.setItem('operation', this.operation);
               if(data.length <= 0) return;
 
@@ -553,7 +553,7 @@ export default {
               id: porderId + '|' + val,
             }
           })
-          .subscribe(({ response }) => {
+          .subscribe(( response ) => {
               if(!response.data?.orderhistorysells || !response.data?.orderhistorybuys) return
 
               const orderHistorySells = response.data.orderhistorysells;
