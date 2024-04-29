@@ -590,7 +590,7 @@ export default {
                 return;
               } 
 
-              Object.entries(data.ordersells).forEach(([key, value]) => {
+              Object.entries(data).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
                 this.pendingTrades = true;

@@ -301,7 +301,7 @@ export default {
             localStorage.setItem('operation', this.operation);
             if(data.length <= 0) return;
 
-              Object.entries(data.ordersells).forEach(([key, value]) => {
+              Object.entries(data).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
                 sessionStorage.setItem('data', this.data.length);
