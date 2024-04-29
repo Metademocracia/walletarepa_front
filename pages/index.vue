@@ -285,7 +285,7 @@ export default {
   },
   beforeDestroy() {
     if(this.poolOrders) {
-  		this.poolOrders.stop();
+  		this.poolOrders.unsubscribe();
     }
 	},
   mounted() {
@@ -580,7 +580,7 @@ export default {
               const orderBuys = response.data.orderbuys;
               const orderSells = response.data.ordersells;
               const data = orderSells.length > 0 ? orderSells :  orderBuys;
-              this.operation = orderSells > 0 ? "SELL" : "BUY";
+              this.operation = orderSells.length > 0 ? "SELL" : "BUY";
               localStorage.setItem('operation', this.operation);
               if(data.length <= 0){
                 localStorage.removeItem('emailCounter');

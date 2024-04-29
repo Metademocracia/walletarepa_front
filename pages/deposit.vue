@@ -202,7 +202,7 @@ export default {
   },
   beforeDestroy() {
     if(this.poolOrders) {
-  		this.poolOrders.stop();
+  		this.poolOrders.unsubscribe();
     }
 	},
   mounted() {
