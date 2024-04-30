@@ -343,7 +343,7 @@ export default {
           // fetchPolicy: 'network-only',
           pollInterval: 5000,
           variables: {
-            token: this.tokenSymbol,
+            token: this.tokenSymbol.toLocaleUpperCase(),
             address: wallet.getCurrentAccount().address,
           }
         })
