@@ -308,7 +308,7 @@ export default {
       const selects = gql`
       query MyQuery( $fiat_method: String, $token: String, $address: String ) {
         offersbuys(
-          where: {fiat_method: $fiat_method, asset_contains: $token, owner_id_not: $address, is_pause: false}
+          where: {asset_contains: $token, owner_id_not: $address, is_pause: false}
           orderBy: exchange_rate
           orderDirection: desc
         ) {
@@ -331,7 +331,7 @@ export default {
         }
       }
       `;
-      const selectedFiat = sessionStorage.getItem('selectedFiat');
+      // const selectedFiat = sessionStorage.getItem('selectedFiat');
       // const eltoken = this.selectToken;
       let paymentMethods = new Set();
       this.listOffers = [];
@@ -341,7 +341,7 @@ export default {
           // fetchPolicy: 'network-only',
           pollInterval: 5000,
           variables: {
-            fiat_method: selectedFiat,
+            // fiat_method: selectedFiat,
             token: this.tokenSymbol,
             address: wallet.getCurrentAccount().address,
           },
