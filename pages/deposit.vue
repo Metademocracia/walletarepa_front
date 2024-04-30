@@ -311,7 +311,6 @@ export default {
           where: {fiat_method: $fiat_method, asset_contains: $token, owner_id_not: $address, is_pause: false}
           orderBy: exchange_rate
           orderDirection: desc
-          first: 1
         ) {
           amount
           asset
