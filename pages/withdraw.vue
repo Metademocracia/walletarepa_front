@@ -307,7 +307,7 @@ export default {
           sessionStorage.setItem("flags", JSON.stringify(this.listFlags));
         });
     },
-    async selects() {
+    selects() {
       const selects = gql`
       query MyQuery( $token: String, $address: String ) {
         offerssells(
@@ -338,7 +338,7 @@ export default {
       // const eltoken = this.selectToken;
       let paymentMethods = new Set();
       this.listOffers = [];
-      this.poolOrders = await this.$apollo
+      this.poolOrders = this.$apollo
         .watchQuery({
           query: selects,
           // fetchPolicy: 'network-only',

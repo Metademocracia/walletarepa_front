@@ -305,7 +305,6 @@ export default {
             where: {signer_id: $address}
           orderBy: id
           orderDirection: desc
-          first: 1
           ) {
           id
           amount_delivered
@@ -328,7 +327,6 @@ export default {
             where: {signer_id: $address}
           orderBy: id
           orderDirection: desc
-          first: 1
           ) {
           id
           amount_delivered
@@ -370,66 +368,88 @@ export default {
             const data = orderSells.length > 0 ? orderSells :  orderBuys;
 
             this.operation = orderSells.length > 0 ? "SELL" : "BUY";
-   
-            console.log("esta ajecutando 6", data)
-            if(data.length <= 0) return;
-            console.log("esta ajecutando 7")
-              // this.data = [];
-            Object.entries(data).forEach(([key, value]) => {
-              this.data = [];
-              this.data.push(value);
-              sessionStorage.setItem('data', this.data.length);
-              this.trader(this.data[0].owner_id);
-              this.terms = this.data[0].terms_conditions;
-              // console.log(this.crypto, this.data[0].asset)
-              /// //////////////////////////////////////
-              this.tokenSymbol = this.data[0].asset;
-              this.tokenImage = this.data[0].asset === "USDT" ? "https://nearp2p.com/dv/portal/usdt.svg" : "https://nearp2p.com/dv/portal/near-wallet-icon.svg";
-              // this.tokenImage = selectedToken.icon;
-              this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
-              this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
 
-              walletUtils.getPrice(this.crypto, this.data[0].asset).then(price => {
-                this.exchangeRate = this.data[0].exchange_rate * price;
-                this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
-              });
-              this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
-              sessionStorage.setItem('operationAmount', this.operationAmount);
-              this.orderId = this.data[0].order_id;
-              localStorage.setItem('orderId', this.orderId)
-              this.endTime = this.data[0].time * 60;
-              this.createAt = moment(this.data[0].datetime);
-              const seconsdNow = moment().diff(this.createAt, 'seconds');
-              const secondsFinal = this.endTime - seconsdNow;
-              this.seconds = secondsFinal <= 0 ? 0 : secondsFinal;
-
-              if(this.data[0].status === 3){
-                this.topText = "TRANSACCIÓN MARCADA PARA";
-                this.topBottom = "DISPUTA";
-                this.stopCountdown();
-                this.seconds = 0;
-              }
-
-              if(this.operation === "SELL"){
-                this.traderNameTitle = "Nombre de comprador:";
-                this.typeOffer = "VENDER"
-                this.amountTittle = "Monto a Recibir:";
-                this.cryptoTittle = "Crypto a Vender:";
-              } else {
-                this.traderNameTitle = "Nombre de vendedor:";
-                this.typeOffer = "COMPRAR";
-                this.amountTittle = "Monto a Pagar:";
-                this.cryptoTittle = "Crypto a Recibir:";
-              }
-              this.getUnreadMessagesCount(this.data[0].order_id, this.operation);
+            if(data.length <= 0) {
+              localStorage.removeItem('operation');
+              localStorage.removeItem('orderId');
               
-              if(!this.poolOrderHistory) {
-                this.orderHistory(this.orderId, this.operation);
-              }
-              
-              this.sendMail();
+              return
+            };
 
-              });
+            let orderId = localStorage.getItem('orderId');
+            let operation = localStorage.getItem('operation');
+            
+            
+            if(orderId === "undefined" || operation === "undefined" || orderId === undefined || operation === undefined || !orderId || !operation ) {
+              console.log("aqui paso asedfesdffdfsdf")
+              localStorage.setItem('orderId', data[0].order_id);
+              localStorage.setItem('operation', this.operation);
+              orderId = data[0].order_id;
+              operation = this.operation;
+            }
+            
+            let order =  data.find((item) => item.order_id === orderId);
+
+            if(order === "undefined" || order === undefined || !order){
+              localStorage.setItem('orderId', data[0].order_id);
+              localStorage.setItem('operation', this.operation);
+              orderId = data[0].order_id;
+              operation = this.operation;
+              order =  data.find((item) => item.order_id === orderId);
+            }
+            
+            this.data = [];
+            this.data.push(order);
+            sessionStorage.setItem('data', this.data.length);
+            this.trader(this.data[0].owner_id);
+            this.terms = this.data[0].terms_conditions;
+            /// //////////////////////////////////////
+            this.tokenSymbol = this.data[0].asset;
+            this.tokenImage = this.data[0].asset === "USDT" ? "https://nearp2p.com/dv/portal/usdt.svg" : "https://nearp2p.com/dv/portal/near-wallet-icon.svg";
+            this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
+            this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
+
+            walletUtils.getPrice(this.crypto, this.data[0].asset).then(price => {
+              this.exchangeRate = this.data[0].exchange_rate * price;
+              this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
+            });
+            this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
+            sessionStorage.setItem('operationAmount', this.operationAmount);
+            this.orderId = this.data[0].order_id;
+
+            this.endTime = this.data[0].time * 60;
+            this.createAt = moment(this.data[0].datetime);
+            const seconsdNow = moment().diff(this.createAt, 'seconds');
+            const secondsFinal = this.endTime - seconsdNow;
+            this.seconds = secondsFinal <= 0 ? 0 : secondsFinal;
+
+            if(this.data[0].status === 3){
+              this.topText = "TRANSACCIÓN MARCADA PARA";
+              this.topBottom = "DISPUTA";
+              this.stopCountdown();
+              this.seconds = 0;
+            }
+
+            if(this.operation === "SELL"){
+              this.traderNameTitle = "Nombre de comprador:";
+              this.typeOffer = "VENDER"
+              this.amountTittle = "Monto a Recibir:";
+              this.cryptoTittle = "Crypto a Vender:";
+            } else {
+              this.traderNameTitle = "Nombre de vendedor:";
+              this.typeOffer = "COMPRAR";
+              this.amountTittle = "Monto a Pagar:";
+              this.cryptoTittle = "Crypto a Recibir:";
+            }
+            this.getUnreadMessagesCount(this.data[0].order_id, this.operation);
+            
+            if(!this.poolOrderHistory) {
+              this.orderHistory(this.orderId, this.operation);
+            }
+            
+            this.sendMail();
+
+            
           });
 
         /* await this.$apollo
@@ -466,7 +486,7 @@ export default {
                 this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
                 sessionStorage.setItem('operationAmount', this.operationAmount);
                 this.orderId = this.data[0].order_id;
-                localStorage.setItem('orderId', this.orderId)
+                localStorage.setItem('ord erId', this.orderId)
                 this.endTime = this.data[0].time * 60;
                 this.createAt = moment(this.data[0].datetime);
                 const seconsdNow = moment().diff(this.createAt, 'seconds');
@@ -567,7 +587,7 @@ export default {
                 });
                 this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
                 this.orderId = this.data[0].order_id;
-                localStorage.setItem('orderId', this.orderId)
+                localStorage.setItem('ord erId', this.orderId)
                 this.endTime = this.data[0].time * 60;
                 this.createAt = moment(this.data[0].datetime);
                 const seconsdNow = moment().diff(this.createAt, 'seconds');
@@ -604,7 +624,6 @@ export default {
     }, */
     
     orderHistory(porderId, operation) {
-      console.log("aqui paso order history 1")
       const val = operation === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
@@ -621,7 +640,6 @@ export default {
           }
       }
       `;
-      console.log("aqui paso order history 2")
         this.poolOrderHistory = this.$apollo
           .watchQuery({
             query: selects,
@@ -632,7 +650,6 @@ export default {
             }
           })
           .subscribe(( response ) => {
-            console.log("aqui paso order history 3")
             if(!response.data?.orderhistorysells || !response.data?.orderhistorybuys) return
 
             const orderHistorySells = response.data.orderhistorysells;

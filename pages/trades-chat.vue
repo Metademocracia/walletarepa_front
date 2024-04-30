@@ -191,6 +191,7 @@ export default {
       deleteContract: null,
       poolOrders: null,
       poolOrderHistory: null,
+      countOrders: 0,
     }
   },
   head() {
@@ -242,7 +243,8 @@ export default {
         });
       // }
     },
-    async getOrders() {
+    
+    getOrders() {
       this.operation = "SELL";
       localStorage.setItem('operation', this.operation);
       const selects = gql`
@@ -251,7 +253,6 @@ export default {
             where: {signer_id: $address}
           orderBy: id
           orderDirection: desc
-          first: 1
           ) {
           id
           amount_delivered
@@ -273,7 +274,6 @@ export default {
             where: {signer_id: $address}
           orderBy: id
           orderDirection: desc
-          first: 1
           ) {
           id
           amount_delivered
@@ -292,7 +292,7 @@ export default {
         }
       }
       `;    
-      this.poolOrders = await this.$apollo
+      this.poolOrders = this.$apollo
         .watchQuery({
           query: selects,
           // fetchPolicy: 'network-only',
@@ -308,39 +308,61 @@ export default {
               const orderSells = response.data.ordersells;
               const data = orderSells.length > 0 ? orderSells :  orderBuys;
               this.operation = orderSells.length > 0 ? "SELL" : "BUY";
+              
+              
+              if(data.length <= 0) {
+              localStorage.removeItem('operation');
+              localStorage.removeItem('orderId');
+              
+              return
+            };
+
+            let orderId = localStorage.getItem('orderId');
+            let operation = localStorage.getItem('operation');
+            
+            
+            if(orderId === "undefined" || operation === "undefined" || orderId === undefined || operation === undefined || !orderId || !operation ) {
+              localStorage.setItem('orderId', data[0].order_id);
               localStorage.setItem('operation', this.operation);
-              if(data.length <= 0) return;
+              orderId = data[0].order_id;
+              operation = this.operation;
+            }
+            
+            let order =  data.find((item) => item.order_id === orderId);
 
-              Object.entries(data).forEach(([key, value]) => {
-                  this.data.push(value); 
-                  sessionStorage.setItem('data', this.data.length);
-                  this.trader(this.data[0].owner_id);
-                  this.terms = this.data[0].terms_conditions;
-                  sessionStorage.setItem('terms', this.terms);
-                  /// //////////////////////////////////////
-                  this.tokenSymbol = this.data[0].asset;
-                  this.tokenImage = this.data[0].asset === "USDT" ? "https://nearp2p.com/dv/portal/usdt.svg" : "https://nearp2p.com/dv/portal/near-wallet-icon.svg";
-                  // this.tokenImage = selectedToken.icon;
-                  this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
-                  this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
-                  
-                  walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
-                    this.exchangeRate = this.data[0].exchange_rate * price;
-                    this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
-                  }); 
-                  this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6); 
-                  // console.log(this.data[0].operation_amount, this.tokenSymbol)              
-                  this.orderId = this.data[0].order_id;
-                  localStorage.setItem('orderId', this.orderId)
+            if(order === "undefined" || order === undefined || !order){
+              localStorage.setItem('orderId', data[0].order_id);
+              localStorage.setItem('operation', this.operation);
+              orderId = data[0].order_id;
+              operation = this.operation;
+              order =  data.find((item) => item.order_id === orderId);
+            }
 
-                  this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
-                  this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
+            this.data.push(order); 
+            sessionStorage.setItem('data', this.data.length);
+            this.trader(this.data[0].owner_id);
+            this.terms = this.data[0].terms_conditions;
+            sessionStorage.setItem('terms', this.terms);
+            /// //////////////////////////////////////
+            this.tokenSymbol = this.data[0].asset;
+            this.tokenImage = this.data[0].asset === "USDT" ? "https://nearp2p.com/dv/portal/usdt.svg" : "https://nearp2p.com/dv/portal/near-wallet-icon.svg";
+       
+            this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
+            this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
+            
+            walletUtils.getPrice(this.crypto, this.tokenSymbol).then(price => {
+              this.exchangeRate = this.data[0].exchange_rate * price;
+              this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;     
+            }); 
+            this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6); 
+            this.orderId = this.data[0].order_id;
 
-                  if(!this.poolOrderHistory) {
-                    this.orderHistory(this.orderId, this.operation);
-                  }
+            this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
+            this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
 
-              });
+            if(!this.poolOrderHistory) {
+              this.orderHistory(this.orderId, this.operation);
+            }
         });
     },
     // async orderBuy() {
@@ -401,7 +423,7 @@ export default {
     //             }); 
     //             this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);               
     //             this.orderId = this.data[0].order_id;
-    //             localStorage.setItem('orderId', this.orderId)
+    //             localStorage.setItem('ord erId', this.orderId)
 
 
     //             this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
@@ -527,7 +549,7 @@ export default {
       // this.sendMail();
       this.$router.push({ path: "/tx-disputed" });
     },
-    async orderHistory(porderId, operation) {
+    orderHistory(porderId, operation) {
       const val = operation === "SELL" ? "1" : "2";
       const selects = gql`
       query MyQuery( $id : String) {
@@ -544,7 +566,7 @@ export default {
           }
       }
       `;    
-      this.poolOrderHistory = await this.$apollo
+      this.poolOrderHistory = this.$apollo
           .watchQuery({
             query: selects,
             // fetchPolicy: 'network-only',

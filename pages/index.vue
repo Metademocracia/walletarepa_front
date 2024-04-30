@@ -518,7 +518,7 @@ export default {
         this.operationSymbol = require("@/assets/sources/tokens/near.svg");
       }
     },
-    async getOrders() {
+    getOrders() {
       // console.log('entro', wallet.getCurrentAccount().address);
       const selects = gql`
         query MyQuery( $address : String) {
@@ -526,7 +526,6 @@ export default {
             where: {signer_id: $address}
           orderBy: id
           orderDirection: desc
-          first: 1
           ) {
           id
           amount_delivered
@@ -547,7 +546,6 @@ export default {
             where: {signer_id: $address}
           orderBy: id
           orderDirection: desc
-          first: 1
           ) {
           id
           amount_delivered
@@ -565,7 +563,7 @@ export default {
         }
       }
       `;    
-      this.poolOrders = await this.$apollo
+      this.poolOrders = this.$apollo
           .watchQuery({
             query: selects,
             // fetchPolicy: 'network-only',
@@ -577,24 +575,46 @@ export default {
           .subscribe(( response ) => {
             if(!response.data?.ordersells || !response.data?.orderbuys) return
 
-              const orderBuys = response.data.orderbuys;
-              const orderSells = response.data.ordersells;
-              const data = orderSells.length > 0 ? orderSells :  orderBuys;
-              this.operation = orderSells.length > 0 ? "SELL" : "BUY";
-              localStorage.setItem('operation', this.operation);
-              if(data.length <= 0){
-                localStorage.removeItem('emailCounter');
-                localStorage.removeItem('orderId');
-                localStorage.removeItem('operation');
-                this.pendingTrades = false;
-                return;
-              } 
+            const orderBuys = response.data.orderbuys;
+            const orderSells = response.data.ordersells;
+            const data = orderSells.length > 0 ? orderSells :  orderBuys;
+            this.operation = orderSells.length > 0 ? "SELL" : "BUY";
 
-              Object.entries(data).forEach(([key, value]) => {
-                this.data = [];
-                this.data.push(value);
-                this.pendingTrades = true;
-              });
+            
+            
+            if(data.length <= 0){
+              localStorage.removeItem('emailCounter');
+              localStorage.removeItem('orderId');
+              localStorage.removeItem('operation');
+              this.pendingTrades = false;
+              return;
+            }
+
+            let orderId = localStorage.getItem('orderId');
+            let operation = localStorage.getItem('operation');
+            
+            
+            if(orderId === "undefined" || operation === "undefined" || orderId === undefined || operation === undefined || !orderId || !operation ) {
+              localStorage.setItem('orderId', data[0].order_id);
+              localStorage.setItem('operation', this.operation);
+              orderId = data[0].order_id;
+              operation = this.operation;
+            }
+            
+            let order =  data.find((item) => item.order_id === orderId);
+
+            if(order === "undefined" || order === undefined || !order){
+              localStorage.setItem('orderId', data[0].order_id);
+              localStorage.setItem('operation', this.operation);
+              orderId = data[0].order_id;
+              operation = this.operation;
+              order =  data.find((item) => item.order_id === orderId);
+            }
+
+            this.data = [];
+            this.data.push(order);
+            this.pendingTrades = true;
+            
           });
     },
     // async orderBuy() {
