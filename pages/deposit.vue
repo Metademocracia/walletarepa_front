@@ -427,7 +427,7 @@ export default {
           });
 
           if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
-            console.log("error al aceptar la oferta", acceptOffer);
+            // console.log("error al aceptar la oferta", acceptOffer);
             this.btnLoading = false;
             return
           }

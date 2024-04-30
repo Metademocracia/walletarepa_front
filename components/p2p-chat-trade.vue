@@ -319,7 +319,7 @@ export default {
           .get();
         // console.log(messagesSnapshot)
         this.unreadMessagesCount = messagesSnapshot.size;
-        console.log("unreadMessagesCount", this.unreadMessagesCount)
+        // console.log("unreadMessagesCount", this.unreadMessagesCount)
       } catch (error) {
         console.error("Failed to get unread messages count:", error);
       }

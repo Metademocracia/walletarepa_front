@@ -579,8 +579,6 @@ export default {
             const orderSells = response.data.ordersells;
             const data = orderSells.length > 0 ? orderSells :  orderBuys;
             this.operation = orderSells.length > 0 ? "SELL" : "BUY";
-
-            
             
             if(data.length <= 0){
               localStorage.removeItem('emailCounter');

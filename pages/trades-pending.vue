@@ -272,7 +272,7 @@ export default {
     }
 	},
 
-  created() {
+  mounted() {
      this.getOrders();
   },
   methods: {
@@ -368,20 +368,25 @@ export default {
             const data = orderSells.length > 0 ? orderSells :  orderBuys;
 
             this.operation = orderSells.length > 0 ? "SELL" : "BUY";
-
+            
             if(data.length <= 0) {
+              /* if(orderId !== "undefined" || operation !== "undefined" || orderId !== undefined || operation !== undefined || orderId || operation ) {
+                if(this.poolOrderHistory) {
+                  this.poolOrderHistory.unsubscribe();
+                }
+                this.orderHistory(orderId, operation);
+              } */
               localStorage.removeItem('operation');
               localStorage.removeItem('orderId');
               
+              // this.$router.push('/');
               return
             };
-
+            
             let orderId = localStorage.getItem('orderId');
             let operation = localStorage.getItem('operation');
-            
-            
+
             if(orderId === "undefined" || operation === "undefined" || orderId === undefined || operation === undefined || !orderId || !operation ) {
-              console.log("aqui paso asedfesdffdfsdf")
               localStorage.setItem('orderId', data[0].order_id);
               localStorage.setItem('operation', this.operation);
               orderId = data[0].order_id;
@@ -444,7 +449,7 @@ export default {
             this.getUnreadMessagesCount(this.data[0].order_id, this.operation);
             
             if(!this.poolOrderHistory) {
-              this.orderHistory(this.orderId, this.operation);
+              this.orderHistory(this.data[0].order_id, this.operation);
             }
             
             this.sendMail();
@@ -623,7 +628,7 @@ export default {
           });
     }, */
     
-    orderHistory(porderId, operation) {
+    orderHistory(orderId, operation) {
       const val = operation === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
@@ -646,7 +651,7 @@ export default {
             // fetchPolicy: 'network-only',
             pollInterval: 5000,
             variables: {
-              id: porderId + '|' + val,
+              id: orderId + '|' + val,
             }
           })
           .subscribe(( response ) => {
@@ -669,7 +674,7 @@ export default {
                   localStorage.removeItem('operation')
                   this.$router.push('/tx-canceled');
                 }
-                if(this.dataCancel[0].status === 2){
+                if(this.dataCancel[0].status === 2 || this.dataCancel[0].status === 3){
                   sessionStorage.clear(); // Clear all data from sessionStorage
                   localStorage.removeItem('emailCounter')
                   localStorage.removeItem('orderId')

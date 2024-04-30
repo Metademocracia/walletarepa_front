@@ -431,7 +431,7 @@ export default {
           });
           // console.log(createSubCobtractUser)
           if (!createSubCobtractUser || createSubCobtractUser.status.SuccessValue !== "") {
-            console.log("error al crear subcontrato");
+            // console.log("error al crear subcontrato");
             this.btnLoading = false;
             return
           }
@@ -463,7 +463,7 @@ export default {
           attachedDeposit: "1"
         });
         if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
-          console.log("error al transferir token");
+          // console.log("error al transferir token");
           this.btnLoading = false;
           return
         }
@@ -483,7 +483,7 @@ export default {
         });
 
         if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
-          console.log("error al aceptar la oferta", acceptOffer);
+          // console.log("error al aceptar la oferta", acceptOffer);
           this.btnLoading = false;
           return
         }
@@ -552,7 +552,7 @@ export default {
           });
           // console.log(createSubCobtractUser)
           if (!createSubCobtractUser || createSubCobtractUser.status.SuccessValue !== "") {
-            console.log("error al crear subcontrato");
+            // console.log("error al crear subcontrato");
             this.btnLoading = false;
             return
           }
@@ -568,7 +568,7 @@ export default {
         });
 
         if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
-          console.log("error al transferir token");
+          // console.log("error al transferir token");
           this.btnLoading = false;
           return
         }
@@ -589,7 +589,7 @@ export default {
         });
 
         if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
-          console.log("error al aceptar la oferta", acceptOffer);
+          // console.log("error al aceptar la oferta", acceptOffer);
           this.btnLoading = false;
           return
         }

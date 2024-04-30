@@ -304,22 +304,24 @@ export default {
         .subscribe(( response ) => {
             if(!response.data?.ordersells || !response.data?.orderbuys) return
 
-              const orderBuys = response.data.orderbuys;
-              const orderSells = response.data.ordersells;
-              const data = orderSells.length > 0 ? orderSells :  orderBuys;
-              this.operation = orderSells.length > 0 ? "SELL" : "BUY";
-              
-              
-              if(data.length <= 0) {
+            const orderBuys = response.data.orderbuys;
+            const orderSells = response.data.ordersells;
+            const data = orderSells.length > 0 ? orderSells :  orderBuys;
+            this.operation = orderSells.length > 0 ? "SELL" : "BUY";
+
+            if(data.length <= 0) {
+              /* if(orderId === "undefined" || operation === "undefined" || orderId === undefined || operation === undefined || !orderId || !operation ) {
+                this.orderHistory(orderId, operation);
+              } */
               localStorage.removeItem('operation');
               localStorage.removeItem('orderId');
               
+              // this.$router.push('/');
               return
             };
 
             let orderId = localStorage.getItem('orderId');
             let operation = localStorage.getItem('operation');
-            
             
             if(orderId === "undefined" || operation === "undefined" || orderId === undefined || operation === undefined || !orderId || !operation ) {
               localStorage.setItem('orderId', data[0].order_id);
@@ -459,7 +461,7 @@ export default {
       }) 
       // console.log("orderConfirmation", orderConfirmation)
       if (!orderConfirmation || orderConfirmation.status.SuccessValue !== "") {
-        console.log("Error confirmando la orden");
+        // console.log("Error confirmando la orden");
         return
       }
       // console.log("orderConfirmation", orderConfirmation)
@@ -510,7 +512,7 @@ export default {
       });
       // console.log("orderConfirmation", orderConfirmation)
       if (!orderConfirmation || orderConfirmation.status.SuccessValue !== "") {
-        console.log("Error cancelando la orden");
+        // console.log("Error cancelando la orden");
         return
       }
       // console.log("orderConfirmation", orderConfirmation)
@@ -540,7 +542,7 @@ export default {
       });
       // console.log("orderConfirmation", orderConfirmation)
       if (!orderConfirmation || orderConfirmation.status.SuccessValue !== "") {
-        console.log("Error cancelando la orden");
+        // console.log("Error cancelando la orden");
         return
       }
       // console.log("orderConfirmation", orderConfirmation)
@@ -597,7 +599,7 @@ export default {
                   localStorage.removeItem('operation');
                   this.$router.push('/tx-canceled');
                 }
-                if(this.dataCancel[0].status === 2){
+                if(this.dataCancel[0].status === 2 || this.dataCancel[0].status === 3){
                   sessionStorage.clear(); // Clear all data from sessionStorage
                   localStorage.removeItem('emailCounter');
                   localStorage.removeItem('orderId');
