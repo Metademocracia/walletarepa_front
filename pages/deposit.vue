@@ -306,7 +306,7 @@ export default {
     },
     selects() {
       const selects = gql`
-      query MyQuery( $fiat_method: String, $token: String, $address: String ) {
+      query MyQuery( $token: String, $address: String ) {
         offersbuys(
           where: {asset_contains: $token, owner_id_not: $address, is_pause: false}
           orderBy: exchange_rate
@@ -342,7 +342,7 @@ export default {
           pollInterval: 5000,
           variables: {
             // fiat_method: selectedFiat,
-            token: this.tokenSymbol,
+            token: this.tokenSymbol.toLocaleUpperCase(),
             address: wallet.getCurrentAccount().address,
           },
         })
