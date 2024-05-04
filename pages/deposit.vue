@@ -58,9 +58,9 @@
     <section class="d-flex flex-column" style="height: 208px; translate: 0 -30px">
       <v-text-field 
       v-model="amount" placeholder="0.0" type="number" :rules="required"
-        @input="debouncePreviewWithdraw()"></v-text-field>
+        ></v-text-field>
 
-      <v-btn 
+      <!-- <v-btn 
       class="btn-outlined mx-auto" style="
           --bg: var(--secondary);
           --b-color: var(--primary);
@@ -70,7 +70,7 @@
           --ls: 0.36px;
           --h: 34px;
           width: 121px;
-        " @click="maxBalance()">USAR MÁXIMO</v-btn>
+        " @click="maxBalance()">USAR MÁXIMO</v-btn> -->
     </section>
 
 
@@ -174,7 +174,6 @@ export default {
       originalPayments: [],
       required: [
         (v) => !!v || "Campo requerido",
-        (v) => Number(v) <= Number(this.balance) || "Saldo insuficiente",
       ],
       model: false,
       modelPayments: false,
@@ -308,7 +307,7 @@ export default {
       const selects = gql`
       query MyQuery( $token: String, $address: String ) {
         offersbuys(
-          where: {asset_contains: $token, owner_id_not: $address, is_pause: false}
+          where: {asset_contains: $token, owner_id_not: $address, is_pause: false, is_merchant: true}
           orderBy: exchange_rate
           orderDirection: desc
         ) {

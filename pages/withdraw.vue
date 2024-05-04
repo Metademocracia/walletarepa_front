@@ -126,7 +126,7 @@
       </v-card>
 
       <div class="d-flex mt-4" style="gap: 10px">
-        <v-btn class="btn-outlined flex-grow-1" :loading="btnLoading" style="--bg: var(--card-2)" @click="$router.back()">
+        <v-btn class="btn-outlined flex-grow-1" :loading="btnLoading" style="--bg: var(--card-2)" @click="$router.push('/')">
           CANCELAR
         </v-btn>
 
@@ -149,6 +149,7 @@
       </h6>
     </section>
   </v-form>
+  
 </template>
 
 <script>
@@ -311,7 +312,7 @@ export default {
       const selects = gql`
       query MyQuery( $token: String, $address: String ) {
         offerssells(
-          where: {asset_contains: $token, owner_id_not: $address, is_pause: false}
+          where: {asset_contains: $token, owner_id_not: $address, is_pause: false, is_merchant: true}
           orderBy: exchange_rate
           orderDirection: desc
         ) {
@@ -612,7 +613,7 @@ export default {
       // console.log('',amountInYocto);
       return amountInYocto.toString();
     },
-  },
+    },
 };
 </script>
 

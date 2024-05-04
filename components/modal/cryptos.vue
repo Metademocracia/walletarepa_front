@@ -201,6 +201,25 @@ export default {
       }); */
       this.tokensData = inventory.fts;
 
+      const usdtExists = this.tokensData.some(token => token.coin === 'USDT');
+
+      // If USDT does not exist, add it manually
+      if (!usdtExists) {
+        const usdtData = {
+          contract: "USDT",
+          balance: "0.00000",
+          balanceTotal: "0",
+          name: "USDT",
+          symbol: "USDT",
+          decimals: 6,
+          icon: require('@/assets/sources/tokens/tether-usdt-logo.png'),
+          balance_usd: "0.00",
+          price: 1
+        };
+
+        this.tokensData.push(usdtData);
+      }
+
       if (this.filter) {
         this.tokensData = this.tokensData.filter((item) => this.filter.includes(item?.symbol.toLowerCase()))
       }
@@ -221,6 +240,11 @@ export default {
       this.loading = false;
       this.dataTokensFinal = [].concat(this.tokensData); // Set sorted inventory data
       // console.log('Final data:', this.dataTokensFinal);
+      this.dataTokensFinal.sort((a, b) => {
+        if (a.name === 'USDT') return -1;
+        if (b.name === 'USDT') return 1;
+        return 0;
+      });
     },
     onSelected(item) {
       this.model = false;
