@@ -291,9 +291,11 @@ export default {
           .where("readed", "==", false)
           .onSnapshot((snapshot) => {
             
-            this.unreadMessagesCount = snapshot.size;
-            this.unreadMessagesActive = snapshot.size > 0;
+            this.unreadMessagesCount = snapshot.size - 1;
+            this.unreadMessagesActive = snapshot.size - 1 > 0;
+            console.log(snapshot.size)
           });
+          
       } catch (error) {
         console.error("Failed to get unread messages count:", error);
       }

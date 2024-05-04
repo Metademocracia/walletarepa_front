@@ -10,7 +10,7 @@
 
     <template v-else>
       <section ref="chat">
-        <!-- <v-card
+        <v-card
           v-if="showInfoCard"
           class="p2p-chat--info-card px-4 py-2 anim-movedown"
         >
@@ -20,7 +20,7 @@
 
           <p class="mb-0 ellipsis-box" :style="`--lines: ${showMoreInfoCard ? 0 : 2}`">{{ infoMessage }}</p>
           <a @click="showMoreInfoCard = !showMoreInfoCard">VER {{ showMoreInfoCard ? 'MENOS' : 'MAS' }} <v-icon size="16">mdi-chevron-right</v-icon></a>
-        </v-card> -->
+        </v-card>
 
         <div
           v-for="(msg, i) in messages" v-show="msg?.text || msg?.name || msg?.src" :key="i"
@@ -156,9 +156,9 @@
 import firebase from "firebase/compat/app";
 import moment from "moment"
 import { Timestamp, collection, query, where, getDocs, doc, onSnapshot, orderBy } from 'firebase/firestore'
-import wallet from '@/services/local-storage-user'
 // import { timeOf } from '@/plugins/functions'
 import { db } from "@/plugins/firebase";
+import wallet from '@/services/local-storage-user'
 import { MessageModel, MessageSpecialId, MessageStatus, MessageType } from '~/models/message_model'
 import { RoomUserInfo } from '~/models/p2p_user_model'
 
@@ -268,7 +268,7 @@ export default {
                 wallet: wallet.getCurrentAccount().address,
                 photoURL: url,
                 text: this.message || " ",
-                readed: false,
+                readed: true,
                 type: MessageType.image,
                 updatedAt: Date.now(),
                 createdAt: Date.now(),
@@ -342,7 +342,6 @@ export default {
         const docRef = doc(db, `${process.env.VUE_APP_CHAT_FIREBASE}/${this.operation}${this.orderId}/MESSAGES`, item.id);
         batch.update(docRef, { readed: true });
       });
-
       await batch.commit();
     },
 
@@ -371,7 +370,7 @@ export default {
           snapshot.forEach((doc) => {
             const item = { ...doc.data(), id: doc.id};
             // item.text = !item?.text ? null : item.text.trim() === "" ? null : item.text.trim();
-            if (item.wallet === localStorage.getItem("address")) {
+            if (item.wallet === wallet.getCurrentAccount().address) {
               item.authorId = "2"
             } else {
               item.authorId = "1"
@@ -457,7 +456,7 @@ export default {
             // console.log("url",url)
             const messageInfo = {
               authorId: null,
-              wallet: localStorage.getItem("address"),
+              wallet: wallet.getCurrentAccount().address,
               photoURL: url,
               text: this.message,
               readed: true,
@@ -488,9 +487,9 @@ export default {
      else if (this.message) {
         const messageInfo = {
           authorId: null,
-          wallet: localStorage.getItem("address"),
+          wallet: wallet.getCurrentAccount().address,
           text: this.message,
-          readed: false,
+          readed: true,
           type: MessageType.text,
           updatedAt: Date.now(),
           createdAt: Date.now(),
