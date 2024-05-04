@@ -376,19 +376,19 @@ export default {
                 }
                 this.orderHistory(orderId, operation);
               } */
-              localStorage.removeItem('operation');
-              localStorage.removeItem('orderId');
+              sessionStorage.removeItem('operation');
+              sessionStorage.removeItem('orderId');
               
               // this.$router.push('/');
               return
             };
             
-            let orderId = localStorage.getItem('orderId');
-            let operation = localStorage.getItem('operation');
+            let orderId = sessionStorage.getItem('orderId');
+            let operation = sessionStorage.getItem('operation');
 
             if(orderId === "undefined" || operation === "undefined" || orderId === undefined || operation === undefined || !orderId || !operation ) {
-              localStorage.setItem('orderId', data[0].order_id);
-              localStorage.setItem('operation', this.operation);
+              sessionStorage.setItem('orderId', data[0].order_id);
+              sessionStorage.setItem('operation', this.operation);
               orderId = data[0].order_id;
               operation = this.operation;
             }
@@ -396,8 +396,8 @@ export default {
             let order =  data.find((item) => item.order_id === orderId);
 
             if(order === "undefined" || order === undefined || !order){
-              localStorage.setItem('orderId', data[0].order_id);
-              localStorage.setItem('operation', this.operation);
+              sessionStorage.setItem('orderId', data[0].order_id);
+              sessionStorage.setItem('operation', this.operation);
               orderId = data[0].order_id;
               operation = this.operation;
               order =  data.find((item) => item.order_id === orderId);
@@ -670,15 +670,15 @@ export default {
                 if(this.dataCancel[0].status === 4){
                   sessionStorage.clear(); // Clear all data from sessionStorage
                   localStorage.removeItem('emailCounter')
-                  localStorage.removeItem('orderId')
-                  localStorage.removeItem('operation')
+                  sessionStorage.removeItem('orderId')
+                  sessionStorage.removeItem('operation')
                   this.$router.push('/tx-canceled');
                 }
                 if(this.dataCancel[0].status === 2 || this.dataCancel[0].status === 3){
                   sessionStorage.clear(); // Clear all data from sessionStorage
                   localStorage.removeItem('emailCounter')
-                  localStorage.removeItem('orderId')
-                  localStorage.removeItem('operation')
+                  sessionStorage.removeItem('orderId')
+                  sessionStorage.removeItem('operation')
                   this.$router.push('/tx-executed');
                 }
               });
@@ -713,14 +713,14 @@ export default {
                 if(this.dataCancel[0].status === 4){
                   sessionStorage.clear(); // Clear all data from sessionStorage
                   localStorage.removeItem('emailCounter')
-                  localStorage.removeItem('orderId')
+                  sessionStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                   this.$router.push('/tx-canceled');
                 }
                 if(this.dataCancel[0].status === 2){
                   sessionStorage.clear(); // Clear all data from sessionStorage
                   localStorage.removeItem('emailCounter')
-                  localStorage.removeItem('orderId')
+                  sessionStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                   this.$router.push('/tx-executed');
                 }
@@ -756,14 +756,14 @@ export default {
                 if(this.dataCancel[0].status === 4){
                   sessionStorage.clear(); // Clear all data from sessionStorage
                   localStorage.removeItem('emailCounter')
-                  localStorage.removeItem('orderId')
+                  sessionStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                   this.$router.push('/tx-canceled');
                 }
                 if(this.dataCancel[0].status === 2){
                   sessionStorage.clear(); // Clear all data from sessionStorage
                   localStorage.removeItem('emailCounter')
-                  localStorage.removeItem('orderId')
+                  sessionStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                     this.$router.push('/tx-executed');
                 }

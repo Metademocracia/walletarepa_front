@@ -10,7 +10,7 @@
 
     <template v-else>
       <section ref="chat">
-        <v-card
+        <!-- <v-card
           v-if="showInfoCard"
           class="p2p-chat--info-card px-4 py-2 anim-movedown"
         >
@@ -20,7 +20,7 @@
 
           <p class="mb-0 ellipsis-box" :style="`--lines: ${showMoreInfoCard ? 0 : 2}`">{{ infoMessage }}</p>
           <a @click="showMoreInfoCard = !showMoreInfoCard">VER {{ showMoreInfoCard ? 'MENOS' : 'MAS' }} <v-icon size="16">mdi-chevron-right</v-icon></a>
-        </v-card>
+        </v-card> -->
 
         <div
           v-for="(msg, i) in messages" v-show="msg?.text || msg?.name || msg?.src" :key="i"
@@ -156,6 +156,7 @@
 import firebase from "firebase/compat/app";
 import moment from "moment"
 import { Timestamp, collection, query, where, getDocs, doc, onSnapshot, orderBy } from 'firebase/firestore'
+import wallet from '@/services/local-storage-user'
 // import { timeOf } from '@/plugins/functions'
 import { db } from "@/plugins/firebase";
 import { MessageModel, MessageSpecialId, MessageStatus, MessageType } from '~/models/message_model'
@@ -184,8 +185,8 @@ export default {
   data() {
     return {
       photo: null,
-      orderId: localStorage.getItem("orderId"),
-      operation: localStorage.getItem("operation"),
+      orderId: sessionStorage.getItem("orderId"),
+      operation: sessionStorage.getItem("operation"),
       MessageSpecialId,
       MessageType,
       uid: "2",
@@ -264,10 +265,10 @@ export default {
             uploadTask.snapshot.ref.getDownloadURL().then((url) => {
               const messageInfo = {
                 authorId: null,
-                wallet: localStorage.getItem("address"),
+                wallet: wallet.getCurrentAccount().address,
                 photoURL: url,
                 text: this.message || " ",
-                readed: true,
+                readed: false,
                 type: MessageType.image,
                 updatedAt: Date.now(),
                 createdAt: Date.now(),
@@ -329,7 +330,7 @@ export default {
     async readMessages() {
       const q = query(
         collection(db, `${process.env.VUE_APP_CHAT_FIREBASE}/${this.operation}${this.orderId}/MESSAGES`),
-        where("wallet", "!=", localStorage.getItem("address")),
+        where("wallet", "!=", wallet.getCurrentAccount().address),
         where("readed", "==", false)
       );
 
@@ -418,7 +419,7 @@ export default {
           querySnapshot.forEach((doc) => {
             const item = { ...doc.data(), id: doc.id};
             // item.text = !item?.text ? null : item.text.trim() === "" ? null : item.text.trim();
-            if (item.wallet === localStorage.getItem("address")) {
+            if (item.wallet === wallet.getCurrentAccount().address) {
               item.authorId = "2"
             } else {
               item.authorId = "1"
@@ -435,10 +436,8 @@ export default {
           setTimeout(() =>{
             // console.log(this.showInfoCard, this.$refs.scrollable)
             // this.$refs.scrollable.scrollIntoView({ behavior: "smooth", block: "end" });
-            if (this.showInfoCard && this.$refs.scrollable) {
                 this.$refs.scrollable.scrollIntoView({ behavior: "smooth" });
-            }
-          }, 1000)
+          }, 500)
 
           this.readMessages();
 
@@ -491,7 +490,7 @@ export default {
           authorId: null,
           wallet: localStorage.getItem("address"),
           text: this.message,
-          readed: true,
+          readed: false,
           type: MessageType.text,
           updatedAt: Date.now(),
           createdAt: Date.now(),

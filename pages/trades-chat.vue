@@ -48,6 +48,32 @@
       </v-btn>
 
     </modal-warning>
+
+    <modal-warning
+      ref="cancelModal"
+    >
+      <template #action>
+        <v-btn class="btn-outlined-2 mt-6" :loading="btnLoading" @click="$refs.cancelModal.model = false">
+          VOLVER
+        </v-btn>
+      </template>
+
+      <p>
+        USTED ESTA A PUNTO CANCELAR EL INTERCAMBIO, ESTÁ DE ACUERDO CON LA TRANSACCIÓN
+      </p>
+
+      <!-- <v-textarea
+        placeholder="COLOQUE AQUÍ LA DENUNCIA HACIA LA CONTRAPARTE"
+        hide-details solo
+        class="flex-grow-0"
+        style="--br: 10px; --c-place: #000 !important"
+      ></v-textarea> -->
+
+      <v-btn  class="btn mt-2 mb-8" :loading="btnLoading"  @click="cancel" >
+        CANCELAR ORDEN
+      </v-btn>
+
+    </modal-warning>
     
 
     <modal-warning
@@ -126,10 +152,11 @@
 
     <v-btn
       :loading="btnLoading" 
+      :disabled="disableButtonText"
       class="btn mt-3 mb-4"
       style="--bg: var(--primary); --br: 30px"
       @click="$refs.aproveModal.model = true"
-    >MARCAR PAGO REALIZADO</v-btn>
+    >{{ buttonText }}</v-btn>
 
     <!--<v-btn
       :loading="btnLoading" 
@@ -143,7 +170,7 @@
       :loading="btnLoading" 
       class="btn-outlined mb-4"
       style="--bg: var(--card-2); --br: 30px"
-      @click="cancel"
+      @click="$refs.cancelModal.model = true"
     >CANCELAR ORDEN</v-btn>
 
     <h6 style="--ff: var(--font2); --fw: 700; --fs: 10px; --lh: 1ch">
@@ -169,7 +196,7 @@ export default {
   name: "TradesChatPage",
   data() {
     return {
-      address: localStorage.getItem("address"),
+      address: wallet.getCurrentAccount().address,
       data: [],
       dataTrader: [],
       dataCancel: [],
@@ -192,6 +219,8 @@ export default {
       poolOrders: null,
       poolOrderHistory: null,
       countOrders: 0,
+      buttonText: "MARCAR PAGO REALIZADO",
+      disableButtonText: false,
     }
   },
   head() {
@@ -245,8 +274,6 @@ export default {
     },
     
     getOrders() {
-      this.operation = "SELL";
-      localStorage.setItem('operation', this.operation);
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
@@ -268,6 +295,7 @@ export default {
           operation_amount
           order_id
           status
+          confirmation_signer_id
         }
 
         orderbuys(
@@ -289,6 +317,7 @@ export default {
           operation_amount
           order_id
           status
+          confirmation_signer_id
         }
       }
       `;    
@@ -306,6 +335,7 @@ export default {
 
             const orderBuys = response.data.orderbuys;
             const orderSells = response.data.ordersells;
+            // console.log('orderSells', orderSells.length > 0 ? "SELL" : "BUY")
             const data = orderSells.length > 0 ? orderSells :  orderBuys;
             this.operation = orderSells.length > 0 ? "SELL" : "BUY";
 
@@ -314,18 +344,18 @@ export default {
                 this.orderHistory(orderId, operation);
               } */
               localStorage.removeItem('operation');
-              localStorage.removeItem('orderId');
+              sessionStorage.removeItem('orderId');
               
               // this.$router.push('/');
               return
             };
 
-            let orderId = localStorage.getItem('orderId');
-            let operation = localStorage.getItem('operation');
+            let orderId = sessionStorage.getItem('orderId');
+            let operation = sessionStorage.getItem('operation');
             
             if(orderId === "undefined" || operation === "undefined" || orderId === undefined || operation === undefined || !orderId || !operation ) {
-              localStorage.setItem('orderId', data[0].order_id);
-              localStorage.setItem('operation', this.operation);
+              sessionStorage.setItem('orderId', data[0].order_id);
+              sessionStorage.setItem('operation', this.operation);
               orderId = data[0].order_id;
               operation = this.operation;
             }
@@ -333,8 +363,8 @@ export default {
             let order =  data.find((item) => item.order_id === orderId);
 
             if(order === "undefined" || order === undefined || !order){
-              localStorage.setItem('orderId', data[0].order_id);
-              localStorage.setItem('operation', this.operation);
+              sessionStorage.setItem('orderId', data[0].order_id);
+              sessionStorage.setItem('operation', this.operation);
               orderId = data[0].order_id;
               operation = this.operation;
               order =  data.find((item) => item.order_id === orderId);
@@ -362,6 +392,9 @@ export default {
 
             this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
             this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
+
+            this.data[0].confirmation_signer_id === 1 ? this.disableButtonText = true : this.disableButtonText = false;
+            this.data[0].confirmation_signer_id === 1 ? this.buttonText = "ESPERANDO POR APROBACIÓN" : this.buttonText = "MARCAR PAGO REALIZADO";
 
             if(!this.poolOrderHistory) {
               this.orderHistory(this.orderId, this.operation);
@@ -450,7 +483,7 @@ export default {
     },
     async aprove() {
       this.btnLoading = true;
-      const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
+      const val = sessionStorage.getItem('operation') === "SELL" ? "1" : "2";
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
       const CONTRACT_USDT = process.env.VUE_APP_CONTRACT_NAME_USDT;
       const account = await walletUtils.nearConnection();
@@ -511,15 +544,20 @@ export default {
       }
 
       sessionStorage.clear(); // Clear all data from sessionStorage
-      this.sendMail('sell', localStorage.getItem('orderId'));
+      this.sendMail('sell', sessionStorage.getItem('orderId'));
       localStorage.removeItem('emailCounter');
-      localStorage.removeItem('orderId');
+      sessionStorage.removeItem('orderId');
       localStorage.removeItem('operation');
       this.data = [];
       this.dataTrader = [];
       this.dataCancel = [];
-      
-      this.$router.push({ path: "/tx-executed" });
+      if(this.val === "SELL"){
+        this.$router.push({ path: "/tx-executed" });
+      } else {
+        this.buttonText = "ESPERANDO POR APROBACIÓN";
+        this.disableButtonText = true;
+        this.$refs.aproveModal.model = false;
+      }
       this.btnLoading = false;
     },
     async cancel() {
@@ -540,9 +578,9 @@ export default {
         return
       }
       // console.log("orderConfirmation", orderConfirmation)
-      this.sendMailCancel(localStorage.getItem('orderId'));
+      this.sendMailCancel(sessionStorage.getItem('orderId'));
       sessionStorage.clear(); // Clear all data from sessionStorage
-      localStorage.removeItem('orderId');
+      sessionStorage.removeItem('orderId');
       localStorage.removeItem('emailCounter');
       localStorage.removeItem('operation');
       this.btnLoading = false;
@@ -570,7 +608,7 @@ export default {
         return
       }
       // console.log("orderConfirmation", orderConfirmation)
-      this.sendMailDispute(localStorage.getItem('orderId'));
+      this.sendMailDispute(sessionStorage.getItem('orderId'));
       this.btnLoading = false;
       // this.sendMail();
       this.$router.push({ path: "/tx-disputed" });
@@ -619,14 +657,14 @@ export default {
                 if(this.dataCancel[0].status === 4){
                   sessionStorage.clear(); // Clear all data from sessionStorage
                   localStorage.removeItem('emailCounter');
-                  localStorage.removeItem('orderId');
+                  sessionStorage.removeItem('orderId');
                   localStorage.removeItem('operation');
                   this.$router.push('/tx-canceled');
                 }
                 if(this.dataCancel[0].status === 2 || this.dataCancel[0].status === 3){
                   sessionStorage.clear(); // Clear all data from sessionStorage
                   localStorage.removeItem('emailCounter');
-                  localStorage.removeItem('orderId');
+                  sessionStorage.removeItem('orderId');
                   localStorage.removeItem('operation');
                     this.$router.push('/tx-executed');
                 }
@@ -660,14 +698,14 @@ export default {
     //             if(this.dataCancel[0].status === 4){
     //               sessionStorage.clear(); // Clear all data from sessionStorage
     //               localStorage.removeItem('emailCounter');
-    //               localStorage.removeItem('orderId');
+    //               sessionStorage.removeItem('orderId');
     //               localStorage.removeItem('operation');
     //               this.$router.push('/tx-canceled');
     //             }
     //             if(this.dataCancel[0].status === 2){
     //                 sessionStorage.clear(); // Clear all data from sessionStorage
     //                 localStorage.removeItem('emailCounter');
-    //                 localStorage.removeItem('orderId');
+    //                 sessionStorage.removeItem('orderId');
     //                 localStorage.removeItem('operation');
     //                 this.$router.push('/tx-executed');
     //             }

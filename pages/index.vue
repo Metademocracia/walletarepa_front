@@ -582,18 +582,18 @@ export default {
             
             if(data.length <= 0){
               localStorage.removeItem('emailCounter');
-              localStorage.removeItem('orderId');
+              sessionStorage.removeItem('orderId');
               localStorage.removeItem('operation');
               this.pendingTrades = false;
               return;
             }
 
-            let orderId = localStorage.getItem('orderId');
+            let orderId = sessionStorage.getItem('orderId');
             let operation = localStorage.getItem('operation');
             
             
             if(orderId === "undefined" || operation === "undefined" || orderId === undefined || operation === undefined || !orderId || !operation ) {
-              localStorage.setItem('orderId', data[0].order_id);
+              sessionStorage.setItem('orderId', data[0].order_id);
               localStorage.setItem('operation', this.operation);
               orderId = data[0].order_id;
               operation = this.operation;
@@ -602,7 +602,7 @@ export default {
             let order =  data.find((item) => item.order_id === orderId);
 
             if(order === "undefined" || order === undefined || !order){
-              localStorage.setItem('orderId', data[0].order_id);
+              sessionStorage.setItem('orderId', data[0].order_id);
               localStorage.setItem('operation', this.operation);
               orderId = data[0].order_id;
               operation = this.operation;
@@ -660,7 +660,7 @@ export default {
     //           });
     //         } else {
     //             localStorage.removeItem('emailCounter');
-    //             localStorage.removeItem('orderId');
+    //             sessionStorage.removeItem('orderId');
     //             localStorage.removeItem('operation');
     //             this.pendingTrades = false;
     //         }

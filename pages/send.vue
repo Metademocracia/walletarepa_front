@@ -308,7 +308,7 @@ export default {
                 this.orderId = this.data[0].order_id;
                 sessionStorage.setItem('data', this.data.length);
                 localStorage.setItem('emailCounter', 'true');
-                localStorage.setItem('orderId', this.data[0].order_id);
+                sessionStorage.setItem('orderId', this.data[0].order_id);
               });
           });
     },
