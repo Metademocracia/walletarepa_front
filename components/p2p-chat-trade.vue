@@ -19,7 +19,7 @@
           </v-btn>
 
           <p class="mb-0 ellipsis-box" :style="`--lines: ${showMoreInfoCard ? 0 : 2}`">{{ infoMessage }}</p>
-          <a @click="showMoreInfoCard = !showMoreInfoCard">SEE {{ showMoreInfoCard ? 'LESS' : 'MORE' }} <v-icon size="16">mdi-chevron-right</v-icon></a>
+          <a @click="showMoreInfoCard = !showMoreInfoCard">VER {{ showMoreInfoCard ? 'MENOS' : 'MAS' }} <v-icon size="16">mdi-chevron-right</v-icon></a>
         </v-card>
 
         <div
@@ -198,8 +198,8 @@ export default {
       isLoadingFile: false,
       showInfoCard: false,
       showMoreInfoCard: false,
-      infoMessage: "We recommend that you try to choose verified merchants, not reasdasd laksdñl aksñl dkasñl kdñlaskñs asd as das das a asd asd as d asdasdasda",
-      terms: localStorage.getItem("terms"),
+      infoMessage: "Los Mercantes de este P2P express son verificados y con KYC previo, si Ud. por alguna razón no se siente seguro, puede cancelar la operación en cualquier momento, o iniciar una disputa.",
+      terms: sessionStorage.getItem("terms"),
       chat: null,
       file: null,
       unreadMessagesCount: 0,
@@ -232,7 +232,8 @@ export default {
   },
   mounted() {
     this.getMessages()
-    this.terms = localStorage.getItem("terms");
+    this.terms = sessionStorage.getItem("terms");
+    this.showInfoCard= true
     // this.pollData();
     // this.getMessages()
   },
@@ -432,8 +433,11 @@ export default {
           
 
           setTimeout(() =>{
+            // console.log(this.showInfoCard, this.$refs.scrollable)
             // this.$refs.scrollable.scrollIntoView({ behavior: "smooth", block: "end" });
-            this.$refs.scrollable.scrollIntoView({ behavior: "smooth" });
+            if (this.showInfoCard && this.$refs.scrollable) {
+                this.$refs.scrollable.scrollIntoView({ behavior: "smooth" });
+            }
           }, 1000)
 
           this.readMessages();

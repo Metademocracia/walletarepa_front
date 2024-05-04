@@ -377,6 +377,29 @@ export default {
     async initContract() {
       this.btnLoading = true;
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
+      const CONTRACT_USDT = process.env.VUE_APP_CONTRACT_NAME_USDT;
+      const account = await walletUtils.nearConnection();
+
+      const getTokenActivo = await account.viewFunctionV1(
+        CONTRACT_USDT,
+          "storage_balance_of",
+          { account_id: wallet.getCurrentAccount().address, }
+      );
+
+      if (!getTokenActivo) {
+          const activarSubcuenta = await account.functionCall({
+            contractId: CONTRACT_USDT,
+            methodName: "storage_deposit",
+            args: { account_id: wallet.getCurrentAccount().address, },
+            gas: "30000000000000",
+            attachedDeposit: "1250000000000000000000"
+          });
+
+          if (!activarSubcuenta || !activarSubcuenta.status.SuccessValue !== "") {
+            console.log("Subcuenta ya activa, procede con el siguiente paso");
+          }
+        }
+
       /**
        * Converts the withdrawal amount to the appropriate format based on the token symbol.
        * If the token symbol is "NEAR", the amount is multiplied by 1e24.
@@ -403,8 +426,6 @@ export default {
       }
       // Filter paymet method as per selected payment
       const filteredPaymentMethod = this.filteredOffers.payment_method.find(method => method.payment_method === this.selectedPayment);
-
-      const account = await walletUtils.nearConnection();
 
       const now = moment()
         .format("YYYY-MM-DD HH:mm:ss")

@@ -118,7 +118,7 @@
       <v-card class="card flex-grow-1 d-flex flex-column pa-4" style="--bg: var(--card-2)">
         <p class="mb-2">Términos del anunciante</p>
 
-        <p class="mb-0" v-html="terms.slice(0, 58) + '...'"></p>
+        <p class="mb-0" v-html="terms.slice(0, 20) + '...'"></p>
 
         <a 
         class="mt-auto ml-auto d-flex align-center" style="font-size: 11px; --fw: 700"

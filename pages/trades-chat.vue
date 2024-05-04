@@ -343,6 +343,7 @@ export default {
             this.data.push(order); 
             sessionStorage.setItem('data', this.data.length);
             this.trader(this.data[0].owner_id);
+            sessionStorage.setItem('trader', this.data[0].owner_id);
             this.terms = this.data[0].terms_conditions;
             sessionStorage.setItem('terms', this.terms);
             /// //////////////////////////////////////
@@ -451,7 +452,30 @@ export default {
       this.btnLoading = true;
       const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
+      const CONTRACT_USDT = process.env.VUE_APP_CONTRACT_NAME_USDT;
       const account = await walletUtils.nearConnection();
+
+      const getTokenActivo = await account.viewFunctionV1(
+        CONTRACT_USDT,
+          "storage_balance_of",
+          { account_id: sessionStorage.getItem('trader') }
+      );
+
+      if (!getTokenActivo) {
+          const activarSubcuenta = await account.functionCall({
+            contractId: CONTRACT_USDT,
+            methodName: "storage_deposit",
+            args: { account_id: sessionStorage.getItem('trader') },
+            gas: "30000000000000",
+            attachedDeposit: "1250000000000000000000"
+          });
+
+          if (!activarSubcuenta || !activarSubcuenta.status.SuccessValue !== "") {
+            console.log("Subcuenta ya activa, procede con el siguiente paso");
+          }
+        }
+
+
       const orderConfirmation = await account.functionCall({
         contractId: CONTRACT_NAME,
         methodName: "order_confirmation",
