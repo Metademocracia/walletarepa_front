@@ -90,6 +90,7 @@ async function getBalanceInitNear(_address) {
   return balanceNear.near ? String((balanceNear.near * balanceNear.price).toFixed(2)) : 0;
 }
 
+
 /**
  * Retrieves a list of token balances for a given user's address.
  * @returns {Promise<Object>} The list of token balances, categorized as fungible tokens (fts) and non-fungible tokens (nfts).
@@ -199,6 +200,8 @@ async function getListTokensBalance() {
       list.fts.push(...tokenBalances.filter(Boolean));
 
       sessionStorage.setItem('allTokenBalances', JSON.stringify(allTokenBalances));
+
+      
 
       return list;
     } catch (error) {

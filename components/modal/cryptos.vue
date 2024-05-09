@@ -207,7 +207,7 @@ export default {
       // If USDT does not exist, add it manually
       if (!usdtExists) {
         const usdtData = {
-          contract: "usdt.tether-token.near",
+          contract: process.env.VUE_APP_CONTRACT_NAME_USDT,
           balance: "0.00000",
           balanceTotal: "0",
           name: "Tether USD",
@@ -240,12 +240,16 @@ export default {
 
       this.loading = false;
       this.dataTokensFinal = [].concat(this.tokensData); // Set sorted inventory data
+      // this.dataTokensFinal.find(token => token.symbol.toLocaleLowerCase() === 'USDT'.toLocaleLowerCase())
       // console.log('Final data:', this.dataTokensFinal);
       this.dataTokensFinal.sort((a, b) => {
         if (a.name === 'USDT') return -1;
         if (b.name === 'USDT') return 1;
         return 0;
       });
+    },
+    onGetUsdt() {
+      this.model = false;
     },
     onSelected(item) {
       this.model = false;
