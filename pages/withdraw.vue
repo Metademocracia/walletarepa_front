@@ -53,7 +53,7 @@
       </v-card>
     </v-dialog>
 
-    <Header hide-navbar top-text="RETIRAR" bottom-text="FONDOS" description="MONTO QUE DESEAS RETIRAR HACIA FIAT">
+    <Header hide-navbar top-text="RETIRAR" bottom-text="FONDOS" description="MONTO QUE DESEAS RETIRAR HACIA BOLIVARES">
     </Header>
 
     <section class="d-flex flex-column" style="height: 208px; translate: 0 -30px">
