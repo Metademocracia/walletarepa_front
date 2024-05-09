@@ -30,7 +30,7 @@
         <v-btn
           class="btn-outlined"
           style="--bg: var(--secondary); flex: 1 1"
-          @click="$refs.modalCryptos.model = true"
+          @click="openModalCrypto()"
         >
           BALANCES
         </v-btn>
@@ -323,6 +323,7 @@ export default {
     this.linkExplorerDetail = process.env.ROUTER_EXPLORER_NEAR;
     // this.getBalance()
     this.loadTokens()
+    
     // Call getListTokensBalance every 5 minutes
     // Run getListTokensBalance every 5 minutes
 
@@ -337,6 +338,26 @@ export default {
   methods: {
     navigateToExternalLink(url) {
       window.open(url, '_blank');
+    },
+
+    async openModalCrypto() {
+      this.$refs.modalCryptos.model = true;
+      
+      await this.$refs.modalCryptos.refreshTokens()
+      
+      // Run this line only once
+      this.balance = '0...';
+      this.balance = await tokens.getBalanceInitNear(this.address);
+      // Set an interval to keep checking for a balance in session storage every 5 seconds
+      
+      // console.log('Checking for balance in session storage...');
+      const storedBalance = sessionStorage.getItem('balance');
+      if (storedBalance) {
+        this.balance = storedBalance;
+        // console.log('Loaded balance from session storage:', this.balance);
+        // If a balance is found, clear the interval
+      }
+      
     },
 
     /**

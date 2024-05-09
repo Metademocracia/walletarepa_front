@@ -76,6 +76,7 @@ export default {
     return {
       model: false,
       search: '',
+      refreshTokens: this.loadTokens,
       selectedCoin: undefined,
       loading: false,
       tokensData: [],
@@ -175,10 +176,10 @@ export default {
       // console.log('Loading data...');
 
       // Check if data exists in session storage
-      const storedTokenBalances = JSON.parse(sessionStorage.getItem('allTokenBalances'));
+      // const storedTokenBalances = JSON.parse(sessionStorage.getItem('allTokenBalances'));
 
-      let inventory;
-      // console.log('Stored data:', storedTokenBalances);
+      const inventory = await tokens.updateBalanceLocalStorage();
+      /* // console.log('Stored data:', storedTokenBalances);
       if (storedTokenBalances) {
         // If session storage data exists, use it as the inventory
         inventory = { fts: storedTokenBalances };
@@ -187,7 +188,7 @@ export default {
         // Otherwise, fetch the inventory from the API
         inventory = await tokens.updateBalanceLocalStorage(); // await tokens.getListTokensBalance();
         // console.log('Fetched data from API:', inventory);
-      }
+      } */
 
       if (!inventory) {
         this.loading = false;
