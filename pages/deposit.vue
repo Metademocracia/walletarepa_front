@@ -97,11 +97,11 @@
         </div>
       </v-card>
 
-      <v-card class="btn-outlined space" style="--bg: var(--secondary); --b-color: #d1c4e8; padding: 0 23px">
+      <!-- <v-card class="btn-outlined space" style="--bg: var(--secondary); --b-color: #d1c4e8; padding: 0 23px">
         <h5 class="mb-0">DISPONIBLE PARA ENVIAR</h5>
 
         <span style="--fs: 12px; --ls: normal">{{ balance }} {{ tokenSymbol }}</span>
-      </v-card>
+      </v-card> -->
 
       <v-list>
         <v-list-item v-for="(payment, i) in payments" :key="i" @click="selectPayment(payment)">
