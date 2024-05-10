@@ -252,7 +252,7 @@ export default {
         {
           icon: require("@/assets/sources/icons/arrow-up.svg"),
           text: "enviar",
-          action: () => { this.$router.push({ path: "/send" }) } ,// { this.alert = false; this.transfer = true; this.$refs.formEnvio.resetValidation(); this.$refs.formEnvio.reset(); },
+          action: () => { this.enviar() } ,// { this.alert = false; this.transfer = true; this.$refs.formEnvio.resetValidation(); this.$refs.formEnvio.reset(); },
         },
         {
           icon: require("@/assets/sources/icons/swap.svg"),
@@ -262,7 +262,7 @@ export default {
         {
           icon: require("@/assets/sources/icons/plus.svg"),
           text: "recargar",
-          action: () => { this.$router.push({ path: "/deposit" }) },
+          action: () => { this.recargar() },
         },
         {
           icon: require("@/assets/sources/icons/arrow-down.svg"),
@@ -639,6 +639,14 @@ export default {
             this.pendingTrades = true;
             
           });
+    },
+    enviar() {
+      this.$router.push({ path: "/send" });
+      sessionStorage.setItem("push", "withdraw");
+    },
+    recargar() {
+      this.$router.push({ path: "/deposit" });
+      sessionStorage.setItem("push", "deposit");
     },
     // async orderBuy() {
     //   const selects = gql`

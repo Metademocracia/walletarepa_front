@@ -113,7 +113,7 @@
           style="--h: 34px; width: min(100%, 192px)"
           @click="$router.push('/withdraw'), loading = true"
         >
-          <span style="color: #000 !important">RETIRAR BOLIVARES</span>
+          <span style="color: #000 !important">RETIRAR A BANCO</span>
         </v-btn>
       </v-card>
     </div>
