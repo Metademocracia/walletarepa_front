@@ -77,7 +77,7 @@
       <v-card class="card px-4 d-flex align-center justify-space-between" style="--bg: #D6DAE2; grid-column: span 5">
         <profile-avatar 
         show-name :profile="{
-          name: 'Iniciar Intercambio',
+          name: 'Intercambio Seguro',
           avatar: require('@/assets/sources/avatars/avatar.png'),
           verified: true,
         }" />

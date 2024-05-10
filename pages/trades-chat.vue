@@ -114,7 +114,7 @@
         <profile-avatar
           show-name
           :profile="{
-            name: 'Iniciar Trade',
+            name: 'Intercambio Seguro',
             avatar: require('@/assets/sources/avatars/avatar.png'),
             verified: true,
           }"
