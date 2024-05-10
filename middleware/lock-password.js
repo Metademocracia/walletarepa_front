@@ -11,5 +11,5 @@ export default function ({ store, from, route, redirect }) {
 
   // If the user have lock password
   if (localStorageUser.getLockPassword() && !lockAuth)
-    redirect({ path: designedPath, query: { from: from.path === designedPath ? route.path : from.path } })
+    redirect({ path: designedPath, query: { from: from.path === designedPath ? route.query : from.query } })
 }

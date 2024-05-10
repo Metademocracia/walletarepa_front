@@ -112,7 +112,14 @@ export default {
           localStorage.removeItem("token")
           this.$router.push("/login?token=" + token)
         } else {
-          this.$router.push("/")
+          const routeAfterUnlocking = sessionStorage.getItem("route-after-unlocking");
+          if(routeAfterUnlocking && routeAfterUnlocking !== null && routeAfterUnlocking !== undefined) {
+            // localStorage.removeItem("route-after-unlocking");
+            this.$router.push(JSON.parse(routeAfterUnlocking))
+          } else {
+            this.$router.push("/")
+          }
+          
         }
       } catch (error) {
         console.error(error)

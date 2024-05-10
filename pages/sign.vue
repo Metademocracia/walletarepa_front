@@ -172,7 +172,7 @@ const { utils, transactions } = nearAPI;
 
 
 export default {
-  name: "LimitedPermissions",
+  name: "SignApproveTransaction",
   layout: "default-variant",
   middleware: ["authenticated"],
   data() {
@@ -235,7 +235,7 @@ export default {
       
       // console.log(transactionsList, transactionsList[0])
 
-      this.token.from = transactionsList[0].signerId;
+      this.token.from = localStorageUser.getCurrentAccount().address // transactionsList[0].signerId;
       this.token.json = { attachedDeposit: totalAmount };
       this.attachedDeposit = totalAmount;
       this.token.transaction = transactionsList;
@@ -249,6 +249,8 @@ export default {
   mounted() {
     // this.token = JSON.parse(sessionStorage.getItem("token"));
     this.loadData();
+    const route = JSON.stringify({ path: "/sign", query: this.$route.query});
+    sessionStorage.setItem("route-after-unlocking", route);
   },
   methods: {
     async loadData(){
@@ -315,7 +317,7 @@ export default {
           return
         }
 
-        const dataUser = localStorageUser.getAccount(this.token.from);
+        const dataUser = localStorageUser.getCurrentAccount();
         const privateKey = dataUser.privateKey;
         const address = dataUser.address;
         
@@ -375,6 +377,7 @@ export default {
         location.replace(rute);
         
       } catch (error) {
+        console.log(error)
         this.loading = false
         this.$alert(ALERT_TYPE.ERROR, { desc: error.toString() })
         // console.log("error error: ", error.toString());
