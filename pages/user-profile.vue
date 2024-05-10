@@ -151,7 +151,7 @@ export default {
           
           // this.$router.push(utils.routeAction(this.$route.query.action,"/create-wallet-verification"));
           
-          this.$router.push({ path: "/withdraw" });
+          this.$router.push({ path: sessionStorage.getItem("push") });
           // this.$router.push(this.localePath("/verification"))
         }).catch((error) => {
           this.loading = false

@@ -30,6 +30,8 @@
 
       <v-btn class="btn-outlined" @click="$router.go(-1)">VOLVER</v-btn>
     </section>
+
+    <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto mt-16" style="width: min(100%, 170px);">
   </div>
 </template>
 
@@ -44,7 +46,7 @@
 export default {
   name: "PassphraseWordPage",
   layout: "auth-layout",
-  middleware: ["authenticated-create-import"],
+  // middleware: ["authenticated-create-import"],
   data() {
     return {
       loading: false,

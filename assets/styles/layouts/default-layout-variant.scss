@@ -3,6 +3,13 @@
   overflow: hidden;
   isolation: isolate;
 
+  .logotype {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    transform: translateY(200px);
+  }
+
   .ball-decoration {
     &-1 {
       position: absolute;

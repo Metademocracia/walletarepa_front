@@ -97,11 +97,11 @@
         </div>
       </v-card>
 
-      <v-card class="btn-outlined space" style="--bg: var(--secondary); --b-color: #d1c4e8; padding: 0 23px">
+      <!-- <v-card class="btn-outlined space" style="--bg: var(--secondary); --b-color: #d1c4e8; padding: 0 23px">
         <h5 class="mb-0">DISPONIBLE PARA ENVIAR</h5>
 
         <span style="--fs: 12px; --ls: normal">{{ balance }} {{ tokenSymbol }}</span>
-      </v-card>
+      </v-card> -->
 
       <v-list>
         <v-list-item v-for="(payment, i) in payments" :key="i" @click="selectPayment(payment)">
@@ -252,7 +252,7 @@ export default {
     },
     async getBalance() {
       const list = await tokensServices.getListTokensBalance();
-      this.balance = list.fts.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase())?.balance_usd || 0.0;
+      this.balance = list.fts.find((item) => item.symbol.toLocaleUpperCase() === "USDT".toLocaleLowerCase())?.balance_usd || 0.0;
 
       /* let balanceNear = 0.0;
 
