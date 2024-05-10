@@ -113,7 +113,7 @@
           style="--h: 34px; width: min(100%, 192px)"
           @click="$router.push('/withdraw'), loading = true"
         >
-          <span style="color: #000 !important">RETIRAR FIAT</span>
+          <span style="color: #000 !important">RETIRAR BOLIVARES</span>
         </v-btn>
       </v-card>
     </div>
@@ -141,6 +141,7 @@ export default {
       listFiats: [],
       loading: false,
       data: [],
+      poolOrders: null,
     }
   },
   head() {
@@ -150,11 +151,16 @@ export default {
     }
   },
 
+  beforeDestroy() {
+    if(this.poolOrders) {
+  		this.poolOrders.unsubscribe();
+    }
+	},
   mounted() {
     this.getBalance();
     this.selects();
     // If not session storage with data orden will verify
-    this.orderSell();
+    this.getOrders();
   },
 
   methods: {
@@ -183,7 +189,7 @@ export default {
     },
 
     maxBalance() {
-      this.amount = this.balance.toFixed(5);
+      this.amount = this.balance;
     },
 
     selectToken(token) {
@@ -229,7 +235,7 @@ export default {
           console.log("Error", err);
         });
     },
-    async orderSell() {
+    async getOrders() {
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
@@ -252,37 +258,8 @@ export default {
           operation_amount
           order_id
         }
-      }
-      `;    
-       await this.$apollo
-          .watchQuery({
-            query: selects,
-            fetchPolicy: 'network-only',
-            pollInterval: 5000,
-            variables: {
-              address: wallet.getCurrentAccount().address // localStorage.getItem("address"),
-            }
-          })
-          .subscribe(({ data }) => {
-            if (data.ordersells.length > 0) {
-              Object.entries(data.ordersells).forEach(([key, value]) => {
-                this.data = [];
-                this.data.push(value);
-                sessionStorage.setItem('data', this.data.length);
-                this.orderId = this.data[0].order_id;
-                sessionStorage.setItem('data', this.data.length);
-                localStorage.setItem('emailCounter', 'true');
-                localStorage.setItem('orderId', this.data[0].order_id);
-              });
-            } else {
-              this.orderBuy();
-            }
-          });
-    },
-    async orderBuy() {
-      const selects = gql`
-        query MyQuery( $address : String) {
-          orderbuys(
+
+        orderbuys(
             where: {signer_id: $address}
           orderBy: id
           orderDirection: desc
@@ -304,29 +281,85 @@ export default {
         }
       }
       `;    
-      await this.$apollo
+      this.poolOrders = await this.$apollo
           .watchQuery({
             query: selects,
-            fetchPolicy: 'network-only',
+            // fetchPolicy: 'network-only',
             pollInterval: 5000,
             variables: {
-              address: wallet.getCurrentAccount().address,
+              address: wallet.getCurrentAccount().address // localStorage.getItem("address"),
             }
           })
-          .subscribe(({ data }) => {
-            if (data.orderbuys.length > 0) {
-              Object.entries(data.orderbuys).forEach(([key, value]) => {
+          .subscribe(( response ) => {
+
+            if(!response.data?.ordersells || !response.data?.orderbuys) return
+
+            const orderBuys = response.data.orderbuys;
+            const orderSells = response.data.ordersells;
+            const data = orderSells.length > 0 ? orderSells :  orderBuys;
+            this.operation = orderSells.length > 0 ? "SELL" : "BUY";
+            localStorage.setItem('operation', this.operation);
+            if(data.length <= 0) return;
+
+              Object.entries(data).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
                 sessionStorage.setItem('data', this.data.length);
                 this.orderId = this.data[0].order_id;
                 sessionStorage.setItem('data', this.data.length);
                 localStorage.setItem('emailCounter', 'true');
-                localStorage.setItem('orderId', this.data[0].order_id);
+                sessionStorage.setItem('orderId', this.data[0].order_id);
               });
-            }
           });
     },
+    // async orderBuy() {
+    //   const selects = gql`
+    //     query MyQuery( $address : String) {
+    //       orderbuys(
+    //         where: {signer_id: $address}
+    //       orderBy: id
+    //       orderDirection: desc
+    //       first: 1
+    //       ) {
+    //       id
+    //       amount_delivered
+    //       asset
+    //       exchange_rate
+    //       fee_deducted
+    //       fiat_method
+    //       owner_id
+    //       payment_method
+    //       signer_id
+    //       terms_conditions
+    //       time
+    //       operation_amount
+    //       order_id
+    //     }
+    //   }
+    //   `;    
+    //   await this.$apollo
+    //       .watchQuery({
+    //         query: selects,
+    //         fetchPolicy: 'network-only',
+    //         pollInterval: 5000,
+    //         variables: {
+    //           address: wallet.getCurrentAccount().address,
+    //         }
+    //       })
+    //       .subscribe(({ data }) => {
+    //         if (data.orderbuys.length > 0) {
+    //           Object.entries(data.orderbuys).forEach(([key, value]) => {
+    //             this.data = [];
+    //             this.data.push(value);
+    //             sessionStorage.setItem('data', this.data.length);
+    //             this.orderId = this.data[0].order_id;
+    //             sessionStorage.setItem('data', this.data.length);
+    //             localStorage.setItem('emailCounter', 'true');
+    //             localStorage.setItem('orderId', this.data[0].order_id);
+    //           });
+    //         }
+    //       });
+    // },
   },
 }
 </script>

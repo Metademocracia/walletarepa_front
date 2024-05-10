@@ -41,21 +41,21 @@ const tokenBalanceCache = new Map();
 
 async function getTokenBalance({ contract, address, symbol }) {
   // Check if token price is cached
-  let priceToken = tokenPriceCache.get(symbol);
-  if (!priceToken) {
+  let priceToken; // = tokenPriceCache.get(symbol);
+  // if (!priceToken) {
       const getPrice = await walletUtils.getPrice("USD", symbol);
       if (getPrice) {
           priceToken = getPrice;
           tokenPriceCache.set(symbol, priceToken);
       }
-  }
+  // }
 
   // Check if token balance is cached
   const balanceKey = `${contract}-${address}`;
-  let balanceData = tokenBalanceCache.get(balanceKey);
+  let balanceData;/* tokenBalanceCache.get(balanceKey);
   if (balanceData) {
       return balanceData;
-  }
+  } */
 
   const account = await walletUtils.nearConnection();
   try {
@@ -89,6 +89,7 @@ async function getBalanceInitNear(_address) {
   const balanceNear = await walletUtils.getBalance();
   return balanceNear.near ? String((balanceNear.near * balanceNear.price).toFixed(2)) : 0;
 }
+
 
 /**
  * Retrieves a list of token balances for a given user's address.
@@ -199,6 +200,8 @@ async function getListTokensBalance() {
       list.fts.push(...tokenBalances.filter(Boolean));
 
       sessionStorage.setItem('allTokenBalances', JSON.stringify(allTokenBalances));
+
+      
 
       return list;
     } catch (error) {

@@ -58,9 +58,9 @@
     <section class="d-flex flex-column" style="height: 208px; translate: 0 -30px">
       <v-text-field 
       v-model="amount" placeholder="0.0" type="number" :rules="required"
-        @input="debouncePreviewWithdraw()"></v-text-field>
+        ></v-text-field>
 
-      <v-btn 
+      <!-- <v-btn 
       class="btn-outlined mx-auto" style="
           --bg: var(--secondary);
           --b-color: var(--primary);
@@ -70,7 +70,7 @@
           --ls: 0.36px;
           --h: 34px;
           width: 121px;
-        " @click="maxBalance()">USAR MÁXIMO</v-btn>
+        " @click="maxBalance()">USAR MÁXIMO</v-btn> -->
     </section>
 
 
@@ -158,6 +158,7 @@ import gql from "graphql-tag";
 import moment from "moment";
 import walletUtils from "@/services/wallet";
 import wallet from '@/services/local-storage-user'
+import tokensServices from "@/services/tokens";
 const { utils } = nearAPI;
 
 export default {
@@ -174,15 +175,14 @@ export default {
       originalPayments: [],
       required: [
         (v) => !!v || "Campo requerido",
-        (v) => Number(v) <= Number(this.balance) || "Saldo insuficiente",
       ],
       model: false,
       modelPayments: false,
       validForm: true,
       amount: null,
       balance: 0.0,
-      tokenImg: require("@/assets/sources/logos/near-icon.svg"),
-      tokenSymbol: "NEAR",
+      tokenImg: "data:image/svg+xml,%3Csvg width='111' height='90' viewBox='0 0 111 90' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M24.4825 0.862305H88.0496C89.5663 0.862305 90.9675 1.64827 91.7239 2.92338L110.244 34.1419C111.204 35.7609 110.919 37.8043 109.549 39.1171L58.5729 87.9703C56.9216 89.5528 54.2652 89.5528 52.6139 87.9703L1.70699 39.1831C0.305262 37.8398 0.0427812 35.7367 1.07354 34.1077L20.8696 2.82322C21.6406 1.60483 23.0087 0.862305 24.4825 0.862305ZM79.8419 14.8003V23.5597H61.7343V29.6329C74.4518 30.2819 83.9934 32.9475 84.0642 36.1425L84.0638 42.803C83.993 45.998 74.4518 48.6635 61.7343 49.3125V64.2168H49.7105V49.3125C36.9929 48.6635 27.4513 45.998 27.3805 42.803L27.381 36.1425C27.4517 32.9475 36.9929 30.2819 49.7105 29.6329V23.5597H31.6028V14.8003H79.8419ZM55.7224 44.7367C69.2943 44.7367 80.6382 42.4827 83.4143 39.4727C81.0601 36.9202 72.5448 34.9114 61.7343 34.3597V40.7183C59.7966 40.8172 57.7852 40.8693 55.7224 40.8693C53.6595 40.8693 51.6481 40.8172 49.7105 40.7183V34.3597C38.8999 34.9114 30.3846 36.9202 28.0304 39.4727C30.8066 42.4827 42.1504 44.7367 55.7224 44.7367Z' fill='%23009393'/%3E%3C/svg%3E",
+      tokenSymbol: "USDT",
       btnLoading: false,
       search: "",
       address: wallet.getCurrentAccount().address,
@@ -191,6 +191,7 @@ export default {
       minLimit : 0,
       modalNoOffers: false,
       modalNoMessage: false,
+      poolOrders: null,
     };
   },
   head() {
@@ -199,6 +200,11 @@ export default {
       title,
     };
   },
+  beforeDestroy() {
+    if(this.poolOrders) {
+  		this.poolOrders.unsubscribe();
+    }
+	},
   mounted() {
     if(sessionStorage.getItem("flags")) {
       this.listFlags = JSON.parse(sessionStorage.getItem("flags"));
@@ -245,7 +251,10 @@ export default {
       this.disabledContinue();
     },
     async getBalance() {
-      let balanceNear = 0.0;
+      const list = await tokensServices.getListTokensBalance();
+      this.balance = list.fts.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase())?.balance_usd || 0.0;
+
+      /* let balanceNear = 0.0;
 
       const { near } = await walletUtils.getBalance();
 
@@ -253,7 +262,7 @@ export default {
         balanceNear = near;
       }
 
-      this.balance = balanceNear.toFixed(5);
+      this.balance = balanceNear.toFixed(5); */
     },
 
     selectToken(token) {
@@ -285,7 +294,7 @@ export default {
       await this.$apollo
         .watchQuery({
           query: selects,
-          fetchPolicy: 'network-only',
+          // fetchPolicy: 'network-only',
           pollInterval: 5000,
         })
         .subscribe(({ data }) => {
@@ -298,11 +307,11 @@ export default {
           sessionStorage.setItem("flags", JSON.stringify(this.listFlags));
         });
     },
-    async selects() {
+    selects() {
       const selects = gql`
-      query MyQuery( $fiat_method: String, $token: String, $address: String ) {
+      query MyQuery( $token: String, $address: String ) {
         offersbuys(
-          where: {fiat_method: $fiat_method, asset_contains: $token, owner_id_not: $address, is_pause: false}
+          where: {asset_contains: $token, owner_id_not: $address, is_pause: false, is_merchant: true}
           orderBy: exchange_rate
           orderDirection: desc
         ) {
@@ -325,18 +334,18 @@ export default {
         }
       }
       `;
-      const selectedFiat = sessionStorage.getItem('selectedFiat');
+      // const selectedFiat = sessionStorage.getItem('selectedFiat');
       // const eltoken = this.selectToken;
       let paymentMethods = new Set();
       this.listOffers = [];
-      await this.$apollo
+      this.poolOrders = this.$apollo
         .watchQuery({
           query: selects,
-          fetchPolicy: 'network-only',
+          // fetchPolicy: 'network-only',
           pollInterval: 5000,
           variables: {
-            fiat_method: selectedFiat,
-            token: this.tokenSymbol,
+            // fiat_method: selectedFiat,
+            token: this.tokenSymbol.toLocaleUpperCase(),
             address: wallet.getCurrentAccount().address,
           },
         })
@@ -372,6 +381,29 @@ export default {
     async initContract() {
       this.btnLoading = true;
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
+      const CONTRACT_USDT = process.env.VUE_APP_CONTRACT_NAME_USDT;
+      const account = await walletUtils.nearConnection();
+
+      const getTokenActivo = await account.viewFunctionV1(
+        CONTRACT_USDT,
+          "storage_balance_of",
+          { account_id: wallet.getCurrentAccount().address, }
+      );
+
+      if (!getTokenActivo) {
+          const activarSubcuenta = await account.functionCall({
+            contractId: CONTRACT_USDT,
+            methodName: "storage_deposit",
+            args: { account_id: wallet.getCurrentAccount().address, },
+            gas: "30000000000000",
+            attachedDeposit: "1250000000000000000000"
+          });
+
+          if (!activarSubcuenta || !activarSubcuenta.status.SuccessValue !== "") {
+            console.log("Subcuenta ya activa, procede con el siguiente paso");
+          }
+        }
+
       /**
        * Converts the withdrawal amount to the appropriate format based on the token symbol.
        * If the token symbol is "NEAR", the amount is multiplied by 1e24.
@@ -399,8 +431,6 @@ export default {
       // Filter paymet method as per selected payment
       const filteredPaymentMethod = this.filteredOffers.payment_method.find(method => method.payment_method === this.selectedPayment);
 
-      const account = await walletUtils.nearConnection();
-
       const now = moment()
         .format("YYYY-MM-DD HH:mm:ss")
         .toString();
@@ -421,7 +451,7 @@ export default {
           });
 
           if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
-            console.log("error al aceptar la oferta", acceptOffer);
+            // console.log("error al aceptar la oferta", acceptOffer);
             this.btnLoading = false;
             return
           }

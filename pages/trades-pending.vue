@@ -118,7 +118,7 @@
       <v-card class="card flex-grow-1 d-flex flex-column pa-4" style="--bg: var(--card-2)">
         <p class="mb-2">Términos del anunciante</p>
 
-        <p class="mb-0" v-html="terms.slice(0, 58) + '...'"></p>
+        <p class="mb-0" v-html="terms.slice(0, 20) + '...'"></p>
 
         <a 
         class="mt-auto ml-auto d-flex align-center" style="font-size: 11px; --fw: 700"
@@ -218,6 +218,8 @@ export default {
       unreadMessagesCount: 0,
       unreadMessagesActive: false,
       operation: "",
+      poolOrders: null,
+      poolOrderHistory: null,
     }
   },
   head() {
@@ -260,12 +262,18 @@ export default {
       }
     }
   }, */
+  
   beforeDestroy() {
-		clearInterval(this.polling);
+    if(this.poolOrders) {
+  		this.poolOrders.unsubscribe();
+    }
+    if(this.poolOrderHistory) {
+      this.poolOrderHistory.unsubscribe();
+    }
 	},
+
   mounted() {
-     this.orderSell();
-    // this.pollData();
+     this.getOrders();
   },
   methods: {
     getUnreadMessagesCount(porderid, poperation) {
@@ -283,23 +291,22 @@ export default {
           .where("readed", "==", false)
           .onSnapshot((snapshot) => {
             
-            this.unreadMessagesCount = snapshot.size;
-            this.unreadMessagesActive = snapshot.size > 0;
+            this.unreadMessagesCount = snapshot.size - 1;
+            this.unreadMessagesActive = snapshot.size - 1 > 0;
+            console.log(snapshot.size)
           });
+          
       } catch (error) {
         console.error("Failed to get unread messages count:", error);
       }
     },
-    async orderSell() {
-      this.operation = "SELL";
-      localStorage.setItem('operation', this.operation);
+    getOrders() {
       const selects = gql`
         query MyQuery( $address : String) {
           ordersells(
             where: {signer_id: $address}
           orderBy: id
           orderDirection: desc
-          first: 1
           ) {
           id
           amount_delivered
@@ -317,9 +324,142 @@ export default {
           status
           datetime
         }
+
+        orderbuys(
+            where: {signer_id: $address}
+          orderBy: id
+          orderDirection: desc
+          ) {
+          id
+          amount_delivered
+          asset
+          exchange_rate
+          fee_deducted
+          fiat_method
+          owner_id
+          payment_method
+          signer_id
+          terms_conditions
+          time
+          operation_amount
+          order_id
+          datetime
+          status
+        }
       }
-      `;    
-        await this.$apollo
+      `;
+      
+      this.poolOrders = this.$apollo
+          .watchQuery({
+            query: selects,
+            // fetchPolicy: 'network-only',
+            // fetchPolicy: 'cache-and-network',
+            pollInterval: 5000,
+            variables: {
+              address: wallet.getCurrentAccount().address,
+            }
+          })
+          .subscribe((response) => {
+            // Check if data and data.ordersells exist
+            if(!response.data?.ordersells || !response.data?.orderbuys) return
+
+            const orderBuys = response.data.orderbuys;
+            const orderSells = response.data.ordersells;
+
+            
+            const data = orderSells.length > 0 ? orderSells :  orderBuys;
+
+            this.operation = orderSells.length > 0 ? "SELL" : "BUY";
+            
+            if(data.length <= 0) {
+              /* if(orderId !== "undefined" || operation !== "undefined" || orderId !== undefined || operation !== undefined || orderId || operation ) {
+                if(this.poolOrderHistory) {
+                  this.poolOrderHistory.unsubscribe();
+                }
+                this.orderHistory(orderId, operation);
+              } */
+              sessionStorage.removeItem('operation');
+              sessionStorage.removeItem('orderId');
+              
+              // this.$router.push('/');
+              return
+            };
+            
+            let orderId = sessionStorage.getItem('orderId');
+            let operation = sessionStorage.getItem('operation');
+
+            if(orderId === "undefined" || operation === "undefined" || orderId === undefined || operation === undefined || !orderId || !operation ) {
+              sessionStorage.setItem('orderId', data[0].order_id);
+              sessionStorage.setItem('operation', this.operation);
+              orderId = data[0].order_id;
+              operation = this.operation;
+            }
+            
+            let order =  data.find((item) => item.order_id === orderId);
+
+            if(order === "undefined" || order === undefined || !order){
+              sessionStorage.setItem('orderId', data[0].order_id);
+              sessionStorage.setItem('operation', this.operation);
+              orderId = data[0].order_id;
+              operation = this.operation;
+              order =  data.find((item) => item.order_id === orderId);
+            }
+            
+            this.data = [];
+            this.data.push(order);
+            sessionStorage.setItem('data', this.data.length);
+            this.trader(this.data[0].owner_id);
+            this.terms = this.data[0].terms_conditions;
+            /// //////////////////////////////////////
+            this.tokenSymbol = this.data[0].asset;
+            this.tokenImage = this.data[0].asset === "USDT" ? "https://nearp2p.com/dv/portal/usdt.svg" : "https://nearp2p.com/dv/portal/near-wallet-icon.svg";
+            this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
+            this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
+
+            walletUtils.getPrice(this.crypto, this.data[0].asset).then(price => {
+              this.exchangeRate = this.data[0].exchange_rate * price;
+              this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
+            });
+            this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
+            sessionStorage.setItem('operationAmount', this.operationAmount);
+            this.orderId = this.data[0].order_id;
+
+            this.endTime = this.data[0].time * 60;
+            this.createAt = moment(this.data[0].datetime);
+            const seconsdNow = moment().diff(this.createAt, 'seconds');
+            const secondsFinal = this.endTime - seconsdNow;
+            this.seconds = secondsFinal <= 0 ? 0 : secondsFinal;
+
+            if(this.data[0].status === 3){
+              this.topText = "TRANSACCIÓN MARCADA PARA";
+              this.topBottom = "DISPUTA";
+              this.stopCountdown();
+              this.seconds = 0;
+            }
+
+            if(this.operation === "SELL"){
+              this.traderNameTitle = "Nombre de comprador:";
+              this.typeOffer = "VENDER"
+              this.amountTittle = "Monto a Recibir:";
+              this.cryptoTittle = "Crypto a Vender:";
+            } else {
+              this.traderNameTitle = "Nombre de vendedor:";
+              this.typeOffer = "COMPRAR";
+              this.amountTittle = "Monto a Pagar:";
+              this.cryptoTittle = "Crypto a Recibir:";
+            }
+            this.getUnreadMessagesCount(this.data[0].order_id, this.operation);
+            
+            if(!this.poolOrderHistory) {
+              this.orderHistory(this.data[0].order_id, this.operation);
+            }
+            
+            this.sendMail();
+
+            
+          });
+
+        /* await this.$apollo
           .watchQuery({
             query: selects,
             fetchPolicy: 'network-only',
@@ -353,7 +493,7 @@ export default {
                 this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
                 sessionStorage.setItem('operationAmount', this.operationAmount);
                 this.orderId = this.data[0].order_id;
-                localStorage.setItem('orderId', this.orderId)
+                localStorage.setItem('ord erId', this.orderId)
                 this.endTime = this.data[0].time * 60;
                 this.createAt = moment(this.data[0].datetime);
                 const seconsdNow = moment().diff(this.createAt, 'seconds');
@@ -391,9 +531,9 @@ export default {
             } else {
               this.orderBuy();
             }
-          });
+          }); */
     },
-    async orderBuy() {
+    /* async orderBuy() {
       this.operation = "BUY";
       localStorage.setItem('operation', this.operation);
       const selects = gql`
@@ -454,7 +594,7 @@ export default {
                 });
                 this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
                 this.orderId = this.data[0].order_id;
-                localStorage.setItem('orderId', this.orderId)
+                localStorage.setItem('ord erId', this.orderId)
                 this.endTime = this.data[0].time * 60;
                 this.createAt = moment(this.data[0].datetime);
                 const seconsdNow = moment().diff(this.createAt, 'seconds');
@@ -488,8 +628,67 @@ export default {
               });
            }
           });
+    }, */
+    
+    orderHistory(orderId, operation) {
+      const val = operation === "SELL" ? "1" : "2";
+      const selects = gql`
+        query MyQuery( $id : String) {
+          orderhistorysells(
+            where: {id: $id}
+          ) {
+            status
+          }
+
+          orderhistorybuys(
+            where: {id: $id}
+          ) {
+            status
+          }
+      }
+      `;
+        this.poolOrderHistory = this.$apollo
+          .watchQuery({
+            query: selects,
+            // fetchPolicy: 'network-only',
+            pollInterval: 5000,
+            variables: {
+              id: orderId + '|' + val,
+            }
+          })
+          .subscribe(( response ) => {
+            if(!response.data?.orderhistorysells || !response.data?.orderhistorybuys) return
+
+            const orderHistorySells = response.data.orderhistorysells;
+            const orderHistoryBuys = response.data.orderhistorybuys;
+            
+            const data = operation === 'SELL' ? orderHistorySells : orderHistoryBuys;
+
+            if(data.length <= 0) return;
+
+              this.dataCancel = [];
+              Object.entries(data).forEach(([key, value]) => {
+                this.dataCancel.push(value);
+                if(this.dataCancel[0].status === 4){
+                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  localStorage.removeItem('emailCounter')
+                  sessionStorage.removeItem('orderId')
+                  sessionStorage.removeItem('operation')
+                  this.$router.push('/tx-canceled');
+                }
+                if(this.dataCancel[0].status === 2 || this.dataCancel[0].status === 3){
+                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  localStorage.removeItem('emailCounter')
+                  sessionStorage.removeItem('orderId')
+                  sessionStorage.removeItem('operation')
+                  this.$router.push('/tx-executed');
+                }
+              });
+          });
     },
-    async orderHistorySell(porderId) {
+    
+    
+    /* async orderHistorySell(porderId) {
       const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
@@ -516,21 +715,23 @@ export default {
                 if(this.dataCancel[0].status === 4){
                   sessionStorage.clear(); // Clear all data from sessionStorage
                   localStorage.removeItem('emailCounter')
-                  localStorage.removeItem('orderId')
+                  sessionStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                   this.$router.push('/tx-canceled');
                 }
                 if(this.dataCancel[0].status === 2){
                   sessionStorage.clear(); // Clear all data from sessionStorage
                   localStorage.removeItem('emailCounter')
-                  localStorage.removeItem('orderId')
+                  sessionStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                   this.$router.push('/tx-executed');
                 }
               });
           });
-    },
-    async orderHistoryBuy(porderId) {
+    }, */
+
+
+    /* async orderHistoryBuy(porderId) {
       const val = localStorage.getItem('operation') === "SELL" ? "1" : "2";
       const selects = gql`
         query MyQuery( $id : String) {
@@ -557,20 +758,20 @@ export default {
                 if(this.dataCancel[0].status === 4){
                   sessionStorage.clear(); // Clear all data from sessionStorage
                   localStorage.removeItem('emailCounter')
-                  localStorage.removeItem('orderId')
+                  sessionStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                   this.$router.push('/tx-canceled');
                 }
                 if(this.dataCancel[0].status === 2){
                   sessionStorage.clear(); // Clear all data from sessionStorage
                   localStorage.removeItem('emailCounter')
-                  localStorage.removeItem('orderId')
+                  sessionStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                     this.$router.push('/tx-executed');
                 }
               });
           });
-    },
+    }, */
     async trader( ownerId ) {
       const selects = gql`
         query MyQuery( $address : String) {
@@ -584,7 +785,7 @@ export default {
       await this.$apollo
         .watchQuery({
           query: selects,
-          fetchPolicy: 'network-only',
+          // fetchPolicy: 'network-only',
           pollInterval: 5000,
           variables: {
             address: ownerId,

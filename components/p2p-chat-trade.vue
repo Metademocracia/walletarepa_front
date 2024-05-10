@@ -19,7 +19,7 @@
           </v-btn>
 
           <p class="mb-0 ellipsis-box" :style="`--lines: ${showMoreInfoCard ? 0 : 2}`">{{ infoMessage }}</p>
-          <a @click="showMoreInfoCard = !showMoreInfoCard">SEE {{ showMoreInfoCard ? 'LESS' : 'MORE' }} <v-icon size="16">mdi-chevron-right</v-icon></a>
+          <a @click="showMoreInfoCard = !showMoreInfoCard">VER {{ showMoreInfoCard ? 'MENOS' : 'MAS' }} <v-icon size="16">mdi-chevron-right</v-icon></a>
         </v-card>
 
         <div
@@ -158,6 +158,7 @@ import moment from "moment"
 import { Timestamp, collection, query, where, getDocs, doc, onSnapshot, orderBy } from 'firebase/firestore'
 // import { timeOf } from '@/plugins/functions'
 import { db } from "@/plugins/firebase";
+import wallet from '@/services/local-storage-user'
 import { MessageModel, MessageSpecialId, MessageStatus, MessageType } from '~/models/message_model'
 import { RoomUserInfo } from '~/models/p2p_user_model'
 
@@ -184,8 +185,8 @@ export default {
   data() {
     return {
       photo: null,
-      orderId: localStorage.getItem("orderId"),
-      operation: localStorage.getItem("operation"),
+      orderId: sessionStorage.getItem("orderId"),
+      operation: sessionStorage.getItem("operation"),
       MessageSpecialId,
       MessageType,
       uid: "2",
@@ -198,8 +199,8 @@ export default {
       isLoadingFile: false,
       showInfoCard: false,
       showMoreInfoCard: false,
-      infoMessage: "We recommend that you try to choose verified merchants, not reasdasd laksdñl aksñl dkasñl kdñlaskñs asd as das das a asd asd as d asdasdasda",
-      terms: localStorage.getItem("terms"),
+      infoMessage: "Los Mercantes de este P2P express son verificados y con KYC previo, si Ud. por alguna razón no se siente seguro, puede cancelar la operación en cualquier momento, o iniciar una disputa.",
+      terms: sessionStorage.getItem("terms"),
       chat: null,
       file: null,
       unreadMessagesCount: 0,
@@ -232,7 +233,8 @@ export default {
   },
   mounted() {
     this.getMessages()
-    this.terms = localStorage.getItem("terms");
+    this.terms = sessionStorage.getItem("terms");
+    this.showInfoCard= true
     // this.pollData();
     // this.getMessages()
   },
@@ -263,7 +265,7 @@ export default {
             uploadTask.snapshot.ref.getDownloadURL().then((url) => {
               const messageInfo = {
                 authorId: null,
-                wallet: localStorage.getItem("address"),
+                wallet: wallet.getCurrentAccount().address,
                 photoURL: url,
                 text: this.message || " ",
                 readed: true,
@@ -319,7 +321,7 @@ export default {
           .get();
         // console.log(messagesSnapshot)
         this.unreadMessagesCount = messagesSnapshot.size;
-        console.log("unreadMessagesCount", this.unreadMessagesCount)
+        // console.log("unreadMessagesCount", this.unreadMessagesCount)
       } catch (error) {
         console.error("Failed to get unread messages count:", error);
       }
@@ -328,7 +330,7 @@ export default {
     async readMessages() {
       const q = query(
         collection(db, `${process.env.VUE_APP_CHAT_FIREBASE}/${this.operation}${this.orderId}/MESSAGES`),
-        where("wallet", "!=", localStorage.getItem("address")),
+        where("wallet", "!=", wallet.getCurrentAccount().address),
         where("readed", "==", false)
       );
 
@@ -340,7 +342,6 @@ export default {
         const docRef = doc(db, `${process.env.VUE_APP_CHAT_FIREBASE}/${this.operation}${this.orderId}/MESSAGES`, item.id);
         batch.update(docRef, { readed: true });
       });
-
       await batch.commit();
     },
 
@@ -369,7 +370,7 @@ export default {
           snapshot.forEach((doc) => {
             const item = { ...doc.data(), id: doc.id};
             // item.text = !item?.text ? null : item.text.trim() === "" ? null : item.text.trim();
-            if (item.wallet === localStorage.getItem("address")) {
+            if (item.wallet === wallet.getCurrentAccount().address) {
               item.authorId = "2"
             } else {
               item.authorId = "1"
@@ -417,7 +418,7 @@ export default {
           querySnapshot.forEach((doc) => {
             const item = { ...doc.data(), id: doc.id};
             // item.text = !item?.text ? null : item.text.trim() === "" ? null : item.text.trim();
-            if (item.wallet === localStorage.getItem("address")) {
+            if (item.wallet === wallet.getCurrentAccount().address) {
               item.authorId = "2"
             } else {
               item.authorId = "1"
@@ -432,9 +433,10 @@ export default {
           
 
           setTimeout(() =>{
+            // console.log(this.showInfoCard, this.$refs.scrollable)
             // this.$refs.scrollable.scrollIntoView({ behavior: "smooth", block: "end" });
-            this.$refs.scrollable.scrollIntoView({ behavior: "smooth" });
-          }, 1000)
+                this.$refs.scrollable.scrollIntoView({ behavior: "smooth" });
+          }, 500)
 
           this.readMessages();
 
@@ -454,7 +456,7 @@ export default {
             // console.log("url",url)
             const messageInfo = {
               authorId: null,
-              wallet: localStorage.getItem("address"),
+              wallet: wallet.getCurrentAccount().address,
               photoURL: url,
               text: this.message,
               readed: true,
@@ -485,7 +487,7 @@ export default {
      else if (this.message) {
         const messageInfo = {
           authorId: null,
-          wallet: localStorage.getItem("address"),
+          wallet: wallet.getCurrentAccount().address,
           text: this.message,
           readed: true,
           type: MessageType.text,
