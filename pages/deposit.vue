@@ -252,7 +252,7 @@ export default {
     },
     async getBalance() {
       const list = await tokensServices.getListTokensBalance();
-      this.balance = list.fts.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase())?.balance_usd || 0.0;
+      this.balance = list.fts.find((item) => item.symbol.toLocaleUpperCase() === "USDT".toLocaleLowerCase())?.balance_usd || 0.0;
 
       /* let balanceNear = 0.0;
 
