@@ -28,6 +28,7 @@
     <section id="section-available" style="padding-top: 23px;">
       <div class="space" style="gap: 10px">
         <v-btn
+          :loading="loading"
           class="btn-outlined"
           style="--bg: var(--secondary); flex: 1 1"
           @click="openModalCrypto()"
@@ -251,7 +252,7 @@ export default {
         {
           icon: require("@/assets/sources/icons/arrow-up.svg"),
           text: "enviar",
-          action: () => { this.$router.push({ path: "/send" }) } ,// { this.alert = false; this.transfer = true; this.$refs.formEnvio.resetValidation(); this.$refs.formEnvio.reset(); },
+          action: () => { this.enviar() } ,// { this.alert = false; this.transfer = true; this.$refs.formEnvio.resetValidation(); this.$refs.formEnvio.reset(); },
         },
         {
           icon: require("@/assets/sources/icons/swap.svg"),
@@ -261,7 +262,7 @@ export default {
         {
           icon: require("@/assets/sources/icons/plus.svg"),
           text: "recargar",
-          action: () => { this.$router.push({ path: "/deposit" }) },
+          action: () => { this.recargar() },
         },
         {
           icon: require("@/assets/sources/icons/arrow-down.svg"),
@@ -275,6 +276,7 @@ export default {
       pendingTrades: false,
       data: [],
       poolOrders: null,
+      loading: false,
     }
   },
   head() {
@@ -341,8 +343,8 @@ export default {
     },
 
     async openModalCrypto() {
-      this.$refs.modalCryptos.model = true;
       
+      this.loading = true;
       await this.$refs.modalCryptos.refreshTokens()
       
       // Run this line only once
@@ -354,6 +356,8 @@ export default {
       const storedBalance = sessionStorage.getItem('balance');
       if (storedBalance) {
         this.balance = storedBalance;
+        this.$refs.modalCryptos.model = true;
+        this.loading = false;
         // console.log('Loaded balance from session storage:', this.balance);
         // If a balance is found, clear the interval
       }
@@ -635,6 +639,14 @@ export default {
             this.pendingTrades = true;
             
           });
+    },
+    enviar() {
+      this.$router.push({ path: "/send" });
+      sessionStorage.setItem("push", "withdraw");
+    },
+    recargar() {
+      this.$router.push({ path: "/deposit" });
+      sessionStorage.setItem("push", "deposit");
     },
     // async orderBuy() {
     //   const selects = gql`
