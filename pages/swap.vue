@@ -3,6 +3,7 @@
     <modalWarning
       ref="modalWarning"
       :text="'USTED ESTA A PUNTO DE INTERCAMBIAR ' + amount + ' ' + fromToken.coin + ' POR UN APROXIMADO DE ' + amountReceive + ' ' + toToken.coin"
+      :count-seconds="countSeconds"
       @click="sendSwap"
     ></modalWarning>
 
@@ -144,8 +145,12 @@
         <span style="--fs: 12px; --ls: normal">{{ amountReceive }} {{toToken.coin}}</span>
       </v-card>
 
-      <v-btn class="btn flex-grow-1" :loading="btnLoading" :disabled="amountReceive == 0" @click="$refs.modalWarning.model = true">
-        CONTINUAR
+      <v-btn v-if="countSeconds > 0" class="btn flex-grow-1" :loading="btnLoading" :disabled="amountReceive == 0" @click="$refs.modalWarning.model = true">
+        CAMBIAR ({{ countSeconds }}s)
+      </v-btn>
+
+      <v-btn v-else class="btn flex-grow-1" :loading="btnLoading" :disabled="amountReceive == 0" @click="previewSwap()">
+        PREVISUALIZAR CONVERSIÓN
       </v-btn>
     </section>
   </v-form>
@@ -263,9 +268,10 @@ export default {
           contract: "fritz.tkn.near",
           balance: 0.00,
           balanceTotal: 0.00,
-          balance_usd: 0.00
+          balance_usd: 0.00,
         },
-      ]
+      ],
+      countSeconds: 0
     }
   },
   head() {
@@ -362,17 +368,20 @@ export default {
       // console.log(this.amount, this.fromToken?.contract, this.toToken?.contract)
       if (!this.amount || this.amount <= 0 || !this.fromToken?.contract || !this.toToken?.contract || !localStorage.getItem('address')) {
         this.btnLoading = false
+        this.countSeconds = 0
         return
       }
 
       if (!this.$refs.form.validate()) {
         this.btnLoading = false
+        this.countSeconds = 0
         return
       }
 
       if ((this.fromToken.contract === "near" || this.fromToken.contract === "wrap.near") && (this.toToken.contract === "near" || this.toToken.contract === "wrap.near")) {
         this.amountReceive = this.amount
         this.btnLoading = false
+        this.countSeconds = 0
         return
       }
 
@@ -397,10 +406,26 @@ export default {
           }
 
           this.btnLoading = false
-          
+          this.countSeconds = 10
+
+          console.log("countSeconds", this.countSeconds)
+
+          const countdown = () => {
+            if (this.countSeconds > 0) {
+              setTimeout(() => {
+                this.countSeconds = this.countSeconds - 1;
+                console.log("countSeconds", this.countSeconds);
+                countdown(); // Llama recursivamente a la función para contar hacia atrás
+              }, 1000);
+            }
+          };
+
+          countdown();
+                    
         }).catch((err) => {
           console.log(err)
           this.btnLoading = false
+          this.countSeconds = 0
           throw new Error ("Failed to get data price route")
         })
     },
