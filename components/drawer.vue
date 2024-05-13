@@ -65,11 +65,11 @@ export default {
           icon: require("@/assets/sources/drawer/wallet.svg"),
           action: () => { this.$router.push({ path: "/" })}
         },
-        {
+        /* {
           name: "seguridad",
           icon: require("@/assets/sources/drawer/security.svg"),
           action: () => this.$router.push({ path: "/security" }),
-        },
+        }, */
         {
           name: "intercambiar",
           icon: require("@/assets/sources/drawer/explore.svg"),
