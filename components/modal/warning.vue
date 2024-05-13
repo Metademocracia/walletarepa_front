@@ -21,8 +21,11 @@
         <slot />
 
         <slot name="action">
-          <v-btn class="btn-outlined-2 mt-6" :loading="btnLoading" @click="$emit('click'); btnLoading = true">
-            ACEPTAR
+          <v-btn v-if="countSeconds > 0" class="btn-outlined-2 mt-6" :loading="btnLoading" @click="$emit('click'); btnLoading = true">
+            ACEPTAR ({{countSeconds}}s)
+          </v-btn>
+          <v-btn v-else class="btn-outlined-2 mt-6" :loading="btnLoading" @click="model=false">
+            PREVISUALIZAR CONVERSIÓN
           </v-btn>
         </slot>
       </v-card-text>
@@ -41,6 +44,10 @@ export default {
     text: {
       type: String,
       default: '',
+    },
+    countSeconds: {
+      type: Number,
+      default: 0,
     },
     contentClass: {
       type: String,
