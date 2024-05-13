@@ -77,6 +77,20 @@ export default {
       title,
     }
   },
+  created() {
+    const address = localStorage.getItem("address");
+
+    if (!address) {
+      this.$router.push("/")
+    }
+
+    const account = localStorageUser.getAccount(address);
+
+    if (account.publicKey.startsWith("ed25519:")) {
+      this.$router.push("/")
+    }
+  },
+
   methods: {
     onComplete() {
       if (!this.$refs.form.validate()) return
@@ -107,20 +121,35 @@ export default {
 
         localStorage.setItem("unlock", true)
 
-        const token = localStorage.getItem("token")
-        if (token) {
+        const listUser = localStorageUser.getListUser()
+
+        const usersData = listUser.map(result => {
+          result[1].privateKey = this.decrypt(result[1].privateKey, this.password)
+          result[1].publicKey = this.decrypt(result[1].publicKey, this.password)
+          return result
+        })
+
+        const userMapStr = JSON.stringify(Array.from(usersData))
+
+        sessionStorage.setItem('listUser', userMapStr)
+        localStorage.setItem('listUser', userMapStr)
+
+        // const token = localStorage.getItem("token")
+        /* if (token) {
           localStorage.removeItem("token")
           this.$router.push("/login?token=" + token)
+        } else */ 
+        
+        if(this.$route.query?.callBackUnlock) {
+          // localStorage.removeItem("route-after-unlocking");
+          const path = this.$route.query.callBackUnlock;
+          this.$route.query.callBackUnlock = undefined;
+          this.$router.push({ path, query: this.$route.query })
         } else {
-          const routeAfterUnlocking = sessionStorage.getItem("route-after-unlocking");
-          if(routeAfterUnlocking && routeAfterUnlocking !== null && routeAfterUnlocking !== undefined) {
-            // localStorage.removeItem("route-after-unlocking");
-            this.$router.push(JSON.parse(routeAfterUnlocking))
-          } else {
-            this.$router.push("/")
-          }
-          
+          this.$router.push("/")
         }
+          
+        
       } catch (error) {
         console.error(error)
       }

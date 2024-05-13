@@ -467,11 +467,11 @@ export default {
     },
 
     cancel() {
-      let ruta = this.token.error;
+      const ruta = this.token.error;
         
-      if(this.token?.searchError) {
+      /* if(this.token?.searchError) {
         ruta += this.token.searchError;
-      }
+      } */
       location.replace(ruta);
     },
   },

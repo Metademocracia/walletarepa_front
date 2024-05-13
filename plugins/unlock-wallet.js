@@ -1,5 +1,6 @@
 import localStorageUser from "@/services/local-storage-user";
 
+
 export default function ({ redirect, route }) {
     localStorage.removeItem("privateKey");
     localStorage.removeItem("publicKey");
@@ -21,7 +22,12 @@ export default function ({ redirect, route }) {
                 localStorage.setItem("token", token);
             }
             setTimeout(() => {
-                redirect("/unlock-wallet");
+                if(route.path === "/unlock-wallet") return
+
+                route.query.callBackUnlock = route.path;
+                // localStorage.setItem("routeUnlock", JSON.stringify(route));
+                
+                redirect({ path: "/unlock-wallet", query: route.query});
             }, 0);
         }
     } catch (error) {

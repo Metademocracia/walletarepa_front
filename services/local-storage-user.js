@@ -125,15 +125,39 @@ function getCurrentAccount() {
       shortenAddress: utils.shortenAddress(_address),
     }
   } catch (error) {
-    throw new Error('Error getCurrentAddress: ' + error.toString())
+    return {}
+    // throw new Error('Error getCurrentAddress: ' + error.toString())
   }
 }
 
+
+function getListUser() {
+  try {
+    let listUsers = localStorage.getItem('listUser');
+    const listUnlock = sessionStorage.getItem('listUser')
+    if (listUnlock && listUnlock !== 'undefined' && listUnlock !== 'null' && listUnlock !== undefined && listUnlock !== null) {
+      listUsers = listUnlock
+    }
+
+    if (!listUsers || listUsers === 'undefined' || listUsers === 'null' || listUsers === undefined || listUsers === null) { 
+      return undefined
+    }
+
+    const result = JSON.parse(listUsers)
+
+    return result
+  } catch (error) {
+    return undefined
+    // throw new Error('Error getListUser: ' + error.toString())
+  }
+}
+
+
 function getAccounts() {
   try {
-    const accounts = localStorage.getItem('listUser')
+    const accounts = getListUser(); // localStorage.getItem('listUser')
 
-    const result = JSON.parse(accounts).map((item) => {
+    const result = accounts.map((item) => { // JSON.parse(accounts).map((item) => {
       return {
         address: item[1].address,
       }
@@ -145,23 +169,13 @@ function getAccounts() {
   }
 }
 
-function getListUser() {
-  try {
-    const accounts = localStorage.getItem('listUser')
 
-    const result = JSON.parse(accounts)
-
-    return result
-  } catch (error) {
-    throw new Error('Error getListUser: ' + error.toString())
-  }
-}
 
 function getAccountsWithKeys() {
   try {
-    const accounts = localStorage.getItem('listUser')
+    const accounts = getListUser(); // localStorage.getItem('listUser')
 
-    const result = JSON.parse(accounts).map((item) => {
+    const result = accounts.map((item) => { // JSON.parse(accounts).map((item) => {
       return item[1]
     })
 
@@ -173,9 +187,11 @@ function getAccountsWithKeys() {
 
 function getAccount(address) {
   try {
-    if (localStorage.getItem('listUser')) {
-      const list = localStorage.getItem('listUser')
-      const users = new Map(JSON.parse(list))
+    const listUsers = getListUser();
+    if(listUsers) {
+    // if (localStorage.getItem('listUser')) {
+      // const list = localStorage.getItem('listUser')
+      const users = new Map(listUsers); // new Map(JSON.parse(list))
       const dataUser = users.get(address)
 
       if (!dataUser) throw new Error('Error getAccount: address not found')
