@@ -133,14 +133,14 @@
 
 
     <v-card class="card mb-4 px-4 py-2 d-flex justify-space-between" style="--bg: var(--card-2); --br: 10px">
-      <h6 class="mb-0" style="--ff: var(--font3); --fs: 16px; translate: 0 2px">MONTO A ENVIAR</h6>
+      <h6 class="mb-0" style="--ff: var(--font3); --fs: 16px; translate: 0 2px">{{ montoText }}</h6>
       <span style="font-family: var(--font2); font-weight: 700 !important; font-size: 11px !important; color: #333 !important">
         {{ operationAmount }} {{ tokenSymbol }}
       </span>
     </v-card>
     
     <v-card class="card mb-4 px-4 py-2 d-flex justify-space-between" style="--bg: #BFFBFA; --br: 10px">
-      <h6 class="mb-0" style="--ff: var(--font3); --fs: 16px; translate: 0 2px">MONTO A RECIBIR</h6>
+      <h6 class="mb-0" style="--ff: var(--font3); --fs: 16px; translate: 0 2px">{{ montoText1 }}</h6>
       <span style="font-family: var(--font2); font-weight: 700 !important; font-size: 11px !important; color: #333 !important">
         {{ fiatSymbol }} {{ formatNumber(receiveAmount) }}
       </span>
@@ -190,6 +190,7 @@ import gql from "graphql-tag";
 import encrypDecript from "@/services/encryp";
 import wallet from '@/services/local-storage-user'
 import walletUtils from "@/services/wallet";
+// import { mont } from "bn.js";
 const { utils } = nearAPI;
 
 export default {
@@ -221,6 +222,8 @@ export default {
       countOrders: 0,
       buttonText: "MARCAR PAGO REALIZADO",
       disableButtonText: false,
+      montoText: "MONTO A ENVIAR",
+      montoText1: "MONTO A RECIBIR",
     }
   },
   head() {
@@ -392,6 +395,9 @@ export default {
 
             this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
             this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
+
+            this.operation === "SELL" ? this.montoText = "MONTO A RECIBIR" : this.montoText = "MONTO A ENVIAR";
+            this.operation === "BUY" ? this.montoText1 = "MONTO A PAGAR" : this.montoText1 = "MONTO A RECIBIR";
 
             this.data[0].confirmation_signer_id === 1 ? this.disableButtonText = true : this.disableButtonText = false;
             this.data[0].confirmation_signer_id === 1 ? this.buttonText = "ESPERANDO POR APROBACIÓN" : this.buttonText = "MARCAR PAGO REALIZADO";
