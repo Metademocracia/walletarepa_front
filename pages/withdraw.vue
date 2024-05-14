@@ -260,8 +260,8 @@ export default {
     
     async getBalance() {
       const list = await tokensServices.getListTokensBalance();
-      this.balance = list.fts.find((item) => item.symbol.toLocaleUpperCase() === "USDT".toLocaleLowerCase())?.balance_usd || 0.0;
-console.log(list.fts)
+      this.balance = list.fts.find((item) => item.symbol.toLocaleUpperCase() === "USDT".toUpperCase())?.balance_usd || 0.0;
+      console.log(list.fts)
       /* let balanceNear = 0.0;
 
       const { near } = await walletUtils.getBalance();
@@ -319,7 +319,7 @@ console.log(list.fts)
       const selects = gql`
       query MyQuery( $token: String, $address: String ) {
         offerssells(
-          where: {asset_contains: $token, owner_id_not: $address, is_pause: false, is_merchant: true}
+          where: {asset_contains: $token, owner_id_not: $address, is_pause: false}
           orderBy: exchange_rate
           orderDirection: desc
         ) {
