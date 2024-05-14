@@ -129,21 +129,21 @@ import localStorageUser from '@/services/local-storage-user';
 export default {
   name: "AccountDetails",
   layout: "default",
-  middleware: ["authenticated"],
+  // middleware: ["authenticated"],
   data() {
     return {
       model: false,
       copie: false,
       privateKey: null,
       options: [
-        {
-          title: "CONTRASEÑA",
-          desc: "Solo para este dispositivo",
-          buttonText: "CREAR",
-          active: true,
-          disabled: false,
-          action: () => this.$router.push('/create-lock-password'),
-        },
+        // {
+        //  title: "CONTRASEÑA",
+        //  desc: "Solo para este dispositivo",
+        //  buttonText: "CREAR",
+        //  active: true,
+        //  disabled: false,
+        //  action: () => this.$router.push('/create-lock-password'),
+        // },
         // {
         //   title: "FRASE SECRETA",
         //   desc: "jul 19 2023",
@@ -179,7 +179,7 @@ export default {
     }
   },
   mounted() {
-    this.validateUnlock()
+    // this.validateUnlock()
   },
   methods: {
     fnCopie(copy) {
@@ -195,28 +195,28 @@ export default {
       this.privateKey = localStorage.getItem("privateKey")
       this.model = true
     },
-    validateUnlock() {
-      const address = localStorage.getItem("address")
+    // validateUnlock() {
+    //   const address = localStorage.getItem("address")
 
-      if (!address) {
-        return
-      }
+    //   if (!address) {
+    //     return
+    //   }
 
-      try {
-        const account = localStorageUser.getAccount(address)
+    //   try {
+    //     const account = localStorageUser.getAccount(address)
 
-        if (account.privateKey.startsWith('ed25519:')) {
-          this.options[0].disabled = false
-        } else {
-          this.options[0].disabled = true
-        }
-      } catch (error) {
-        localStorage.removeItem("address")
-        localStorage.removeItem("listUser")
-        localStorage.removeItem("auth")
-        location.reload()
-      }
-    },
+    //     if (account.privateKey.startsWith('ed25519:')) {
+    //       this.options[0].disabled = false
+    //     } else {
+    //       this.options[0].disabled = true
+    //     }
+    //   } catch (error) {
+    //     localStorage.removeItem("address")
+    //     localStorage.removeItem("listUser")
+    //     localStorage.removeItem("auth")
+    //     location.reload()
+    //   }
+    // },
     logout() {
       localStorageUser.removeAccountWallet();
     },
