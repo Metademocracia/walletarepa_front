@@ -178,7 +178,9 @@ export default {
 
     async getBalance() {
       const list = await tokensServices.getListTokensBalance();
-      this.balance = list.fts.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase())?.balance_usd || 0.0;
+      const tokenSelect  = list.fts.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase())
+      this.balance = tokenSelect?.balance_usd || 0.0;
+      this.dataToken = tokenSelect;
 
       /* let balanceNear = 0.00;
 
