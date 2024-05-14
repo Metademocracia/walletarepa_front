@@ -396,7 +396,7 @@ export default {
             this.operation === "SELL" ? this.cancelVisible = false : this.cancelVisible = true;
             this.operation === "true" ? this.disputeDiabled = true : this.disputeDiabled = false;
 
-            this.operation === "SELL" ? this.montoText = "MONTO A RECIBIR" : this.montoText = "MONTO A ENVIAR";
+            this.operation === "SELL" ? this.montoText = "CRYPTO A ENVIAR" : this.montoText = "CRYPTO A RECIBIR";
             this.operation === "BUY" ? this.montoText1 = "MONTO A PAGAR" : this.montoText1 = "MONTO A RECIBIR";
 
             this.data[0].confirmation_signer_id === 1 ? this.disableButtonText = true : this.disableButtonText = false;
