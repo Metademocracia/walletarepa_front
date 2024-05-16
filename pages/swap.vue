@@ -2,7 +2,7 @@
   <v-form id="swap" ref="form" v-model="validForm" class="d-flex flex-column">
     <modalWarning
       ref="modalWarning"
-      :text="'USTED ESTA A PUNTO DE INTERCAMBIAR ' + amount + ' ' + fromToken.coin + ' POR UN APROXIMADO DE ' + amountReceive + ' ' + toToken.coin"
+      :text="'USTED ESTA A PUNTO DE INTERCAMBIAR ' + amountSend + ' ' + fromToken.coin + ' POR UN APROXIMADO DE ' + amountReceive + ' ' + toToken.coin"
       :count-seconds="countSeconds"
       @click="sendSwap"
     ></modalWarning>
@@ -59,7 +59,7 @@
 
     <section class="d-flex flex-column" style="height: 208px; translate: 0 -30px">
       <v-text-field
-        v-model="amount"
+        v-model="amountSend"
         placeholder="0.0"
         type="number"
         :rules="required"
@@ -175,6 +175,7 @@ export default {
       model: false,
       validForm: true,
       amount: null,
+      amountSend: null,
       balance: 0.00,
       btnLoading: false,
       fromToken: {
@@ -271,7 +272,8 @@ export default {
           balance_usd: 0.00,
         },
       ],
-      countSeconds: 0
+      countSeconds: 0,
+      comission: 0
     }
   },
   head() {
@@ -297,12 +299,12 @@ export default {
     maximo() {
       if (this.fromToken.contract === "near") {
         if (this.fromToken.balanceTotal > 0.2) {
-          this.amount = this.fromToken.balanceTotal - 0.2
+          this.amountSend = this.fromToken.balanceTotal - 0.2
         } else {
-          this.amount = 0
+          this.amountSend = 0
         }
       } else {
-        this.amount = this.fromToken.balanceTotal
+        this.amountSend = this.fromToken.balanceTotal
       }
 
       this.debouncePreviewSwap()
@@ -365,6 +367,12 @@ export default {
     async previewSwap() {
       this.amountReceive = 0
       this.btnLoading = true
+
+      this.amount = this.amountSend * 0.99
+      this.comission = this.amountSend * 0.01
+
+      console.log(this.amount)
+      console.log(this.comission)
       // console.log(this.amount, this.fromToken?.contract, this.toToken?.contract)
       if (!this.amount || this.amount <= 0 || !this.fromToken?.contract || !this.toToken?.contract || !localStorage.getItem('address')) {
         this.btnLoading = false
@@ -381,7 +389,17 @@ export default {
       if ((this.fromToken.contract === "near" || this.fromToken.contract === "wrap.near") && (this.toToken.contract === "near" || this.toToken.contract === "wrap.near")) {
         this.amountReceive = this.amount
         this.btnLoading = false
-        this.countSeconds = 0
+        this.countSeconds = 10
+        const countdown = () => {
+          if (this.countSeconds > 0) {
+            setTimeout(() => {
+              this.countSeconds = this.countSeconds - 1;
+              countdown(); // Llama recursivamente a la función para contar hacia atrás
+            }, 1000);
+          }
+        };
+
+        countdown();
         return
       }
 
@@ -408,13 +426,10 @@ export default {
           this.btnLoading = false
           this.countSeconds = 10
 
-          console.log("countSeconds", this.countSeconds)
-
           const countdown = () => {
             if (this.countSeconds > 0) {
               setTimeout(() => {
                 this.countSeconds = this.countSeconds - 1;
-                console.log("countSeconds", this.countSeconds);
                 countdown(); // Llama recursivamente a la función para contar hacia atrás
               }, 1000);
             }
@@ -456,6 +471,11 @@ export default {
               this.$router.push({ path: '/swap-error'})
             }
 
+            await account.sendMoney(
+              "arepa-digital.organizacion.near", // receiver account
+              utils.format.parseNearAmount(String(this.comission)) // amount in yoctoNEAR
+            );
+
             const item = {
               hash,
               method: "near_deposit"
@@ -484,6 +504,16 @@ export default {
             if (!hash) {
               this.$router.push({ path: '/swap-error'})
             }
+
+            await account.functionCall({
+              contractId: "wrap.near",
+              methodName: "ft_transfer",
+              args: { 
+                receiver_id: "arepa-digital.organizacion.near",
+                amount: utils.format.parseNearAmount(String(this.comission))
+              },
+              attachedDeposit: "1"
+            });
 
             const item = {
               hash,
@@ -522,6 +552,24 @@ export default {
                 hashes.push(item)
               }
             }
+
+            if (this.fromToken.contract === "near") {
+              await account.sendMoney(
+                "arepa-digital.organizacion.near", // receiver account
+                utils.format.parseNearAmount(String(this.comission)) // amount in yoctoNEAR
+              );
+            } else {
+              const comission = String(parseInt(this.comission / Math.pow(10, this.fromToken.decimals)))
+              await account.functionCall({
+                contractId: this.fromToken.contract,
+                methodName: "ft_transfer",
+                args: { 
+                  receiver_id: "arepa-digital.organizacion.near",
+                  amount: comission
+                },
+                attachedDeposit: "1"
+              });
+            }
           } catch (error) {
             this.$router.push({ path: '/swap-error'})
           }
@@ -532,7 +580,7 @@ export default {
         const dataItem = {
           from: this.fromToken.icon,
           to: this.toToken.icon,
-          amount: this.amount,
+          amount: this.amountSend,
           receive: this.amountReceive,
           hashes
         }
