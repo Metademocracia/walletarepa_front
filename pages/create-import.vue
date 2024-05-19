@@ -8,7 +8,7 @@
       description="INICIAR SESIÓN O REGÍSTRESE PARA UNIRTE A LA DIVERSIÓN"
       max-width="251px"
     >
-      <template #top-text>
+      <template #topText>
         <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto" style="width: 200px;">
       </template>
     </Header>

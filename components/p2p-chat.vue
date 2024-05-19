@@ -162,7 +162,7 @@ export default {
     },
     height: {
       type: String,
-      default: "450px",
+      default: window.innerHeight > 970 ? "550px" : "450px",
     },
     textActionButton: {
       type: String,
