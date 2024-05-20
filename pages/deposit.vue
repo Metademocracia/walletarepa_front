@@ -452,8 +452,9 @@ export default {
 
           if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
             // console.log("error al aceptar la oferta", acceptOffer);
-            this.btnLoading = false;
-            return
+            // this.btnLoading = false;
+            // return
+            console.log("Error en accept_offer");
           }
         } catch (error) {
           console.error(error.message);
