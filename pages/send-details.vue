@@ -227,7 +227,7 @@ export default {
     },
 
     async send() {
-      if(this.$refs.formEnvio.validate()) {
+      if(this.$refs.formEnvio.validate() && !this.errorAccount) {
         this.envioLoading = true;
 
         if(this.tokenSymbol === "NEAR"){
