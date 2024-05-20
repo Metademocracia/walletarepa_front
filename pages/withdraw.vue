@@ -440,8 +440,9 @@ export default {
           // console.log(createSubCobtractUser)
           if (!createSubCobtractUser || createSubCobtractUser.status.SuccessValue !== "") {
             // console.log("error al crear subcontrato");
-            this.btnLoading = false;
-            return
+            // this.btnLoading = false;
+            // return
+            console.log("Error en create_subcontract_user");
           }
         }
 
@@ -472,8 +473,8 @@ export default {
         });
         if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
           // console.log("error al transferir token");
-          this.btnLoading = false;
-          return
+          // this.btnLoading = false;
+          console.log("Error en ft_transfer");
         }
         const acceptOffer = await account.functionCall({
           contractId: CONTRACT_NAME,
@@ -492,8 +493,9 @@ export default {
 
         if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
           // console.log("error al aceptar la oferta", acceptOffer);
-          this.btnLoading = false;
-          return
+          // this.btnLoading = false;
+          // return\
+          console.log("Error en accept_offer");
         }
       } catch (error) {
         this.subcontract = {};
@@ -598,8 +600,9 @@ export default {
 
         if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
           // console.log("error al aceptar la oferta", acceptOffer);
-          this.btnLoading = false;
-          return
+          // this.btnLoading = false;
+          // return
+          console.log("Error en accept_offer");
         }
       } catch (error) {
         this.subcontract = {};
