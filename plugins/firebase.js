@@ -8,7 +8,7 @@ import "firebase/compat/storage";
 const firebaseConfig =
   process.env.Network === "mainnet"
     ? {
-        apiKey: "AIzaSyAnL8N-tpjOXRuGJv694TwtlJ15raXQMEU",
+        apiKey: process.env.VUE_APP_CHAT_FIREBASE_API_KEY,
         authDomain: "nearp2pmainnet.firebaseapp.com",
         projectId: "nearp2pmainnet",
         storageBucket: "nearp2pmainnet.appspot.com",
@@ -17,7 +17,7 @@ const firebaseConfig =
         measurementId: "G-Q54N9T6LFL",
       }
     : {
-        apiKey: "AIzaSyC8iTeCI50fXBfcmutV9Y4PQrbSY2tgKmo",
+        apiKey: process.env.VUE_APP_CHAT_FIREBASE_API_KEY,
         authDomain: "nearp2ptestnet.firebaseapp.com",
         projectId: "nearp2ptestnet",
         storageBucket: "nearp2ptestnet.appspot.com",
