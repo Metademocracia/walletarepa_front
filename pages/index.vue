@@ -410,7 +410,7 @@ export default {
         // Set an interval to keep checking for a balance in session storage every 5 seconds
         const intervalIdTwo = setInterval(() => {
           // console.log('Checking for balance in session storage...');
-          storedBalance = sessionStorage.getItem('balance');         
+          storedBalance = sessionStorage.getItem('balance');
           if (storedBalance) {
             this.balance = storedBalance;
             // console.log('Loaded balance from session storage:', this.balance);

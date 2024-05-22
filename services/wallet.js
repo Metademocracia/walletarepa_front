@@ -109,7 +109,7 @@ async function nearConnection(accountId) {
   
 }
 
-async function getnear(_publicKey) {
+/* async function getNearId(_publicKey) {
   let nearId;
   let error = ""
   
@@ -150,7 +150,7 @@ async function getnear(_publicKey) {
   
   
   return nearId
-}
+} */
 
 
 async function getNearId(publicKey) {
@@ -350,7 +350,6 @@ export default {
   getPrice,
   nearConnection,
   getNearId,
-  getnear,
   getNfts,
   verifyWallet
 }
