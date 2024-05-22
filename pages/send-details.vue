@@ -293,9 +293,10 @@ export default {
           utils.format.parseNearAmount(this.amount).toString() // amount in yoctoNEAR
         );
 
+        const hash = !result?.transaction.hash ? result : result?.transaction.hash
         const sendResult = JSON.stringify({
-          hash: !result?.transaction.hash ? result : result?.transaction.hash,
-          hashUrl: process.env.ROUTER_EXPLORER_NEAR + 'es/txns/' + this.hash,
+          hash,
+          hashUrl: process.env.ROUTER_EXPLORER_NEAR + 'es/txns/' + hash,
           alertType: result?.status?.SuccessValue === "" ? "success" : "error",
         })
 
