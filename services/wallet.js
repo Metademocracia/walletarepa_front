@@ -1,9 +1,11 @@
 import axios from 'axios';
 import * as nearAPI from "near-api-js";
 import Big from 'big.js';
+// import { accountsByPublicKey } from '@mintbase-js/data';
 import utils from './utils';
 import { configNear } from "@/services/nearConfig";
 import localStorageUser from '~/services/local-storage-user';
+
 const { connect } = nearAPI;
 
 const formatTokenAmount = (value, decimals = 18, precision = 2) => value && Big(value).div(Big(10).pow(decimals)).toFixed(precision);
@@ -107,7 +109,7 @@ async function nearConnection(accountId) {
   
 }
 
-async function getNearId(_publicKey) {
+async function getnear(_publicKey) {
   let nearId;
   let error = ""
   
@@ -150,6 +152,181 @@ async function getNearId(_publicKey) {
   return nearId
 }
 
+
+async function getNearId(publicKey) {
+  
+    const masterController = new AbortController();
+
+    const network = process.env.Network === "testnet" ? 'testnet' : 'mainnet';
+
+    const INDEXERSERVICEURL = network === "testnet" ? 'https://api-testnet.nearblocks.io/v1/kitwallet' 
+    : 'https://api3.nearblocks.io/v1/kitwallet';
+
+    const INDEXERSERVICEURLv1 = network === "testnet" ? 'https://api-testnet.nearblocks.io/v1' 
+    : 'https://api.nearblocks.io/v1';
+
+    const INDEXERSERVICEURLv3 = network === "testnet" ? 'https://api-testnet.nearblocks.io/v1' 
+    : 'https://api3.nearblocks.io/v1';
+
+    
+    // const IS_MAINNET =  // ["mainnet"].some((env:any) => env === process.env.NETWORK);
+
+    const resultApis = [];
+
+    // ---------------------
+    // Nearblocks API3 kitwallet mock
+    // ---------------------
+    let resultApi1 = [];
+    // await fetch(`${INDEXERSERVICEURL}/publicKey/${publicKey}/accounts`, {
+    await axios.get(`${INDEXERSERVICEURL}/publicKey/${publicKey}/accounts`, {
+        headers: {
+              'X-requestor': 'near',
+        },
+        signal: masterController.signal,
+    })
+    .then((res) => {
+      resultApi1 = res.data;
+      res.data.forEach((item) => resultApis.push(item));
+    })
+    .catch((err) => {
+        console.warn('kitwallet fetch error', err);
+    });
+
+    let resultApi2 = [];
+    // await fetch(`${INDEXERSERVICEURLv1}/keys/${publicKey}`, {
+    await axios.get(`${INDEXERSERVICEURLv1}/keys/${publicKey}`, {
+        headers: {
+              'X-requestor': 'near',
+        },
+        signal: masterController.signal,
+    })
+    .then((res) => {
+      if(res.data?.keys && res.data?.keys instanceof Array && res.data?.keys.length > 0) {
+        const resMap = res.data.keys.map((item) => item.account_id);
+        resultApi2 = resMap
+        resMap.forEach((item) => resultApis.push(item));
+      }
+      /* const result = res.json();
+      if (result?.keys && result?.keys instanceof Array && result?.keys.length > 0) {
+        return result.keys.map((item) => item.account_id)
+      } else {
+        return [];
+      } */
+
+    })
+    .catch((err) => {
+        console.warn('api v1 fetch error', err);
+    });
+
+    let resultApi3 = [];
+    // await fetch(`${INDEXERSERVICEURLv3}/keys/${publicKey}`, {
+    await axios.get(`${INDEXERSERVICEURLv3}/keys/${publicKey}`, {
+        headers: {
+              'X-requestor': 'near',
+        },
+        signal: masterController.signal,
+    })
+    .then((res) => {
+      if(res.data?.keys && res.data?.keys instanceof Array && res.data?.keys.length > 0) {
+        const resMap = res.data.keys.map((item) => item.account_id);
+        resultApi3 = resMap;
+        resMap.forEach((item) => resultApis.push(item));
+      }
+      /* const result = (await res.json());
+      if (result.keys && result.keys instanceof Array && result.keys.length > 0) {
+        return result.keys.map((item) => item.account_id)
+      } else {
+        return [];
+      } */
+
+    })
+    .catch((err) => {
+        console.warn('api v3 fetch error', err);
+    });
+
+          /* axios.get(`${CONFIG.INDEXER_SERVICE_URL}/publicKey/${publicKey}/accounts`)
+          .then((response) => {
+            response.json()
+          }).catch((err) => {
+            console.warn('kitwallet fetch error', err);
+            return [];
+          }), */
+        
+    // ---------------------
+    // Mintbase API
+    // ---------------------
+    /* let resultApi4 = [];
+    accountsByPublicKey(
+        publicKey.toString(),
+        network
+    )
+    .then((res) => {
+      resultApi4 = res.data ?? []
+    })
+    .catch((err) => {
+        console.warn('mintbase fetch error', err);
+    }); */
+
+    let resultApi4 = [];
+    const params = {
+      "query":"\n  query mintbase_js_data__accountsByPublicKey(\n    $publicKey: String!\n  ) {\n    accounts: access_keys(\n  where: {\n  public_key: { _eq: $publicKey }\n removed_at: { _is_null: true }\n      }\n    ) {\n      id: account_id\n    }\n  }\n",
+      "variables":{publicKey},
+      "operationName":"mintbase_js_data__accountsByPublicKey"
+    }
+
+    await axios.post(`https://interop-${network}.hasura.app/v1/graphql`,  params)
+      .then((response) => {
+        if(response.data?.data?.accounts && response.data?.data?.accounts.length > 0) { 
+          const resMap = response.data?.data?.accounts.map((item) => item.id);
+          resultApi4 = resMap;
+          resMap.forEach((item) => resultApis.push(item));
+        }
+        /* if(response.data?.data?.accounts[0]) {
+          nearId = response.data?.data?.accounts[0].id
+        } */
+    }).catch((err) => {
+      console.log("error grahp consulta nickname: ", err)
+    })
+        
+         
+  
+    let resultApi5 = [];
+    if (network === "mainnet") {
+        // ---------------------
+        // Fastnear API
+        // ---------------------
+        /* fetch(
+            `https://api.fastnear.com/v0/public_key/${publicKey}/all`,
+            {
+                signal: masterController.signal,
+            }
+        ) */
+        await axios.get(`https://api.fastnear.com/v0/public_key/${publicKey}/all`)
+        /* .then((res) => {
+          resultApi5 = res.json();
+          console.log("fast api 1: ", res.json())
+        }) */
+        .then((res) => {
+          if(res?.data && res?.data?.account_ids) {
+            resultApi5 = res.data.account_ids
+            res.data.account_ids.forEach((item) => resultApis.push(item));
+          }
+
+        })
+        .catch((err) => {
+            console.warn('fastnear fetch error', err);
+        })
+    }
+
+    console.log("resultApi1: ", resultApi1);
+    console.log("resultApi2: ", resultApi2);
+    console.log("resultApi3: ", resultApi3);
+    console.log("resultApi4: ", resultApi4);
+    console.log("resultApi5: ", resultApi5);
+    
+    return resultApis
+}
+
 async function verifyWallet() {
   try {
     const response = await axios.post(process.env.URL_BACKEND + '/wallet/verify-wallet', {
@@ -173,6 +350,7 @@ export default {
   getPrice,
   nearConnection,
   getNearId,
+  getnear,
   getNfts,
   verifyWallet
 }
