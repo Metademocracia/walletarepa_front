@@ -233,7 +233,7 @@ export default {
                 .reduce((totalAmount, amount) => totalAmount.add(new BN(amount)), new BN(0)).toString();
       
       
-      console.log(transactionsList, transactionsList[0])
+      // console.log(transactionsList, transactionsList[0])
 
       this.token.from = transactionsList[0].signerId// localStorageUser.getCurrentAccount().address //;
       this.token.json = { attachedDeposit: totalAmount };
