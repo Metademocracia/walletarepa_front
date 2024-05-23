@@ -19,7 +19,8 @@
       <div class="divcol" style="gap: 5px">
         <h3 v-if="item.title" class="font1">{{item.title}}</h3>
         <p
-          class="font2 p"
+          class="font2 p ellipsis-box"
+          style="--lines: 3"
           v-html="item.desc === `text${item.key.toCapitalize()}` ? $t(item.desc) : item.desc"
         ></p>
       </div>
