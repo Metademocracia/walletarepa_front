@@ -19,6 +19,14 @@
         </v-text-field>
       </aside>
 
+      <v-dialog v-model="modelError"  max-width="max-content" :overlay-opacity="0.9" content-class="modal-payments">
+        <aside class="d-flex justify-end mb-5">
+          <v-text>
+            Error
+          </v-text>
+        </aside>
+       </v-dialog> 
+
       <v-card class="payment-card">
         <div class="payment-card__wrapper" >
           <v-list class="grid-list">
@@ -183,6 +191,7 @@ export default {
       ],
       model: false,
       modelPayments: false,
+      modelError: false,
       validForm: true,
       amount: null,
       balance: 0.0,
@@ -542,6 +551,8 @@ export default {
       } catch (error) {
         this.subcontract = {};
         this.btnLoading = false;
+        this.modalNoMessage = error.message
+        this.modalNoOffers = true;
         console.error(error.message);
         return;
       }
