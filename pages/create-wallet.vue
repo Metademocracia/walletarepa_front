@@ -10,7 +10,6 @@
     />
 
     <!--<div v-for="i in 3" :id="`login-decoration-${i}`" :key="i" />-->
-    <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto" style="width: min(100%, 170px);">
 
     <section id="login-content">
       <v-text-field

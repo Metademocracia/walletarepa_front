@@ -81,28 +81,6 @@
     </section>
 
 
-    <section id="section-explore">
-      <div id="section-explore-content">
-        <v-btn
-          class="btn-outlined"
-          @click="openExplorer()"
-        >
-        IR A <span data-inner>AREPA DAO</span>
-        </v-btn>
-
-        <v-btn
-          class="btn"
-          to="/explore"
-        >
-        explorar apps
-        </v-btn>
-
-      
-        <img src="@/assets/sources/images/background-explore-arepa.svg" alt="explore arepa background">
-      </div>
-    </section>
-
-
     <section id="section-recent-activity" class="mb-10">
       <div id="section-recent-activity__wrapper">
         <h1 class="p">actividad <br>reciente</h1>

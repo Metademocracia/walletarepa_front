@@ -22,7 +22,6 @@
 
 
       <section class="d-flex flex-column" style="gap: 16px;">
-        <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto" style="width: min(100%, 170px);">
 
         <div class="d-flex flex-column" style="gap: 9px;">
           <label>CUENTA</label>

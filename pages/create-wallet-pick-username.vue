@@ -59,7 +59,6 @@
     </section>
 
     <Footer ref="footer">
-      <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto" style="width: 200px">
     </Footer>
 
   </div>

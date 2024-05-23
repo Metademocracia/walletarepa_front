@@ -84,8 +84,7 @@
           </v-btn>
         </aside>
       </section>
-      
-      <!-- <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto mt-16 mb-8" style="width: 200px"> -->
+    
 
       <v-card class="card-outline pa-4 mt-16 d-flex flex-column justify-center align-center" style="--bg: var(--card-2)">
         <p class="text-center" style="--fs: 9px; width: min(100%, 192px)">PARA RETIRAR HACIA BANCO TRADICIONAL</p>
