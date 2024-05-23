@@ -438,7 +438,7 @@ export default {
           const acceptOffer = await account.functionCall({
             contractId: CONTRACT_NAME,
             methodName: "accept_offer",
-            gas: "300000000000000",
+            gas: "30000000000000",
             args: {
               offer_type: 2,
               offer_id: parseInt(this.filteredOffers.id),

@@ -491,34 +491,14 @@ export default {
       this.btnLoading = true;
       const val = sessionStorage.getItem('operation') === "SELL" ? "1" : "2";
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
-      const CONTRACT_USDT = process.env.VUE_APP_CONTRACT_NAME_USDT;
+      // const CONTRACT_USDT = process.env.VUE_APP_CONTRACT_NAME_USDT;
       const account = await walletUtils.nearConnection();
 
-      const getTokenActivo = await account.viewFunctionV1(
-        CONTRACT_USDT,
-          "storage_balance_of",
-          { account_id: sessionStorage.getItem('trader') }
-      );
-
-      if (!getTokenActivo) {
-          const activarSubcuenta = await account.functionCall({
-            contractId: CONTRACT_USDT,
-            methodName: "storage_deposit",
-            args: { account_id: sessionStorage.getItem('trader') },
-            gas: "30000000000000",
-            attachedDeposit: "1250000000000000000000"
-          });
-
-          if (!activarSubcuenta || !activarSubcuenta.status.SuccessValue !== "") {
-            console.log("Subcuenta ya activa, procede con el siguiente paso");
-          }
-        }
-
-
+      
       const orderConfirmation = await account.functionCall({
         contractId: CONTRACT_NAME,
         methodName: "order_confirmation",
-        gas: "300000000000000",
+        gas: "180000000000000",
         args: { offer_type: parseInt(val), order_id: parseInt(this.orderId) },
         attachedDeposit: "3"
       }) 
@@ -538,7 +518,7 @@ export default {
         this.deleteContract = await account.functionCall({
           contractId: CONTRACT_NAME,
           methodName: "delete_contract",
-          gas: "300000000000000",
+          gas: "150000000000000",
           args: {},     
         });
       
@@ -574,7 +554,7 @@ export default {
       const orderConfirmation = await account.functionCall({
         contractId: CONTRACT_NAME,
         methodName: "cancel_order",
-        gas: "300000000000000",
+        gas: "180000000000000",
         args: { offer_type: 2, order_id: parseInt(this.orderId) },
         attachedDeposit: "3"
       });
@@ -604,7 +584,7 @@ export default {
       const orderConfirmation = await account.functionCall({
         contractId: CONTRACT_NAME,
         methodName: "order_dispute",
-        gas: "300000000000000",
+        gas: "40000000000000",
         args: { offer_type: type, order_id: parseInt(this.orderId) },
         attachedDeposit: "3"
       });

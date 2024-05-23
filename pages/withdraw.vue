@@ -197,6 +197,7 @@ export default {
       modalNoOffers: false,
       modalNoMessage: false,
       poolOrders: null,
+      nearBalanceObject: 0.0,
     };
   },
   head() {
@@ -261,7 +262,8 @@ export default {
     async getBalance() {
       const list = await tokensServices.getListTokensBalance();
       this.balance = list.fts.find((item) => item.symbol.toLocaleUpperCase() === "USDT".toUpperCase())?.balance_usd || 0.0;
-      console.log(list.fts)
+      this.nearBalanceObject = list.fts.find(item => item.contract === "NEAR").balance || 0.0;
+      // console.log(list.fts)
       /* let balanceNear = 0.0;
 
       const { near } = await walletUtils.getBalance();
@@ -419,6 +421,16 @@ export default {
 
       try {
         const account = await walletUtils.nearConnection();
+
+        const result = await account.viewFunction(CONTRACT_NAME_USDT, "storage_balance_of", { account_id: `${this.address.split(".")[0]}.${CONTRACT_NAME}` });
+        
+        if ( this.nearBalanceObject < 0.0126 && result == null ) {
+          this.modalNoMessage = "Se requiere un balance mínimo de 0.0127 NEAR para iniciar por primera vez la transacción";
+          this.modalNoOffers = true;
+          this.btnLoading = false;
+          return;
+        }
+
         this.subcontract = await account.viewFunctionV1(
           CONTRACT_NAME,
           "get_subcontract",
@@ -427,59 +439,71 @@ export default {
         const now = moment()
           .format("YYYY-MM-DD HH:mm:ss")
           .toString();
-
+        
         if (this.subcontract === null) {
           this.subcontract = { contract: `${this.address.split(".")[0]}.${CONTRACT_NAME}` };
           const createSubCobtractUser = await account.functionCall({
             contractId: CONTRACT_NAME,
             methodName: "create_subcontract_user",
-            gas: "80000000000000",
+            gas: "30000000000000",
             args: { subaccount_id: this.subcontract.contract, asset: "USDT" },
             attachedDeposit: "1"
           });
+          console.log( "create_subcontract_user");
+          console.log(createSubCobtractUser);
           // console.log(createSubCobtractUser)
-          if (!createSubCobtractUser || createSubCobtractUser.status.SuccessValue !== "") {
-            // console.log("error al crear subcontrato");
-            // this.btnLoading = false;
-            // return
-            console.log("Error en create_subcontract_user");
-          }
+          // if (!createSubCobtractUser || createSubCobtractUser.status.SuccessValue !== "") {
+          //   console.log(createSubCobtractUser.status.SuccessValue);
+          //   // this.btnLoading = false;
+          //   // return
+          //   console.log("Error en create_subcontract_user");
+          // }
         }
 
-        const getTokenActivo = await account.viewFunctionV1(
-          CONTRACT_NAME,
-          "get_token_activo",
-          { user_id: this.subcontract.contract, ft_token: "USDT" }
-        );
-        if (!getTokenActivo) {
-          const activarSubcuenta = await account.functionCall({
-            contractId: CONTRACT_NAME,
-            methodName: "activar_subcuenta_ft",
-            args: { subaccount_id: this.subcontract.contract, asset: "USDT" },
-            attachedDeposit: "100000000000000000000000"
-          });
+        // console.log(result != null);
 
-          if (!activarSubcuenta || !activarSubcuenta.status.SuccessValue !== "") {
-            console.log("Subcuenta ya activa, procede con el siguiente paso");
-          }
+        // const getTokenActivo = await account.viewFunctionV1(
+        //   CONTRACT_NAME,
+        //   "get_token_activo",
+        //   { user_id: this.subcontract.contract, ft_token: "USDT" }
+        // );
+        
+        if (result == null) {
+           const activarSubcuenta = await account.functionCall({
+             contractId: CONTRACT_NAME_USDT,
+             methodName: "storage_deposit",
+             args: { account_id: this.subcontract.contract },
+             gas: "30000000000000",
+             attachedDeposit: "1250000000000000000000"
+           });
+           console.log( "storage_deposit");
+           console.log(activarSubcuenta)
+
+        //   // if (!activarSubcuenta || !activarSubcuenta.status.SuccessValue !== "") {
+        //   //   console.log("Subcuenta ya activa, procede con el siguiente paso");
+        //   //   console.log(activarSubcuenta.status.SuccessValue)
+        //   // }
         }
-
+        
         const ftTransfer = await account.functionCall({
           contractId: CONTRACT_NAME_USDT,
           methodName: "ft_transfer",
-          gas: "80000000000000",
+          gas: "15000000000000",
           args: { receiver_id: this.subcontract.contract, amount: orderAmount },
           attachedDeposit: "1"
         });
-        if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
-          // console.log("error al transferir token");
-          // this.btnLoading = false;
-          console.log("Error en ft_transfer");
-        }
+        console.log("ft_transfer");
+        console.log(ftTransfer)
+        // // if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
+        // //   // console.log("error al transferir token");
+        // //   // this.btnLoading = false;
+        // //   console.log("Error en ft_transfer");
+        // // }
+        
         const acceptOffer = await account.functionCall({
           contractId: CONTRACT_NAME,
           methodName: "accept_offer",
-          gas: "300000000000000",
+          gas: "120000000000000",
           args: {
             offer_type: 1,
             offer_id: parseInt(this.filteredOffers.id),
@@ -490,13 +514,16 @@ export default {
           },
           attachedDeposit: "1"
         });
+        console.log( "accept_offer");
+        console.log(acceptOffer)
 
-        if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
-          // console.log("error al aceptar la oferta", acceptOffer);
-          // this.btnLoading = false;
-          // return\
-          console.log("Error en accept_offer");
-        }
+        // if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
+        //   // console.log("error al aceptar la oferta", acceptOffer);
+        //   // this.btnLoading = false;
+        //   // return\
+        //   console.log(acceptOffer.status.SuccessValue)
+        //   console.log("Error en accept_offer");
+        // }
       } catch (error) {
         this.subcontract = {};
         this.btnLoading = false;

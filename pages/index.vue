@@ -407,6 +407,7 @@ export default {
         // Run this line only once
         this.balance = '0...';
         this.balance = await tokens.getBalanceInitNear(this.address);
+        
         // Set an interval to keep checking for a balance in session storage every 5 seconds
         const intervalIdTwo = setInterval(() => {
           // console.log('Checking for balance in session storage...');
