@@ -177,10 +177,22 @@ export default {
     },
 
     async getBalance() {
-      const list = await tokensServices.getListTokensBalance();
-      const tokenSelect  = list.fts.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase())
-      this.balance = tokenSelect?.balance_usd || 0.0;
-      this.dataToken = tokenSelect;
+      const storedTokenBalances = JSON.parse(sessionStorage.getItem('allTokenBalances'));
+      // console.log(storedTokenBalances.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase()))
+      if(storedTokenBalances) {
+        const tokenSelect  = storedTokenBalances.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase())
+        this.balance = tokenSelect?.balance || 0.0;
+        this.dataToken = tokenSelect;
+      } else {
+        const list = await tokensServices.getListTokensBalance();
+        const tokenSelect  = list.fts.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase())
+        this.balance = tokenSelect?.balance_usd || 0.0;
+        this.dataToken = tokenSelect;
+      }
+      // const list = await tokensServices.getListTokensBalance();
+      // const tokenSelect  = list.fts.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase())
+      // this.balance = tokenSelect?.balance_usd || 0.0;
+      // this.dataToken = tokenSelect;
 
       /* let balanceNear = 0.00;
 

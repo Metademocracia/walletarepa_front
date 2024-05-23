@@ -260,9 +260,17 @@ export default {
     },
     
     async getBalance() {
-      const list = await tokensServices.getListTokensBalance();
-      this.balance = list.fts.find((item) => item.symbol.toLocaleUpperCase() === "USDT".toUpperCase())?.balance_usd || 0.0;
-      this.nearBalanceObject = list.fts.find(item => item.contract === "NEAR").balance || 0.0;
+      const storedTokenBalances = JSON.parse(sessionStorage.getItem('allTokenBalances'));
+      // console.log(storedTokenBalances.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase()))
+      if(storedTokenBalances) {
+        const tokenSelect  = storedTokenBalances.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase())
+        this.balance = tokenSelect?.balance || 0.0;
+        this.nearBalanceObject = storedTokenBalances.find(item => item.contract === "NEAR").balance || 0.0;
+      } else {
+        const list = await tokensServices.getListTokensBalance();
+        this.balance = list.fts.find((item) => item.symbol.toLocaleUpperCase() === "USDT".toUpperCase())?.balance_usd || 0.0;
+        this.nearBalanceObject = list.fts.find(item => item.contract === "NEAR").balance || 0.0;
+      }
       // console.log(list.fts)
       /* let balanceNear = 0.0;
 

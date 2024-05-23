@@ -523,6 +523,7 @@ export default {
         });
       
         // console.log("deleteContract", deleteContract)
+        sessionStorage.removeItem('allTokenBalances')
 
         if (!this.deleteContract || this.deleteContract.status.SuccessValue !== "") {
           console.log("Error borrando el contrato");
