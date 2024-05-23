@@ -78,7 +78,7 @@
           </p>
         </v-card>
 
-        <h5 class="text-center mt-8" style="">
+        <!--<h5 class="text-center mt-8" style="">
           A CONTINUACIÓN PUEDE<br> PERSONALIZAR LA SOLICITUD DE DEPOSITO
         </h5>
 
@@ -107,7 +107,7 @@
           @click="$router.push('/deposit')"
         >
           CREAR SOLICITUD DE PAGO
-        </v-btn>
+        </v-btn>-->
 
       <!--<aside class="d-flex" style="gap: 12px">
         <v-btn class="btn-outlined flex-grow-1" style="--bg: var(--secondary);" @click="$router.go(-1)">
