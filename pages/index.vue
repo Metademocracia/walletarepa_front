@@ -97,10 +97,7 @@
         explorar apps
         </v-btn>
 
-        <article class="btn-outlined">
-          ¡Un ciudadano!<br>¡Una voz!<br>¡Un voto!
-        </article>
-
+      
         <img src="@/assets/sources/images/background-explore-arepa.svg" alt="explore arepa background">
       </div>
     </section>
