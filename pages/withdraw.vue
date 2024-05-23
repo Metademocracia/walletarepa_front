@@ -439,6 +439,13 @@ export default {
           return;
         }
 
+        if ( this.nearBalanceObject < 0.0005) {
+          this.modalNoMessage = "Deposite al menos 0.0005 NEAR para iniciar el P2P";
+          this.modalNoOffers = true;
+          this.btnLoading = false;
+          return;
+        }
+
         this.subcontract = await account.viewFunctionV1(
           CONTRACT_NAME,
           "get_subcontract",
