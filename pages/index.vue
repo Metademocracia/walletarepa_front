@@ -58,13 +58,16 @@
       </div>
 
       <aside class="container-available">
-        <h1 class="p">
+        <h1 class="p" :class="{offuscate}">
           <span style="--fw: 400">$</span>{{ balance }}
           <span class="currency">USD</span>
         </h1>
 
         <div class="divcol center" style="margin-top: 25px;">
-          <h3 class="p">SALDO DISPONIBLE</h3>
+          <div clasS="d-flex align-center" style="gap: 10px">
+            <h3 class="mb-0">SALDO DISPONIBLE</h3>
+            <v-icon size="16" @click="offuscate = !offuscate">{{ offuscate ? 'mdi-eye-off' : 'mdi-eye'}}</v-icon>
+          </div>
           <img src="../assets/sources/icons/warning-orange.svg"  alt="warning icon" style="--w: 25px; --h: 25px; margin-top: 6px" @click="$refs.modalCryptos.model = true">
         </div>
       </aside>
@@ -277,6 +280,7 @@ export default {
       data: [],
       poolOrders: null,
       loading: false,
+      offuscate: true,
     }
   },
   head() {
