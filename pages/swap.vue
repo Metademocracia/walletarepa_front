@@ -55,6 +55,8 @@
 
     <Header show-append></Header>
 
+    <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto mt-1" style="width: 290px">
+
     <section class="d-flex flex-column" style="height: 208px; translate: 0 -30px">
       <v-text-field
         v-model="amountSend"

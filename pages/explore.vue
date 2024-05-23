@@ -72,6 +72,7 @@
       </v-card>
     </section> -->
     
+    <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto mb-8" style="width: 200px; margin-top: 90px;">
   </div>
 </template>
 

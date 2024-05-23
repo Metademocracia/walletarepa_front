@@ -12,6 +12,7 @@
     />
 
     <section id="verification-content">
+      <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto" style="width: 200px">
 
       <v-otp-input
         v-model="otp"
