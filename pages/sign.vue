@@ -233,9 +233,9 @@ export default {
                 .reduce((totalAmount, amount) => totalAmount.add(new BN(amount)), new BN(0)).toString();
       
       
-      // console.log(transactionsList, transactionsList[0])
+      console.log(transactionsList, transactionsList[0])
 
-      this.token.from = localStorageUser.getCurrentAccount().address // transactionsList[0].signerId;
+      this.token.from = transactionsList[0].signerId// localStorageUser.getCurrentAccount().address //;
       this.token.json = { attachedDeposit: totalAmount };
       this.attachedDeposit = totalAmount;
       this.token.transaction = transactionsList;
@@ -317,7 +317,7 @@ export default {
           return
         }
 
-        const dataUser = localStorageUser.getCurrentAccount();
+        const dataUser = localStorageUser.getAccount(this.token.from); // localStorageUser.getCurrentAccount();
         const privateKey = dataUser.privateKey;
         const address = dataUser.address;
         
