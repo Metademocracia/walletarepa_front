@@ -368,11 +368,9 @@ export default {
       this.amountReceive = 0
       this.btnLoading = true
 
-      this.amount = this.amountSend * 0.99
+      this.amount = this.amountSend * 0.999
       this.comission = this.amountSend * 0.001
 
-      console.log(this.amount)
-      console.log(this.comission)
       // console.log(this.amount, this.fromToken?.contract, this.toToken?.contract)
       if (!this.amount || this.amount <= 0 || !this.fromToken?.contract || !this.toToken?.contract || !localStorage.getItem('address')) {
         this.btnLoading = false
