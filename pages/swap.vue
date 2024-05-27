@@ -369,7 +369,7 @@ export default {
       this.btnLoading = true
 
       this.amount = this.amountSend * 0.99
-      this.comission = this.amountSend * 0.01
+      this.comission = this.amountSend * 0.001
 
       console.log(this.amount)
       console.log(this.comission)
