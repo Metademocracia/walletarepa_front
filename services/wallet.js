@@ -165,8 +165,8 @@ async function getNearId(publicKey) {
     const INDEXERSERVICEURLv1 = network === "testnet" ? 'https://api-testnet.nearblocks.io/v1' 
     : 'https://api.nearblocks.io/v1';
 
-    const INDEXERSERVICEURLv3 = network === "testnet" ? 'https://api-testnet.nearblocks.io/v1' 
-    : 'https://api3.nearblocks.io/v1';
+    const INDEXERSERVICEURLv3 = network === "testnet" ? 'https://api-testnet.nearblocks.io/v3' 
+    : 'https://api3.nearblocks.io/v3';
 
     
     // const IS_MAINNET =  // ["mainnet"].some((env:any) => env === process.env.NETWORK);
