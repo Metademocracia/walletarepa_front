@@ -293,7 +293,7 @@ export default {
             
             this.unreadMessagesCount = snapshot.size - 1;
             this.unreadMessagesActive = snapshot.size - 1 > 0;
-            console.log(snapshot.size)
+            // console.log(snapshot.size)
           });
           
       } catch (error) {
@@ -449,6 +449,8 @@ export default {
               this.cryptoTittle = "Crypto a Recibir:";
             }
             this.getUnreadMessagesCount(this.data[0].order_id, this.operation);
+            const typeDesc = this.operation === "SELL" ? "VENTA" : "COMPRA";
+            this.sendBotMessage(this.orderId, 1, this.data[0].signer_id, this.data[0].owner_id, typeDesc);
             
             if(!this.poolOrderHistory) {
               this.orderHistory(this.data[0].order_id, this.operation);
@@ -866,6 +868,26 @@ export default {
           }
        }
 		},
+    async sendBotMessage(orderId, sTatus, signerId, ownerId, tYpe) {
+      if(!localStorage.getItem('MessageCounter')){
+          await axios.post(process.env.URL_BACKEND +'/api/v1/botp2p/handle_update', 
+          { order_id: orderId,
+            status: sTatus,
+            signer_id: signerId,
+            owner_id: ownerId,
+            type: tYpe
+          }, {
+            headers: {
+              'accept': 'application/json',
+            },
+          }).then(() => {
+            console.log('Message send')
+            localStorage.setItem('MessageCounter', true)
+          }).catch(() => {
+            console.log('Error send message')
+          })
+      }
+    },
     // pollData() {
 		// 	this.polling = setInterval(() => {
     //     if(this.data.length > 0 && this.data[0].status === 3){
