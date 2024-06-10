@@ -224,6 +224,8 @@ export default {
       disableButtonText: false,
       montoText: "MONTO A ENVIAR",
       montoText1: "MONTO A RECIBIR",
+      signerId: null,
+      ownerId: null,
     }
   },
   head() {
@@ -401,6 +403,8 @@ export default {
 
             this.data[0].confirmation_signer_id === 1 ? this.disableButtonText = true : this.disableButtonText = false;
             this.data[0].confirmation_signer_id === 1 ? this.buttonText = "ESPERANDO POR APROBACIÓN" : this.buttonText = "MARCAR PAGO REALIZADO";
+            this.signerId = this.data[0].signer_id
+            this.ownerId = this.data[0].owner_id
 
             if(!this.poolOrderHistory) {
               this.orderHistory(this.orderId, this.operation);
@@ -490,6 +494,7 @@ export default {
     async aprove() {
       this.btnLoading = true;
       const val = sessionStorage.getItem('operation') === "SELL" ? "1" : "2";
+      const type = sessionStorage.getItem('operation') === "SELL" ? "VENTA" : "COMPRA";
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
       // const CONTRACT_USDT = process.env.VUE_APP_CONTRACT_NAME_USDT;
       const account = await walletUtils.nearConnection();
@@ -528,15 +533,17 @@ export default {
           console.log("Error borrando el contrato");
         }
       }
-
+      this.sendBotMessage(this.orderId, 5, this.signerId, this.ownerId, type);
       sessionStorage.clear(); // Clear all data from sessionStorage
       this.sendMail('sell', sessionStorage.getItem('orderId'));
       localStorage.removeItem('emailCounter');
       sessionStorage.removeItem('orderId');
       localStorage.removeItem('operation');
+      localStorage.removeItem('MessageCounter');
       this.data = [];
       this.dataTrader = [];
       this.dataCancel = [];
+      
       if(this.val === "SELL"){
         this.$router.push({ path: "/tx-executed" });
       } else {
@@ -548,6 +555,7 @@ export default {
     },
     async cancel() {
       this.btnLoading = true;
+      const typeDesc = sessionStorage.getItem('operation') === "SELL" ? "VENTA" : "COMPRA";
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
       const account = await walletUtils.nearConnection();
 
@@ -565,10 +573,13 @@ export default {
       }
       // console.log("orderConfirmation", orderConfirmation)
       this.sendMailCancel(sessionStorage.getItem('orderId'));
+      this.sendBotMessage(this.orderId, 4, this.signerId, this.ownerId, typeDesc);
       sessionStorage.clear(); // Clear all data from sessionStorage
       sessionStorage.removeItem('orderId');
       localStorage.removeItem('emailCounter');
       localStorage.removeItem('operation');
+      localStorage.removeItem('MessageCounter');
+      
       this.btnLoading = false;
       this.data = [];
       this.dataTrader = [];
@@ -578,6 +589,7 @@ export default {
     },
     async dispute() {
       this.btnLoading = true;
+      const typeDesc = sessionStorage.getItem('operation') === "SELL" ? "VENTA" : "COMPRA";
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
       const account = await walletUtils.nearConnection();
       const type = this.operation === "SELL" ? 1 : 2;
@@ -596,6 +608,7 @@ export default {
       // console.log("orderConfirmation", orderConfirmation)
       this.sendMailDispute(sessionStorage.getItem('orderId'));
       this.btnLoading = false;
+      this.sendBotMessage(this.orderId, 3, this.signerId, this.ownerId, typeDesc);
       // this.sendMail();
       this.$router.push({ path: "/tx-disputed" });
     },
@@ -740,6 +753,24 @@ export default {
           }
        }
 		},
+    async sendBotMessage(orderId, sTatus, signerId, ownerId, tYpe) {
+          await axios.post(process.env.URL_BACKEND +'/api/v1/botp2p/handle_update', 
+          { order_id: orderId,
+            status: sTatus,
+            signer_id: signerId,
+            owner_id: ownerId,
+            type: tYpe
+          }, {
+            headers: {
+              'accept': 'application/json',
+            },
+          }).then(() => {
+            console.log('Message send')
+          }).catch(() => {
+            console.log('Error send message')
+          })
+    },
+
     // pollData() {
 		// 	this.polling = setInterval(() => {
     //     if(this.data.length > 0 && this.data[0].status === 3){

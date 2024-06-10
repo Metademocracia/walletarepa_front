@@ -49,6 +49,9 @@ export default {
       title,
     }
   },
+  mounted(){
+    localStorage.removeItem('MessageCounter');
+  },
   methods: {
     goToExplorer() {
       window.open(process.env.URL_EXPLORER + localStorage.getItem('address'), '_blank');
