@@ -494,7 +494,6 @@ export default {
       // const CONTRACT_USDT = process.env.VUE_APP_CONTRACT_NAME_USDT;
       const account = await walletUtils.nearConnection();
 
-      
       const orderConfirmation = await account.functionCall({
         contractId: CONTRACT_NAME,
         methodName: "order_confirmation",

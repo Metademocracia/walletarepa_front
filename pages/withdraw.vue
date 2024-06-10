@@ -523,19 +523,31 @@ export default {
         // //   // this.btnLoading = false;
         // //   console.log("Error en ft_transfer");
         // // }
-        
-        const acceptOffer = await account.functionCall({
-          contractId: CONTRACT_NAME,
-          methodName: "accept_offer",
-          gas: "120000000000000",
-          args: {
+
+        const argsAcceptOffer = process.env.Network === "testnet" ? 
+        {
+            offer_type: 1,
+            offer_id: parseInt(this.filteredOffers.id),
+            amount: orderAmount,
+            payment_method: parseInt(filteredPaymentMethod.payment_method_id),
+            datetime: now,
+            rate: parseFloat(this.filteredOffers.exchange_rate),
+            assosiated: "arepaWallet"
+        }
+        : {
             offer_type: 1,
             offer_id: parseInt(this.filteredOffers.id),
             amount: orderAmount,
             payment_method: parseInt(filteredPaymentMethod.payment_method_id),
             datetime: now,
             rate: parseFloat(this.filteredOffers.exchange_rate)
-          },
+          };
+        
+        const acceptOffer = await account.functionCall({
+          contractId: CONTRACT_NAME,
+          methodName: "accept_offer",
+          gas: "120000000000000",
+          args: argsAcceptOffer,
           attachedDeposit: "1"
         });
         console.log( "accept_offer");
@@ -636,18 +648,30 @@ export default {
           return
         }
 
-        const acceptOffer = await account.functionCall({
-          contractId: CONTRACT_NAME,
-          methodName: "accept_offer",
-          gas: "300000000000000",
-          args: {
+        const argsAcceptOffer = process.env.Network === "testnet" ? 
+        {
+            offer_type: 1,
+            offer_id: parseInt(this.filteredOffers.id),
+            amount: orderAmount,
+            payment_method: parseInt(filteredPaymentMethod.payment_method_id),
+            datetime: now,
+            rate: parseFloat(this.filteredOffers.exchange_rate),
+            assosiated: "arepaWallet"
+        }
+        : {
             offer_type: 1,
             offer_id: parseInt(this.filteredOffers.id),
             amount: orderAmount,
             payment_method: parseInt(filteredPaymentMethod.payment_method_id),
             datetime: now,
             rate: parseFloat(this.filteredOffers.exchange_rate)
-          },
+          };
+
+        const acceptOffer = await account.functionCall({
+          contractId: CONTRACT_NAME,
+          methodName: "accept_offer",
+          gas: "300000000000000",
+          args: argsAcceptOffer,
           attachedDeposit: "1"
         });
 
