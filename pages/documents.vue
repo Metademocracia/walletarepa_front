@@ -74,6 +74,7 @@ export default {
   },
   methods: {
     async getContractIds(wallet) {
+      console.log("wallet: ", wallet)
       if (process.env.Network === "mainnet") {
         const serviceUrl = `https://api.fastnear.com/v0/account/${wallet}/nft`;
 
@@ -84,7 +85,7 @@ export default {
         const serviceUrl = `https://testnet-api.kitwallet.app/account/${wallet}/likelyNFTs`;
 
         const result = await axios.get(serviceUrl);
-
+        console.log("data: ", result.data)
         return result.data
       }
     },
@@ -96,9 +97,10 @@ export default {
           }
           
           let collections = sessionStorage.getItem('collections'); // Retrieve collections from sessionStorage
-
+          console.log("collections1: ", collections)
           if (!collections) {
               collections = await walletUtils.getNfts(wallet);
+              console.log("collections2: ", collections)
               sessionStorage.setItem('collections', JSON.stringify(collections)); // Cache collections in sessionStorage
           } else {
               collections = JSON.parse(collections); // Parse cached collections if available
