@@ -340,6 +340,15 @@ async function verifyWallet() {
   }
 }
 
+function getPikespeak(ruta="") {
+  return axios.get(`https://api.pikespeak.ai${ruta}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.VUE_API_KEY_PIKESPEAK,
+    },
+  });
+}
+
 
 export default {
   formatTokenAmount,
@@ -351,5 +360,6 @@ export default {
   nearConnection,
   getNearId,
   getNfts,
-  verifyWallet
+  verifyWallet,
+  getPikespeak
 }

@@ -22,6 +22,7 @@ export default {
     VUE_APP_API_MAIL_URL: process.env.VUE_APP_API_MAIL_URL || "http://localhost:3000",
     VUE_APP_CHAT_FIREBASE: process.env.VUE_APP_CHAT_FIREBASE,
     VUE_APP_PASSPHRASE: process.env.VUE_APP_PASSPHRASE,
+    VUE_API_KEY_PIKESPEAK: process.env.VUE_API_KEY_PIKESPEAK,
   },
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,

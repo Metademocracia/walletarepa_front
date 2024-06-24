@@ -296,7 +296,7 @@ export default {
         const hash = !result?.transaction.hash ? result : result?.transaction.hash
         const sendResult = JSON.stringify({
           hash,
-          hashUrl: process.env.ROUTER_EXPLORER_NEAR + 'es/txns/' + hash,
+          hashUrl: process.env.URL_EXPLORER_TXS + hash,
           alertType: result?.status?.SuccessValue === "" ? "success" : "error",
         })
 
@@ -343,7 +343,7 @@ export default {
         const hash = !result?.transaction.hash ? result : result?.transaction.hash;
         const sendResult = JSON.stringify({
           hash,
-          hashUrl: process.env.ROUTER_EXPLORER_NEAR + 'es/txns/' + hash,
+          hashUrl: process.env.URL_EXPLORER_TXS + hash,
           alertType: result?.status?.SuccessValue === "" ? "success" : "error",
         })
 

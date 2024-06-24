@@ -1,4 +1,4 @@
-import axios from 'axios';
+// import axios from 'axios';
 // import { utils } from "near-api-js";
 // import * as nearAPI from "near-api-js";
 // import utils from './utils';
@@ -13,7 +13,7 @@ import localStorageUser from '~/services/local-storage-user';
  * @param {string} address - The address to retrieve contract tokens for.
  * @returns {Promise<Array<string>>} - A promise that resolves to an array of contract IDs.
  */
-function getListContractToken(address) {
+/* function getListContractToken(address) {
   // https://api.kitwallet.app/account//likelyTokensFromBlock
   if(process.env.Network === "mainnet" ){
     return axios.get(`https://api.fastnear.com/v1/account/${address}/ft`)
@@ -31,7 +31,7 @@ function getListContractToken(address) {
       }).catch(error => {return error}
     );
   }
-  }
+  } */
 
 // Caching mechanism for token price
 const tokenPriceCache = new Map();
@@ -99,16 +99,20 @@ async function getBalanceInitNear(_address) {
 async function getListTokensBalance() {
     try {
       const address = localStorageUser.getCurrentAccount().address;
-      const contractFromBlock = await getListContractToken(address);
+      // const contractFromBlock = await getListContractToken(address);
 
-      if (!contractFromBlock) return;
-      const listContract = contractFromBlock;
+      const contractFromBlock = await walletUtils.getPikespeak(`/account/balance/${address}`).catch(error => { console.log("error api pikespeak: ", error) });
+      console.log("contractFromBlock: ", contractFromBlock);
+      // if (!contractFromBlock) return;
+      const listContract = contractFromBlock ? contractFromBlock.data.filter((item) => item.contract.toLowerCase() !== 'near').map((element) => { return element.contract }) : [];
+      console.log("listContract: ", listContract);
       const list = {
         fts: [],
         nfts: [],
       };
 
       const allTokenBalances = [];
+
 
       /**
        * Retrieves the NEAR balance data from session storage or fetches it from the walletUtils.getBalance() function.
@@ -210,7 +214,7 @@ async function getListTokensBalance() {
   }
 
 
-async function getInventoryUser() {
+/* async function getInventoryUser() {
   const address = localStorageUser.getCurrentAccount().address;
   const list = {
     fts: [],
@@ -259,7 +263,7 @@ async function getInventoryUser() {
   });
 
   return list
-}
+} */
 
 
 async function updateBalanceLocalStorage() {
@@ -295,7 +299,7 @@ export default {
   getTokenBalance,
   getTokenMetadata,
   getListTokensBalance,
-  getInventoryUser,
+  // getInventoryUser,
   getBalanceInitNear,
   updateBalanceLocalStorage
 }

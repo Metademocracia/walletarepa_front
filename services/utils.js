@@ -40,10 +40,20 @@ function executeQueryRpc(_method, _params) {
     });
 }
 
+function getPikespeak(ruta) {
+  return axios.get(`https://api.pikespeak.ai/${ruta}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.VUE_API_KEY_PIKESPEAK,
+    },
+  });
+}
+
 
 export default {
   routeLogin,
   routeAction,
   shortenAddress,
   executeQueryRpc,
+  getPikespeak,
 }
