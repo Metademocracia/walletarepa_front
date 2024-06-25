@@ -39,6 +39,7 @@ export default {
         '/import-wallet',
         '/create-wallet',
         '/user-profile',
+        '/tx-successfuly',
       ],
       bgLogo: [
         '/create-wallet-verification'

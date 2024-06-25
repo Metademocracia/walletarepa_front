@@ -59,37 +59,37 @@ export default {
       linkHash: undefined,
       types: {
         "receive": {
-          icon: require("@/assets/sources/icons/icon-recieved.svg"),
+          icon: require("@/assets/sources/operations/icon-recieved.svg"),
           title: "received",
           text: "Desde: ",
           text2: "",
         },
         "sent": {
-          icon: require("@/assets/sources/icons/icon-sent.svg"),
+          icon: require("@/assets/sources/operations/icon-sent.svg"),
           title: "send",
           text: "Para: ",
           text2: "",
         },
         "access": {
-          icon: require("@/assets/sources/icons/icon-access-key.svg"),
+          icon: require("@/assets/sources/operations/icon-access-key.svg"),
           title: "access key",
           text: "Para: ",
           text2: "",
         },
         "account": {
-          icon: require("@/assets/sources/icons/icon-new-account.svg"),
+          icon: require("@/assets/sources/operations/icon-new-account.svg"),
           title: "new account created",
           text: "Cuenta",
           text2: "",
         },
         "function": {
-          icon: require("@/assets/sources/icons/icon-function.svg"),
+          icon: require("@/assets/sources/operations/icon-function.svg"),
           title: "function call",
           text: "Desde: ",
           text2: "Metodo: ",
         },
         "batch": {
-          icon: require("@/assets/sources/icons/icon-batch.svg"),
+          icon: require("@/assets/sources/operations/icon-batch.svg"),
           title: "batch transactions",
           text: "Acciones realizadas: ",
           text2: "",

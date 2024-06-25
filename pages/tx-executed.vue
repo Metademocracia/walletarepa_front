@@ -21,7 +21,7 @@
 
       <v-btn class="btn mb-4" @click="goToExplorer">
         VERIFICAR EN EL EXPLORADOR
-      </v-btn>
+      </v-btn>  
 
       <v-btn class="btn-outlined" style="--bg: #fff" @click="$router.push('/')">
         OK
