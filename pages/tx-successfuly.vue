@@ -41,22 +41,12 @@
         </span>
       </v-card>
 
-      <v-btn
-        class="btn"
-        :disable="loading"
-        :loading="loading"
-        @click="onContinueLogin('/import-wallet-passphrase')"
-      >
-        INGRESAR CON 12 PALABRAS
+      <v-btn class="btn">
+        IR A LA BIBLIOTECA
       </v-btn>
 
-      <v-btn
-        class="btn-outlined"
-        :disable="loading"
-        :loading="loading"
-        @click="onContinueLogin('/import-wallet-privatekey')"
-      >
-        INGRESAR CON LLAVE PRIVADA
+      <v-btn class="btn-outlined">
+        REVISAR LA TRANSACCIÓN
       </v-btn>
     </section>
   </div>
@@ -68,8 +58,6 @@ export default {
   layout: "auth-layout",
   data() {
     return {
-      loading: false,
-      validEmail: false,
     }
   },
   head() {
