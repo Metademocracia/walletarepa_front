@@ -481,7 +481,7 @@ export default {
           }, 1000);
         });
       }
-      const wallet = "yonaikergarcia.near" // this.address;
+      const wallet = this.address; // "yonaikergarcia.near" // this.address;
 
       await deley();
 
