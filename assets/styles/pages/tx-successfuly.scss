@@ -1,0 +1,50 @@
+#tx-successfuly {
+  @include parent;
+  padding-inline: var(--margin-global);
+  margin-bottom: var(--margin-footer);
+  
+  &-content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 300px;
+
+    > *:not(.v-input, .v-input + .v-btn) {
+      margin-top: 15px;
+    }
+
+    .v-btn {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      span {
+        white-space: initial !important;
+      }
+    }
+  }
+
+
+  .bg-image {
+    position: absolute;
+    top: 45px;
+  }
+
+  .detail-card {
+    * {
+      font-family: var(--font2);
+      font-weight: 700 !important;
+    }
+
+    h6 {
+      letter-spacing: .3em;
+    }
+
+    > span {
+      display: block;
+      font-weight: 600 !important;
+      line-height: 1.5ch;
+      &:not(:last-child) { margin-bottom: 8px; }
+    }
+  }
+}
