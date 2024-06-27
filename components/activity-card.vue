@@ -4,11 +4,11 @@
       <img :src="matchingType.icon" :alt="`${type} icon`">
 
       <div class="divcol">
-        <span>{{matchingType.title}}{{coin ? ` ${coin}` : ''}}</span>
+        <span>{{matchingType.title}} <!--{{coin ? ` ${coin}` : ''}} --></span>
         <span>{{matchingType.text}} 
           <span style="--fw: 700; color: black !important">{{account}}</span>
         </span>
-        <span v-if="text2" style="color: black !important">{{matchingType.text2}} 
+        <span v-if="!text2" style="color: black !important">{{matchingType.text2}} 
           <span style="--fw: 700; color: black !important">{{text2}}</span>
         </span>
       </div>
@@ -26,6 +26,10 @@ export default {
   name: "ActivityCard",
   props: {
     type: {
+      type: String,
+      default: undefined
+    },
+    desc: {
       type: String,
       default: undefined
     },
@@ -60,13 +64,13 @@ export default {
       types: {
         "receive": {
           icon: require("@/assets/sources/icons/icon-recieved.svg"),
-          title: "received",
+          title: "pago recibido",
           text: "Desde: ",
           text2: "",
         },
         "sent": {
           icon: require("@/assets/sources/icons/icon-sent.svg"),
-          title: "send",
+          title: "pago enviado",
           text: "Para: ",
           text2: "",
         },
@@ -78,7 +82,7 @@ export default {
         },
         "account": {
           icon: require("@/assets/sources/icons/icon-new-account.svg"),
-          title: "new account created",
+          title: "creacion de cuenta",
           text: "Cuenta",
           text2: "",
         },
@@ -87,6 +91,12 @@ export default {
           title: "function call",
           text: "Desde: ",
           text2: "Metodo: ",
+        },
+        "p2p": {
+          icon: require("@/assets/sources/icons/icon-new-account.svg"),
+          title: this.desc,
+          text: "Cambio con: ",
+          text2: this.text2,
         },
         "batch": {
           icon: require("@/assets/sources/icons/icon-batch.svg"),
@@ -103,7 +113,6 @@ export default {
     }
   },
   mounted() {
-    // this.linkHash
   },
   methods: {
     getLinkHash() {

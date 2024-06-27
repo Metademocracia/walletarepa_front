@@ -85,6 +85,7 @@
 <script>
 import * as nearAPI from "near-api-js";
 // import tokens from '@/services/tokens';
+import moment from 'moment';
 import { configNear } from "@/services/nearConfig";
 // import { configNear } from "@/services/nearConfig";
 import walletUtils from '@/services/wallet';
@@ -168,17 +169,21 @@ export default {
       const result = localStorage.getItem("common-beneficiary");
 
       if(result) {
-        const arreglo = JSON.parse(result).map(item => { return  {
+        const arreglo = JSON.parse(result).map(item => { 
+          const date = !item?.date ? new Date(moment().subtract(1, "day")) : new Date(item.date);
+          
+          return  {
             img: require('@/assets/sources/avatars/avatar-male.svg'),
             email: item.wallet,
             name: "",
             count: item.count,
+            date
           } 
         });
-        
+
         arreglo.sort(function(a, b) {
-          const textA = a.count;
-          const textB = b.count;
+          const textA = a.date;
+          const textB = b.date;
           return (textA > textB) ? -1 : (textA < textB) ? 1 : 0;
         });
 
@@ -278,8 +283,9 @@ export default {
 
       if(isExistBeneficiary) {
         beneficiary.find(item => item.wallet === address).count += 1;
+        beneficiary.find(item => item.wallet === address).date = new Date();
       } else {
-        beneficiary.push({wallet: address, count: 1});
+        beneficiary.push({wallet: address, count: 1, date: new Date()});
       }
 
       localStorage.setItem("common-beneficiary", JSON.stringify(beneficiary));
