@@ -11,15 +11,17 @@
 
       <img v-if="showLogotype" src="@/assets/sources/logos/logotype.svg" alt="logo icon" style="width: min(100%, 170px);">
 
-      <aside v-if="showAppend" class="container-btns">
-        <v-btn v-if="!hideProfile" data-avatar class="btn-icon" to="/account-details">
-          <img src="@/assets/sources/avatars/person.png" alt="avatar">
-        </v-btn>
-
-        <v-btn class="btn-icon" style="--bg: var(--primary);" @click="showDrawer()">
-          <img src="@/assets/sources/icons/options.svg" alt="settings">
-        </v-btn>
-      </aside>
+      <slot name="append">
+        <aside v-if="showAppend" class="container-btns">
+          <v-btn v-if="!hideProfile" data-avatar class="btn-icon" to="/account-details">
+            <img src="@/assets/sources/avatars/person.png" alt="avatar">
+          </v-btn>
+  
+          <v-btn class="btn-icon" style="--bg: var(--primary);" @click="showDrawer()">
+            <img src="@/assets/sources/icons/options.svg" alt="settings">
+          </v-btn>
+        </aside>
+      </slot>
     </div>
   </div>
 </template>
