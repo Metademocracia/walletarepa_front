@@ -76,7 +76,7 @@ export default {
         },
         "access": {
           icon: require("@/assets/sources/operations/icon-access-key.svg"),
-          title: "access key",
+          title: "llave de acceso",
           text: "Para: ",
           text2: "",
         },
@@ -88,7 +88,7 @@ export default {
         },
         "function": {
           icon: require("@/assets/sources/operations/icon-function.svg"),
-          title: "function call",
+          title: "Llamada de función",
           text: "Desde: ",
           text2: "Metodo: ",
         },
