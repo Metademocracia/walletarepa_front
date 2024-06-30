@@ -72,6 +72,19 @@ async function getTokenBalance({ contract, address, symbol }) {
   }
 }
 
+async function getPriceToken({ symbol }) {
+  // Check if token price is cached
+  let priceToken; // = tokenPriceCache.get(symbol);
+  // if (!priceToken) {
+      const getPrice = await walletUtils.getPrice("USD", symbol);
+      if (getPrice) {
+          priceToken = getPrice;
+          tokenPriceCache.set(symbol, priceToken);
+      }
+  // }    
+  return priceToken;
+}
+
 async function getTokenMetadata(contract) {
   const account = await walletUtils.nearConnection();
   return account.viewFunctionV1(
@@ -97,12 +110,67 @@ async function getBalanceInitNear(_address) {
  * @throws {Error} If an error occurs while retrieving the token balances.
  */
 async function getListTokensBalance() {
+    function deley() {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 3000);
+      });
+    }
     try {
       const address = localStorageUser.getCurrentAccount().address;
       // const contractFromBlock = await getListContractToken(address);
-
-      const contractFromBlock = await walletUtils.getPikespeak(`/account/balance/${address}`).catch(error => { console.log("error api pikespeak: ", error) });
+      await deley()
+      const contractFromBlock = await walletUtils.getPikespeak(`/account/balance/${address}`) // .catch(error => { console.log("error api pikespeak: ", error) });
+      await deley()
+      const metadataFt = await walletUtils.getPikespeak(`/money/ft-list`) // .catch(error => { console.log("error api pikespeak: ", error) });
+      console.log("metadataFt: ", metadataFt);
       console.log("contractFromBlock: ", contractFromBlock);
+
+      const datafinal = !contractFromBlock ? [] : contractFromBlock.data.filter((item) => item.contract.toLowerCase() !== 'near');
+
+      const listaFt = await datafinal.map(async (element) => {
+        let price = 0 ;
+         
+        const decimals = metadataFt.data.find((item) => item.token_account_id === element.contract)?.decimals;
+        const priceToken = await getPriceToken({ symbol: element.symbol });
+        if (priceToken) {
+          price = priceToken;
+        }
+
+        
+          const balanceUsd = (Number(element.amount) * Number(price)).toFixed(2);
+          let balanceofi = element.amount
+
+          if (balanceofi.toString().includes('.')) {
+            const parts = balanceofi.toString().split('.');
+            if (parts[1].length > 14) {
+              balanceofi = parseFloat(parts[0] + '.' + parts[1].slice(0, 14));
+            }
+          }
+          const tokenBalanceData = {
+            contract: element.contract,
+            balance: Number(element.amount), // walletUtils.formatTokenAmount(balance, decimals, 5),
+            balanceTotal: String(balanceofi),
+            name: element.symbol,
+            symbol: element.symbol,
+            decimals,
+            icon: element.symbol === 'Wrapped Ether' 
+              ? "https://assets.ref.finance/images/2396.png" 
+              : element.symbol === 'wNEAR' 
+                ? require('@/assets/sources/logos/near-icon.svg') 
+                : element.icon,
+            balance_usd: isNaN(balanceUsd) ? 0.00 : balanceUsd,
+            price
+          };
+
+        
+        return tokenBalanceData;
+      });
+
+      console.log("listaFt: ", listaFt);
+
+
       // if (!contractFromBlock) return;
       const listContract = contractFromBlock ? contractFromBlock.data.filter((item) => item.contract.toLowerCase() !== 'near').map((element) => { return element.contract }) : [];
       console.log("listContract: ", listContract);

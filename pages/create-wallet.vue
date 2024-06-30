@@ -129,14 +129,14 @@ export default {
       if(this.$refs.formEmail.validate()) {
         this.loading = true
         await axios.post(process.env.URL_BACKEND +'/wallet/send-code-verify-email',
-        {email: this.emailImput, cedula: this.cedulaImput}, {
+        {email: this.emailImput, cedula: this.cedulaImput.toLowerCase()}, {
           headers: {
             'accept': 'application/json',
           },
         }).then(() => {
           this.loading = false
           sessionStorage.setItem("email", this.emailImput);
-          sessionStorage.setItem("cedula", this.cedulaImput);
+          sessionStorage.setItem("cedula", this.cedulaImput.toLowerCase());
           // localStorage.setItem("login", true);
           
           // this.$router.push(utils.routeAction(this.$route.query.action,"/create-wallet-verification"));
