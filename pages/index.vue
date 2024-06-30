@@ -129,8 +129,8 @@
         </div>
 
         <v-btn
-          :href="linkExplorer" target="_blank"
           class="btn mb-10"
+          @click="$router.push('/activity-history')"
         >
           ver todos
         </v-btn>

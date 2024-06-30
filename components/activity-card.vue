@@ -104,6 +104,12 @@ export default {
           text: "Acciones realizadas: ",
           text2: "",
         },
+        "swap": {
+          icon: require("@/assets/sources/operations/icon-swap.svg"),
+          title: "swap crypto",
+          text: "Intercambio crypto: ",
+          text2: "",
+        },
       }
     }
   },

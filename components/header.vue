@@ -11,6 +11,10 @@
       <template #prepend>
         <slot name="prepend" />
       </template>
+
+      <template #append>
+        <slot name="append"></slot>
+      </template>
     </Navbar>
 
     <div

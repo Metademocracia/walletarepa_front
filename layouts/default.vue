@@ -5,6 +5,7 @@
     <ModalConnect ref="connect" /> -->
 
     <img
+      v-if="!hideImg.includes($route.path)"
       id="default-layout-background"
       :src="
         require(`~/assets/sources/images/circle${
@@ -36,6 +37,9 @@ export default {
   middleware: ['lock-password'],
   data() {
     return {
+      hideImg: [
+        '/activity-history'
+      ],
       bgBubbles: [
         '/document-transfer'
       ],
