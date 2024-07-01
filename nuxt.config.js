@@ -43,6 +43,7 @@ export default {
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { hid: "description", name: "description", content: "" },
       { name: "format-detection", content: "telephone=no" },
+      { name: 'google', content: 'notranslate' }  // Disable Google Translate
     ],
     link: [
       { rel: "icon", type: "image/icon", href: "favicon.ico" },
@@ -106,6 +107,7 @@ export default {
     "~/plugins/firebase.js",
     // services
     "~/services/near-api",
+    '~/plugins/translate-no.js',
     { src: "~/plugins/vue-cryptojs.js", ssr: false },
   ],
 
