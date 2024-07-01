@@ -72,7 +72,7 @@ async function getTokenBalance({ contract, address, symbol }) {
   }
 }
 
-async function getPriceToken({ symbol }) {
+/* async function getPriceToken({ symbol }) {
   // Check if token price is cached
   let priceToken; // = tokenPriceCache.get(symbol);
   // if (!priceToken) {
@@ -83,7 +83,7 @@ async function getPriceToken({ symbol }) {
       }
   // }    
   return priceToken;
-}
+} */
 
 async function getTokenMetadata(contract) {
   const account = await walletUtils.nearConnection();
