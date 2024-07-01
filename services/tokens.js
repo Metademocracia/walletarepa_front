@@ -110,19 +110,19 @@ async function getBalanceInitNear(_address) {
  * @throws {Error} If an error occurs while retrieving the token balances.
  */
 async function getListTokensBalance() {
-    function deley() {
+    /* function deley() {
       return new Promise((resolve) => {
         setTimeout(() => {
           resolve();
         }, 3000);
       });
-    }
+    } */
     try {
       const address = localStorageUser.getCurrentAccount().address;
       // const contractFromBlock = await getListContractToken(address);
-      await deley()
+      // await deley()
       const contractFromBlock = await walletUtils.getPikespeak(`/account/balance/${address}`) // .catch(error => { console.log("error api pikespeak: ", error) });
-      await deley()
+      /* await deley()
       const metadataFt = await walletUtils.getPikespeak(`/money/ft-list`) // .catch(error => { console.log("error api pikespeak: ", error) });
       console.log("metadataFt: ", metadataFt);
       console.log("contractFromBlock: ", contractFromBlock);
@@ -168,7 +168,7 @@ async function getListTokensBalance() {
         return tokenBalanceData;
       });
 
-      console.log("listaFt: ", listaFt);
+      console.log("listaFt: ", listaFt); */
 
 
       // if (!contractFromBlock) return;
