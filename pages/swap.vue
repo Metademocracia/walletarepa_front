@@ -149,7 +149,7 @@
         CAMBIAR ({{ countSeconds }}s)
       </v-btn>
 
-      <v-btn v-else class="btn flex-grow-1" :loading="btnLoading" :disabled="amountReceive == 0" @click="previewSwap()">
+      <v-btn v-else class="btn flex-grow-1" :loading="btnLoading" :disabled="amountReceive === 0" @click="previewSwap()">
         PREVISUALIZAR CONVERSIÓN
       </v-btn>
     </section>
@@ -338,6 +338,8 @@ export default {
       const storedTokenBalances = JSON.parse(sessionStorage.getItem('allTokenBalances'));
       const inventory = { fts: storedTokenBalances }; // await tokens.getListTokensBalance()
 
+      console.log("inventory", inventory)
+
       if(!inventory) return 
 
       this.dataTokens = inventory.fts
@@ -435,9 +437,10 @@ export default {
 
           countdown();
                     
-        }).catch((err) => {
-          console.log(err)
+        }).catch(() => {
           this.btnLoading = false
+          console.log("ENTRPPP")
+          this.amountReceive = null
           this.countSeconds = 0
           throw new Error ("Failed to get data price route")
         })
