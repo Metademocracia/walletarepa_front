@@ -1,4 +1,4 @@
-import CryptoJS  from 'crypto-js';
+const CryptoJS = require("crypto-js");
 
 const key = process.env.VUE_APP_PASSPHRASE;
 
