@@ -18,7 +18,7 @@
         </Header>
 
         <div class="divcol mb-4" style="gap: 20px; cursor: pointer">
-          <h6 v-if="!dataActivity.length" class="tcenter mb-5 mt-4" style="--fs: 15px;">no records found</h6>
+          <h6 v-if="!dataActivity.length" class="tcenter mb-5 mt-4" style="--fs: 15px;">No se encontraron registros</h6>
 
           <ActivityCard
             v-for="(item, i) in dataActivity" :key="i"
@@ -51,7 +51,7 @@
 
 
 <script>
-import moment from 'moment';
+import walletUtils from '@/services/wallet';
 
 export default {
   name: "ActivityHistory",
@@ -68,67 +68,18 @@ export default {
     }
   },
   mounted() {
-    this.getData()
+    this.recentActivity()
   },
   methods: {
-    getData() {
-      this.dataActivity = [
-        {
-          hash: "11",
-          date: moment(111/1000000).fromNow(),
-          type: "access",
-          account: "walletUtils.shortenAddress(accountParam)",
-          coin: "coinParam",
-          amount: "222",
-          text2: "asdasd",
-        },
-        {
-          hash: "11",
-          date: moment(111/1000000).fromNow(),
-          type: "access",
-          account: "walletUtils.shortenAddress(accountParam)",
-          coin: "coinParam",
-          amount: "222",
-          text2: "asdasd",
-        },
-        {
-          hash: "11",
-          date: moment(111/1000000).fromNow(),
-          type: "access",
-          account: "walletUtils.shortenAddress(accountParam)",
-          coin: "coinParam",
-          amount: "222",
-          text2: "asdasd",
-        },
-        {
-          hash: "11",
-          date: moment(111/1000000).fromNow(),
-          type: "access",
-          account: "walletUtils.shortenAddress(accountParam)",
-          coin: "coinParam",
-          amount: "222",
-          text2: "asdasd",
-        },
-        {
-          hash: "11",
-          date: moment(111/1000000).fromNow(),
-          type: "access",
-          account: "walletUtils.shortenAddress(accountParam)",
-          coin: "coinParam",
-          amount: "222",
-          text2: "asdasd",
-        },
-        {
-          hash: "11",
-          date: moment(111/1000000).fromNow(),
-          type: "access",
-          account: "walletUtils.shortenAddress(accountParam)",
-          coin: "coinParam",
-          amount: "222",
-          text2: "asdasd",
-        }
-      ]
-    }
+    recentActivity() {
+      walletUtils.getRecentActivity()
+      .then((result) => {
+        this.dataActivity = result;
+      })
+      .catch((error) => {
+        console.error("Error al cargar recientes actividades: ", error);
+      });
+    },
   }
 };
 </script>

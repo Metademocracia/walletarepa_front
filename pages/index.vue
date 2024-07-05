@@ -223,7 +223,6 @@
 import gql from "graphql-tag";
 // import * as nearAPI from "near-api-js";
 import VueQr from 'vue-qr'
-import moment from 'moment';
 import logoWallet from "~/assets/sources/logos/logo.svg";
 import tokens from '@/services/tokens';
 import wallet from '@/services/local-storage-user';
@@ -473,152 +472,14 @@ export default {
     },
 
 
-    async recentActivity() {
-      function deley() {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve();
-          }, 1000);
-        });
-      }
-      const wallet = this.address; // "yonaikergarcia.near" // this.address;
-
-      await deley();
-
-      await walletUtils.getPikespeak(`/account/transactions/${wallet}?limit=25`)
-      // .catch(error => { console.log("error api pikespeak: ", error) });
-      
-      // await axios.get(`${process.env.URL_API_INDEXER}/account/${wallet}/txns?order=desc&page=1&per_page=25`)
-      .then(async (response) => {
-        try {
-          // const data = response.data?.txns;
-          const data = response?.data;
-
-          if(!data) return
-
-          await deley()
-
-          let transferList =  await walletUtils.getPikespeak(`/event-historic/${wallet}?limit=25`); // .catch(error => { console.log("error api pikespeak: ", error) });
-
-          await deley()
-
-          let parseExecution =  await walletUtils.getPikespeak(`/tx/parsed-execution-by-contract?contract=yonaikergarcia.near`); // .catch(error => { console.log("error api pikespeak: ", error) });
-
-          if(!transferList) transferList = [];
-          if(!parseExecution) parseExecution = [];
-
-          moment.locale('es');
-          // const dataActivity = data.filter((item) => item.predecessor_account_id !== "system").map((items) => {
-          const dataActivity = data.map((items) => {
-            const dataTransfer = !transferList ? [] : transferList?.data.find((element) => element.transaction_id === items.id);
-
-            const res = {
-              hash: items?.id,
-              date: moment(items.transaction_timestamp/1000000).fromNow(),
-              /* type: typeParam,
-              account: walletUtils.shortenAddress(accountParam),
-              coin: coinParam,
-              amount: amountParam,
-              date: moment(items.transaction_timestamp/1000000).fromNow(), // moment(items.block_timestamp/1000000).fromNow(),
-              text2,
-              hash: items?.id // items.transaction_hash */
-            }
-
-            // if(items.actions.length === 1) {
-              // switch (items.actions[0].action) {
-              switch (items.first_action_type) {
-                case "transfer": // "TRANSFER":
-                  res.type = dataTransfer.direction === "send" ? "sent" : "receive"; // items.predecessor_account_id === wallet ? "sent" : "receive";
-                  res.account = dataTransfer.direction === "send" ? dataTransfer.receiver : dataTransfer.sender;
-                  res.amount = (dataTransfer.direction === "send" ? "-" : "+")+Number(dataTransfer.amount).toFixed(5);
-                  // accountParam = items.predecessor_account_id === wallet ? items.receiver_account_id : items.predecessor_account_id;
-                  // amountParam = (items.predecessor_account_id === wallet ? "-" : "+")+Number(utils.format.formatNearAmount(BigInt(items.actions_agg.deposit).toString())).toFixed(5);
-                  res.coin = "NEAR"
-                  break;
-                case "createAccount": // "CREATE_ACCOUNT":
-                  res.type = "account";
-                  res.account = walletUtils.shortenAddress(items.receiver); // items.receiver_account_id;
-                  break;
-                case "addKey": // "ADD_KEY":
-                  res.type = "access";
-                  res.account = walletUtils.shortenAddress(items.receiver); // items.receiver_account_id;
-                  break;
-                case "functionCall": // "FUNCTION_CALL":
-                  if(items.receiver === "v4.nearp2pdex.near" && ["accept_offer", "order_confirmation"].includes(items.method_name)) {
-                    res.type = "p2p";
-                    res.text2 = items.method_name; // items.actions[0].method;
-                    switch (items.method_name) {
-                      case "accept_offer": {
-                        const dataExecution = parseExecution.data.find((element) => element?.tx?.hash === items.id);
-                        const logSell = dataExecution.receipts.find((element) => element?.actions[0]?.method_name === "on_accept_offer_sell")?.logs
-                        const logBuy = dataExecution.receipts[0]?.logs
-                        const logs = logSell ? JSON.parse(logSell) : JSON.parse(logBuy);
-
-                        /* console.log("parseExecution 2: ", parseExecution.data.length, dataExecution)
-                        console.log("parseExecution 3: ", dataExecution.receipts)
-                        console.log("parseExecution 4: ", logs?.params) */
-                        
-                        res.desc = "intercambio p2p";
-                        res.account = logs?.params.owner_id; // items.receiver_account_id;
-                        const amount = Number(logs?.params.operation_amount);
-                        res.amount = logs?.params.asset.toUpperCase() === "NEAR" ? amount / Math.pow(10, 24) : amount / Math.pow(10, 6);
-                        res.coin = logs?.params.asset
-                      }
-                      break;
-                      case "order_confirmation": {
-                        const dataExecution = parseExecution.data.find((element) => element?.tx?.hash === items.id);
-                        const logTxt = dataExecution.receipts.find((element) => element?.actions[0]?.method_name === "on_confirmation")?.logs
-                        // const logBuy = dataExecution.receipts[0]?.logs
-                        const logs = logTxt ? JSON.parse(logTxt) : {};
-                        const amount = Number(logs?.params.operation_amount);
-
-                        /* console.log("parseExecution 2: ", parseExecution.data.length, dataExecution)
-                        console.log("parseExecution 3: ", dataExecution.receipts)
-                        console.log("parseExecution 4: ", logs?.params) */
-
-                        res.desc = logs?.params.status === "2" ? "culminado p2p" : "error culminar p2p";
-                        res.account = logs?.params.owner_id // logs?.params.owner_id; // items.receiver_account_id;
-                        res.amount = "-" + (logs?.params.asset.toUpperCase() === "NEAR" ? amount / Math.pow(10, 24) : amount / Math.pow(10, 6)).toString();
-                        res.coin = logs?.params.asset
-                        
-                        // const amount = Number(logs?.params.operation_amount);
-                        // res.amount = logs?.params.asset.toUpperCase() === "NEAR" ? amount / Math.pow(10, 24) : amount / Math.pow(10, 6);
-                        // res.coin = logs?.params.asset
-                      }
-                      break;
-                    }
-                    
-                    
-
-                    // asdasd
-                  } else {
-                    res.type = "function";
-                    res.account = walletUtils.shortenAddress(items.receiver); // items.receiver_account_id;
-                    res.text2 = items.method_name; // items.actions[0].method;
-                  }
-                  break;
-                default:
-                  res.type = "access";
-                  res.account = walletUtils.shortenAddress(items.receiver); // items.receiver_account_id;
-                  break;
-              }
-            /* } else {
-              typeParam = "batch";
-              res.account = items.receiver; // items.receiver_account_id
-            } */
-
-           
-
-            return res
-          })
-
-          this.dataActivity = dataActivity.slice(0, 7);
-
-        } catch (error) {
-          console.log("error a mapear lista de actividades recientes: ", error)
-        }
-
+    recentActivity() {
+      walletUtils.getRecentActivity()
+      .then((result) => {
+        this.dataActivity = result;
       })
+      .catch((error) => {
+        console.error("Error al cargar recientes actividades: ", error);
+      });
     },
     setOperationSymbol(symbol) {
       const tokenSymbol = symbol;

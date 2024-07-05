@@ -173,7 +173,7 @@ async function getListTokensBalance() {
 
       // if (!contractFromBlock) return;
       const listContract = contractFromBlock ? contractFromBlock.data.filter((item) => item.contract.toLowerCase() !== 'near').map((element) => { return element.contract }) : [];
-      console.log("listContract: ", listContract);
+     
       const list = {
         fts: [],
         nfts: [],

@@ -72,10 +72,10 @@ export default {
           icon: require("@/assets/sources/operations/icon-access-key-color.svg"),
           title: "Firma en metademocracia",
         },
-        {
+        /* {
           icon: require("@/assets/sources/operations/icon-new-account-color.svg"),
           title: "Cración de billetera",
-        },
+        }, */
         {
           icon: require("@/assets/sources/operations/icon-swap-color.svg"),
           title: "intercambio P2P",
