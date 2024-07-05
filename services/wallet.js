@@ -352,7 +352,7 @@ function getPikespeak(ruta="") {
 }
 
 
-async function getRecentActivity() {
+async function getRecentActivity(filter) {
   function deley() {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -363,8 +363,7 @@ async function getRecentActivity() {
   let resultDataActivity = [];
   const cacheDataActivity = sessionStorage.getItem('recentActivity');
 
-  if(cacheDataActivity) {
-    console.log("cargo cache")
+  if(cacheDataActivity && !filter) {
     resultDataActivity = JSON.parse(cacheDataActivity);
     return resultDataActivity;
   }
@@ -372,37 +371,125 @@ async function getRecentActivity() {
   const wallet = localStorageUser.getCurrentAccount().address; // "yonaikergarcia.near" // this.address;
 
   await deley();
-
-  await getPikespeak(`/account/transactions/${wallet}?limit=25`)
   // .catch(error => { console.log("error api pikespeak: ", error) });
   
   // await axios.get(`${process.env.URL_API_INDEXER}/account/${wallet}/txns?order=desc&page=1&per_page=25`)
-  .then(async (response) => {
+  // .then(async (response) => {
     try {
-      // const data = response.data?.txns;
-      const data = response?.data;
+      let result = [];
+      
+      await deley()
+      
+      if(filter) {
+        const tokenType = filter.token ? `${filter.token?.symbol}` : "all"
+        const tokenFilterList = [
+          {token: "NEAR", value: "|near"},
+          {token: "all", value: "|all"},
+        ]
+        const tokenTxTypeFilter = ['envio', 'recibo'].includes(filter.txType) ? tokenFilterList.find((item) => item.token === tokenType)?.value || '|token' : '';
+        
+        const optionTxType = [
+          {txType: "metademocracia", value: `&contractFilter=${process.env.VUE_APP_CONTRACT_NAME_DAO_METADEMOCRACIA}`},
+          {txType: "p2p", value: `&contractFilter=${process.env.VUE_APP_CONTRACT_NAME}`},
+          {txType: "envio|all", value: `&filters=SEND_RECEIVE,FT_TRANSFER,FT_TRANSFER_FROM_AURORA,NEAR_TRANSFER`},
+          {txType: "envio|near", value: `&filters=NEAR_TRANSFER`},
+          {txType: "envio|token", value: `&contractFilter=${filter.token?.contract}&filters=SEND_RECEIVE,FT_TRANSFER,FT_TRANSFER_FROM_AURORA`},
+          {txType: "recibo|all", value: `&filters=SEND_RECEIVE,FT_TRANSFER,FT_TRANSFER_FROM_AURORA,NEAR_TRANSFER`},
+          {txType: "recibo|near", value: `&filters=NEAR_TRANSFER`},
+          {txType: "recibo|token", value: `&contractFilter=${filter.token?.contract}&filters=SEND_RECEIVE,FT_TRANSFER,FT_TRANSFER_FROM_AURORA`},
+          
+        ]
+        
+        let filterOptions = optionTxType.find((element) => element.txType === `${filter.txType}${tokenTxTypeFilter}`)?.value 
+        if(!filterOptions) { 
+          filterOptions = tokenType === "NEAR" ? "&filters=NEAR_TRANSFER" : tokenType !== "all" ? `&contractFilter=${filter.token?.contract}` : "";
+        }
 
-      if(!data) return
+        let transferList =  await getPikespeak(`/event-historic/${wallet}?timestampStart=${filter.dates[0]}&timestampEnd=${filter.dates[1]}${filterOptions}`); // .catch(error => { console.log("error api pikespeak: ", error) });
+        // let transferList =  await getPikespeak(`/event-historic/${wallet}?timestampStart=2020-04-03&timestampEnd=2024-07-11${txTypeFilter}`); // .catch(error => { console.log("error api pikespeak: ", error) });
+        if(!transferList) transferList = [];
+
+        switch (filter.txType) {
+          case "envio":
+            transferList.data = transferList.data.filter((item) => item.direction === "send");    
+            break;
+          case "recibo":
+            transferList.data = transferList.data.filter((item) => item.direction === "receive");
+            break;
+        }
+        
+
+        result = transferList.data.map((items) => { 
+          const typeList = [
+            {type: "FT_TRANSFER", value: "transfer"},
+            {type: "NEAR_TRANSFER", value: "transfer"},
+          ]
+          const type = typeList.find((element) => element.type === items.type)?.value;
+
+          return { // 1719515934533
+                   // 1720497600  * 1000
+            id: items.transaction_id,
+            transaction_timestamp: Number(items.timestamp),
+            first_action_type:  type || "functionCall" ,
+            method_name: items.transaction_view?.method_name || items.type.toLowerCase(),
+            receiver: items.receiver,
+            signer: items.sender,
+            direction: items?.direction || "",
+            amount: items?.amount || "",
+            coin: items.type === "FT_TRANSFER" ? items?.token : "NEAR",
+          }
+        })
+        
+      } else {
+        await getPikespeak(`/account/transactions/${wallet}?limit=25`).then(async (response) => {
+          const data = response?.data || [];
+          
+          await deley()
+
+          let transferList =  await getPikespeak(`/event-historic/${wallet}?limit=25`); // .catch(error => { console.log("error api pikespeak: ", error) });
+          if(!transferList) transferList = [];
+
+          result = data.map((item) => {
+            const dataTransfer = !transferList ? [] : transferList?.data.find((element) => element.transaction_id === item.id);
+            const direction = dataTransfer?.direction || "";
+            const amount = dataTransfer?.amount || "";
+            const coin = dataTransfer?.type === "FT_TRANSFER" ? dataTransfer?.token : dataTransfer?.type === "NEAR_TRANSFER" ? "NEAR" : "";
+            
+            const typeList = [
+              {type: "FT_TRANSFER", value: "transfer"},
+            ]
+            const type = typeList.find((element) => element.type === dataTransfer?.type)?.value;
+            const typeFinal = type || item.first_action_type;
+
+            return {
+              id: item.id,
+              transaction_timestamp: item.transaction_timestamp / 1000000,
+              first_action_type:  typeFinal,
+              method_name: item.method_name,
+              receiver: typeFinal === "transfer" ? dataTransfer.receiver : item.receiver,
+              signer: typeFinal === "transfer" ? dataTransfer.sender : item.signer,
+              direction,
+              amount,
+              coin,
+            }
+          });
+
+        }).catch(error => { console.log("error api pikespeak: ", error) });
+      }
 
       await deley()
-
-      let transferList =  await getPikespeak(`/event-historic/${wallet}?limit=25`); // .catch(error => { console.log("error api pikespeak: ", error) });
-
-      await deley()
-
+    
       let parseExecution =  await getPikespeak(`/tx/parsed-execution-by-contract?contract=yonaikergarcia.near`); // .catch(error => { console.log("error api pikespeak: ", error) });
-
-      if(!transferList) transferList = [];
       if(!parseExecution) parseExecution = [];
 
       moment.locale('es');
-      // const dataActivity = data.filter((item) => item.predecessor_account_id !== "system").map((items) => {
-      const dataActivity = data.map((items) => {
-        const dataTransfer = !transferList ? [] : transferList?.data.find((element) => element.transaction_id === items.id);
 
+
+      // const dataActivity = data.filter((item) => item.predecessor_account_id !== "system").map((items) => {
+      const dataActivity = result.map((items) => {
         const res = {
           hash: items?.id,
-          date: moment(items.transaction_timestamp/1000000).fromNow(),
+          date: moment(items.transaction_timestamp).fromNow(),
           /* type: typeParam,
           account: walletUtils.shortenAddress(accountParam),
           coin: coinParam,
@@ -416,12 +503,10 @@ async function getRecentActivity() {
           // switch (items.actions[0].action) {
           switch (items.first_action_type) {
             case "transfer": // "TRANSFER":
-              res.type = dataTransfer.direction === "send" ? "sent" : "receive"; // items.predecessor_account_id === wallet ? "sent" : "receive";
-              res.account = dataTransfer.direction === "send" ? dataTransfer.receiver : dataTransfer.sender;
-              res.amount = (dataTransfer.direction === "send" ? "-" : "+")+Number(dataTransfer.amount).toFixed(5);
-              // accountParam = items.predecessor_account_id === wallet ? items.receiver_account_id : items.predecessor_account_id;
-              // amountParam = (items.predecessor_account_id === wallet ? "-" : "+")+Number(utils.format.formatNearAmount(BigInt(items.actions_agg.deposit).toString())).toFixed(5);
-              res.coin = "NEAR"
+              res.type = items.direction; // items.predecessor_account_id === wallet ? "sent" : "receive";
+              res.account = items.direction === "send" ? items.receiver : items.signer;
+              res.amount = (items.direction === "send" ? "-" : "+")+Number(items.amount).toFixed(5);
+              res.coin = items.coin;
               break;
             case "createAccount": // "CREATE_ACCOUNT":
               res.type = "account";
@@ -441,10 +526,6 @@ async function getRecentActivity() {
                     const logSell = dataExecution.receipts.find((element) => element?.actions[0]?.method_name === "on_accept_offer_sell")?.logs
                     const logBuy = dataExecution.receipts[0]?.logs
                     const logs = logSell ? JSON.parse(logSell) : JSON.parse(logBuy);
-
-                    /* console.log("parseExecution 2: ", parseExecution.data.length, dataExecution)
-                    console.log("parseExecution 3: ", dataExecution.receipts)
-                    console.log("parseExecution 4: ", logs?.params) */
                     
                     res.desc = "intercambio p2p";
                     res.account = logs?.params.owner_id; // items.receiver_account_id;
@@ -456,29 +537,18 @@ async function getRecentActivity() {
                   case "order_confirmation": {
                     const dataExecution = parseExecution.data.find((element) => element?.tx?.hash === items.id);
                     const logTxt = dataExecution.receipts.find((element) => element?.actions[0]?.method_name === "on_confirmation")?.logs
-                    // const logBuy = dataExecution.receipts[0]?.logs
                     const logs = logTxt ? JSON.parse(logTxt) : {};
                     const amount = Number(logs?.params.operation_amount);
-
-                    /* console.log("parseExecution 2: ", parseExecution.data.length, dataExecution)
-                    console.log("parseExecution 3: ", dataExecution.receipts)
-                    console.log("parseExecution 4: ", logs?.params) */
 
                     res.desc = logs?.params.status === "2" ? "culminado p2p" : "error culminar p2p";
                     res.account = logs?.params.owner_id // logs?.params.owner_id; // items.receiver_account_id;
                     res.amount = "-" + (logs?.params.asset.toUpperCase() === "NEAR" ? amount / Math.pow(10, 24) : amount / Math.pow(10, 6)).toString();
                     res.coin = logs?.params.asset
                     
-                    // const amount = Number(logs?.params.operation_amount);
-                    // res.amount = logs?.params.asset.toUpperCase() === "NEAR" ? amount / Math.pow(10, 24) : amount / Math.pow(10, 6);
-                    // res.coin = logs?.params.asset
                   }
                   break;
                 }
                 
-                
-
-                // asdasd
               } else {
                 res.type = "function";
                 res.account = shortenAddress(items.receiver); // items.receiver_account_id;
@@ -506,10 +576,11 @@ async function getRecentActivity() {
       console.log("error a mapear lista de actividades recientes: ", error)
     }
 
-  })
+  
 
-  console.log("aqui paso: ", resultDataActivity)
-  sessionStorage.setItem('recentActivity', JSON.stringify(resultDataActivity))
+  if(!filter) {
+    sessionStorage.setItem('recentActivity', JSON.stringify(resultDataActivity))
+  }
 
   return resultDataActivity;
 }

@@ -68,7 +68,7 @@ export default {
           text: "Desde: ",
           text2: "",
         },
-        "sent": {
+        "send": {
           icon: require("@/assets/sources/operations/icon-sent.svg"),
           title: "pago enviado",
           text: "Para: ",

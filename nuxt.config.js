@@ -19,6 +19,7 @@ export default {
     ROUTER_RPC: process.env.ROUTER_RPC || "http://localhost:3000",
     VUE_APP_CONTRACT_NAME: process.env.VUE_APP_CONTRACT_NAME || "http://localhost:3000",
     VUE_APP_CONTRACT_NAME_USDT: process.env.VUE_APP_CONTRACT_NAME_USDT || "http://localhost:3000",
+    VUE_APP_CONTRACT_NAME_DAO_METADEMOCRACIA: process.env.VUE_APP_CONTRACT_NAME_DAO_METADEMOCRACIA || "http://localhost:3000",
     VUE_APP_API_MAIL_URL: process.env.VUE_APP_API_MAIL_URL || "http://localhost:3000",
     VUE_APP_CHAT_FIREBASE: process.env.VUE_APP_CHAT_FIREBASE,
     VUE_APP_PASSPHRASE: process.env.VUE_APP_PASSPHRASE,

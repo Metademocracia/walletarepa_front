@@ -63,14 +63,17 @@ export default {
         {
           icon: require("@/assets/sources/operations/icon-recieved-color.svg"),
           title: "Recepción de fondos",
+          value: "recibo"
         },
         {
           icon: require("@/assets/sources/operations/icon-sent-color.svg"),
           title: "Envio de fondos",
+          value: "envio"
         },
         {
           icon: require("@/assets/sources/operations/icon-access-key-color.svg"),
           title: "Firma en metademocracia",
+          value: "metademocracia"
         },
         /* {
           icon: require("@/assets/sources/operations/icon-new-account-color.svg"),
@@ -79,10 +82,12 @@ export default {
         {
           icon: require("@/assets/sources/operations/icon-swap-color.svg"),
           title: "intercambio P2P",
+          value: "p2p"
         },
         {
           icon: require("@/assets/sources/operations/icon-all-color.svg"),
           title: "Todas (cualquiera)",
+          value: "all",
         },
       ],
     }

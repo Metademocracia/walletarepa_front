@@ -1,6 +1,6 @@
 <template>
   <div id="activity-history" class="divcol center">
-    <activity-filter ref="activity-filter" />
+    <activity-filter ref="activity-filter" @on-filtrar="(item) => filtrar(item)"/>
 
     <section id="section-recent-activity" class="mb-10">
       <div id="section-recent-activity__wrapper">
@@ -18,7 +18,8 @@
         </Header>
 
         <div class="divcol mb-4" style="gap: 20px; cursor: pointer">
-          <h6 v-if="!dataActivity.length" class="tcenter mb-5 mt-4" style="--fs: 15px;">No se encontraron registros</h6>
+          <h6 v-if="!dataActivity.length && !loading" class="tcenter mb-5 mt-4" style="--fs: 15px;">No se encontraron registros</h6>
+          <h6 v-if="!dataActivity.length && loading" class="tcenter mb-5 mt-4" style="--fs: 15px;">Cargango...</h6>
 
           <ActivityCard
             v-for="(item, i) in dataActivity" :key="i"
@@ -58,7 +59,9 @@ export default {
   data() {
     return {
       linkExplorer: "",
-      dataActivity: []
+      dataActivity: [],
+      metodopruebafn: this.metodoprueba,
+      loading: false,
     }
   },
   head() {
@@ -67,18 +70,34 @@ export default {
       title,
     }
   },
+
+  watch: {
+    linkExplorer(value) {
+      console.log("seguimiento: ", value)
+    }
+  },
+
   mounted() {
     this.recentActivity()
   },
   methods: {
-    recentActivity() {
-      walletUtils.getRecentActivity()
+    recentActivity(filter) {
+      this.loading = true;
+      this.dataActivity = [];
+
+      walletUtils.getRecentActivity(filter)
       .then((result) => {
         this.dataActivity = result;
+        this.loading = false
       })
       .catch((error) => {
         console.error("Error al cargar recientes actividades: ", error);
+        this.loading = false;
+        this.dataActivity = [];
       });
+    },
+    async filtrar(item) {
+      await this.recentActivity(item);
     },
   }
 };

@@ -10,7 +10,7 @@
 
     <ModalSelectTxType
       ref="txType"
-      @on-selected-type="(item) => txType = item.title"
+      @on-selected-type="(item) => txType = item"
     ></ModalSelectTxType>
 
     <img id="activity-filter-background" src="~/assets/sources/images/bg-drawer.svg" alt="background">
@@ -61,13 +61,13 @@
           
           <div class="center" style="gap: 6px;">
 
-            <span style="--fs: 12px; --c: var(--primary); --ls: normal">{{ txType ?? 'TODAS' }}</span>
+            <span style="--fs: 12px; --c: var(--primary); --ls: normal">{{ txType?.title }}</span>
             <img src="@/assets/sources/icons/double-chevron-right.svg" alt="arrow right">
           </div>
         </v-card>
       </section>
 
-      <v-btn class="btn">
+      <v-btn class="btn" @click="onFiltrar">
         REVISAR
       </v-btn>
     </div>
@@ -83,8 +83,9 @@ export default {
     return {
       model: true,
       dates: [],
-      txType: null,
-      token: null,
+      txType: {title: "TODAS", value: "all" },
+      token: undefined,
+      ejecutar: false,
     }
   },
   computed: {
@@ -105,8 +106,20 @@ export default {
   },
 
   methods: {
-    test(item) {
-      console.log(item);
+    onFiltrar() {
+      // console.log("aqui va: ", this.dates, this.txType?.value, this.token);
+      if(this.dates.length === 2) {
+        // this.ejecutar = true;
+        // console.log("data: ", this.dates.map((element) => {return element }) )
+
+        this.$emit('on-filtrar', {
+          dates: this.dates,
+          txType: this.txType?.value,
+          token: this.token
+        })
+        this.model = false;
+      }
+      
     }
   },
 }
