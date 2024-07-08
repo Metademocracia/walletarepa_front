@@ -406,7 +406,7 @@ async function getRecentActivity(filter) {
         }
 
         let transferList =  await getPikespeak(`/event-historic/${wallet}?timestampStart=${filter.dates[0]}&timestampEnd=${filter.dates[1]}${filterOptions}`); // .catch(error => { console.log("error api pikespeak: ", error) });
-        // let transferList =  await getPikespeak(`/event-historic/${wallet}?timestampStart=2020-04-03&timestampEnd=2024-07-11${txTypeFilter}`); // .catch(error => { console.log("error api pikespeak: ", error) });
+        
         if(!transferList) transferList = [];
 
         switch (filter.txType) {
@@ -426,8 +426,7 @@ async function getRecentActivity(filter) {
           ]
           const type = typeList.find((element) => element.type === items.type)?.value;
 
-          return { // 1719515934533
-                   // 1720497600  * 1000
+          return {
             id: items.transaction_id,
             transaction_timestamp: Number(items.timestamp),
             first_action_type:  type || "functionCall" ,
@@ -446,7 +445,7 @@ async function getRecentActivity(filter) {
           
           await deley()
 
-          let transferList =  await getPikespeak(`/event-historic/${wallet}?limit=25`); // .catch(error => { console.log("error api pikespeak: ", error) });
+          let transferList =  await getPikespeak(`/event-historic/${wallet}?limit=25`);
           if(!transferList) transferList = [];
 
           result = data.map((item) => {
@@ -479,7 +478,7 @@ async function getRecentActivity(filter) {
 
       await deley()
     
-      let parseExecution =  await getPikespeak(`/tx/parsed-execution-by-contract?contract=yonaikergarcia.near`); // .catch(error => { console.log("error api pikespeak: ", error) });
+      let parseExecution =  await getPikespeak(`/tx/parsed-execution-by-contract?contract=yonaikergarcia.near`);
       if(!parseExecution) parseExecution = [];
 
       moment.locale('es');
