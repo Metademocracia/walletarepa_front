@@ -193,6 +193,18 @@ export default {
         if (b.name === 'USDT') return 1;
         return 0;
       });
+
+      
+      this.dataTokensFinal.push(
+        {
+          icon: require("@/assets/sources/operations/icon-all-color.svg"),
+          symbol: "all",
+          name: "TODOS"
+        }
+      )
+
+      console.log(this.dataTokensFinal)
+    
     },
   },
 

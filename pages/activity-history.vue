@@ -10,16 +10,16 @@
           top-text-center
           max-width="390px"
         >
-          <template #append>
+          <!-- <template #append>
             <v-btn class="btn-icon" style="--bg: var(--secondary); --b: 1px solid #000">
               <img src="@/assets/sources/icons/magnify.svg" alt="search icon">
             </v-btn>
-          </template>
+          </template> -->
         </Header>
 
         <div class="divcol mb-4" style="gap: 20px; cursor: pointer">
           <h6 v-if="!dataActivity.length && !loading" class="tcenter mb-5 mt-4" style="--fs: 15px;">No se encontraron registros</h6>
-          <h6 v-if="!dataActivity.length && loading" class="tcenter mb-5 mt-4" style="--fs: 15px;">Cargango...</h6>
+          <h6 v-if="!dataActivity.length && loading" class="tcenter mb-5 mt-4" style="--fs: 15px;">Cargando...</h6>
 
           <ActivityCard
             v-for="(item, i) in dataActivity" :key="i"
@@ -53,12 +53,13 @@
 
 <script>
 import walletUtils from '@/services/wallet';
+import localStorageUser from '~/services/local-storage-user';
 
 export default {
   name: "ActivityHistory",
   data() {
     return {
-      linkExplorer: "",
+      linkExplorer: process.env.URL_EXPLORER,
       dataActivity: [],
       metodopruebafn: this.metodoprueba,
       loading: false,
@@ -71,13 +72,14 @@ export default {
     }
   },
 
-  watch: {
+  /* watch: {
     linkExplorer(value) {
       console.log("seguimiento: ", value)
     }
-  },
+  }, */
 
   mounted() {
+    this.linkExplorer = `${process.env.URL_EXPLORER || ""}${localStorageUser.getCurrentAccount()?.address}`;
     this.recentActivity()
   },
   methods: {

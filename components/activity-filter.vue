@@ -33,6 +33,7 @@
         <v-date-picker
           v-model="dates"
           range
+          locale="es"
         ></v-date-picker>
 
 
@@ -46,7 +47,7 @@
 
 
           <div class="center" style="gap: 6px;">
-            <img v-if="token?.icon" :src="token.icon" alt="near icon" style="width: 29px;">
+            <img v-if="token?.icon && token?.symbol !== 'all'" :src="token.icon" alt="near icon" style="width: 29px;">
             <span style="--fs: 12px; --c: var(--primary); --ls: normal">{{ token?.name ?? 'TODOS' }}</span>
             <img src="@/assets/sources/icons/double-chevron-right.svg" alt="arrow right">
           </div>
