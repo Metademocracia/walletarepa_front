@@ -14,8 +14,8 @@
       class="text-center"
       style="font-weight: 500 !important;"
     >
-      ENVIASTE <strong style="font-weight: 700 !important;">20 USDT</strong>
-      <br>A <strong style="font-weight: 700 !important;">FRITZWAGNER.NEAR</strong>
+      ENVIASTE <strong style="font-weight: 700 !important;">{{ attachedDeposit }} <span>{{ token }}</span></strong>
+      <br>A <strong style="font-weight: 700 !important;">{{ to.toUpperCase() }}</strong>
     </span>
 
     <img class="bg-image" src="@/assets/sources/images/successfuly.png" alt="success image">
@@ -25,10 +25,10 @@
         <h6>DETALLES DE LA TRANSACCIÓN</h6>
 
         <span>TXID:_BF3dECdLue1zZemMoQX5MSZ4h3cKAMsXvjgdbyTEMgSu</span>
-        <span>Monto: 10 USDT</span>
-        <span>DESTINO: FRITZWAGNER.NEAR</span>
+        <span>Monto: {{ attachedDeposit }} {{ token }}</span>
+        <span>DESTINO: {{ to.toUpperCase() }}</span>
         <span class="d-flex align-center justify-space-between" style="gap: 10px">
-          Fecha: 24/05/2024 - 09:51 AM
+          Fecha: {{ date}}
 
           <v-btn
             icon
@@ -41,7 +41,7 @@
         </span>
       </v-card>
 
-      <v-btn class="btn">
+      <v-btn class="btn" @click="router.push('/')">
         IR A LA BIBLIOTECA
       </v-btn>
 
@@ -53,11 +53,17 @@
 </template>
 
 <script>
+import moment from 'moment-timezone';
+
 export default {
   name: "TxSuccessfuly",
   layout: "auth-layout",
   data() {
     return {
+      to: '',
+      token: null,
+      attachedDeposit: 0,
+      formattedDate: '',
     }
   },
   head() {
@@ -65,6 +71,28 @@ export default {
     return {
       title,
     }
+  },
+  mounted() {
+    // Import moment and moment-timezone
+    const moment = require('moment-timezone');
+    // Create the date in the specific format and timezone
+    const date = moment.tz(new Date(), "DD/MM/YYYY HH:mm", "America/Caracas");
+    this.formattedDate = date;
+    // Retrieve the item from sessionStorage
+    const jsonString = sessionStorage.getItem("send-json");
+    // Parse the JSON string back into an object
+    const jsonObj = JSON.parse(jsonString);
+    // Access the 'name' and 'symbol' properties within 'dataToken'
+    // const dataTokenName = jsonObj.dataToken.name;
+    const dataTokenSymbol = jsonObj.dataToken.symbol;
+    // Access the 'amount'
+    const amount = jsonObj.amount;
+    // console.log(dataTokenName); // This will log the 'name' value to the console
+    // console.log(dataTokenSymbol); // This will log the 'symbol' value to the console
+    // console.log(amount); // This will log the 'amount' value to the console
+    this.token = dataTokenSymbol;
+    this.attachedDeposit = amount;
+    this.to = sessionStorage.getItem('send-to');
   },
 };
 </script>

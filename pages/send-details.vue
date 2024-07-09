@@ -36,7 +36,6 @@
           <v-btn
             class="btn-outlined flex-grow-1"
             style="--bg: var(--secondary);" 
-            :loading="envioLoading"
             @click="$router.go(-1)"
           >
             CANCELAR
@@ -44,8 +43,7 @@
 
           <v-btn 
             class="btn flex-grow-1"
-            :loading="envioLoading"
-            @click="send()"
+            @click="next()"
           >
             CONTINUAR
           </v-btn>
@@ -88,8 +86,8 @@ import * as nearAPI from "near-api-js";
 import moment from 'moment';
 import { configNear } from "@/services/nearConfig";
 // import { configNear } from "@/services/nearConfig";
-import walletUtils from '@/services/wallet';
-const { keyStores, Account, Near, utils } = nearAPI;
+// import walletUtils from '@/services/wallet';
+const { keyStores, Account, Near } = nearAPI;
 
 
 export default {
@@ -231,44 +229,11 @@ export default {
     
     },
 
-    async send() {
-      if(this.$refs.formEnvio.validate() && !this.errorAccount) {
-        this.envioLoading = true;
-
-        if(this.tokenSymbol === "NEAR"){
-          let err = false;
-          await this.sendNear().catch(error => {
-            this.$alert("error",{ desc: error })
-            err = true
-          });
-
-          if(err) {
-            this.envioLoading = false;
-            return
-          }
-        } else {
-          let err = false;
-          await this.sendToken().catch(error => {
-            this.$alert("error",{ desc: error })
-            err = true;
-          });
-          if(err) {
-            this.envioLoading = false;
-            return
-          }
-        }
-
-        this.$refs.formEnvio.reset();
-
-        sessionStorage.removeItem('allTokenBalances')
-        
-        
-
-        this.envioLoading = false;
-
-        
-
-        this.$router.push({ path: "/" });
+    next() {
+      if(this.$refs.formEnvio.validate()) {
+        sessionStorage.setItem("send-to", this.accountNear)
+        this.addRecentBaneficiary(this.accountNear);
+        this.$router.push({ path: "/send-confirm" });
       }
     },
 
@@ -290,77 +255,6 @@ export default {
 
       localStorage.setItem("common-beneficiary", JSON.stringify(beneficiary));
     },
-
-    async sendNear() {
-      try {
-        const account = await walletUtils.nearConnection();
-        const result = await account.sendMoney(
-          this.accountNear, // receiver account
-          utils.format.parseNearAmount(this.amount).toString() // amount in yoctoNEAR
-        );
-
-        const hash = !result?.transaction.hash ? result : result?.transaction.hash
-        const sendResult = JSON.stringify({
-          hash,
-          hashUrl: process.env.URL_EXPLORER_TXS + hash,
-          alertType: result?.status?.SuccessValue === "" ? "success" : "error",
-        })
-
-        sessionStorage.setItem("send-result", sendResult)
-        this.addRecentBaneficiary(this.accountNear)
-      } catch (error) {
-        throw new Error(error)
-      }
-    },
-
-    async sendToken() {
-      try {
-        const account = await walletUtils.nearConnection();
-        const isActiveToken = await account.viewFunctionV1(
-          this.dataToken.contract,
-          "storage_balance_of",
-          { account_id: this.accountNear }
-        );
-
-        if(!isActiveToken) {
-          const storageDepositResult = await account.functionCall({
-            contractId: this.dataToken.contract,
-            methodName: "storage_deposit",
-            args: { account_id: this.accountNear },
-            attachedDeposit: "1250000000000000000000"
-          });
-          
-          if(!storageDepositResult || !storageDepositResult.status?.SuccessValue) {
-            console.log("error al activar token");
-            return
-          }
-        }
-
-        const result = await account.functionCall({
-          contractId: this.dataToken.contract,
-          methodName: "ft_transfer",
-          args: { 
-            receiver_id: this.accountNear,
-            amount: walletUtils.parseTokenAmount(this.amount, this.dataToken.decimals)
-          },
-          attachedDeposit: "1"
-        });
-
-        const hash = !result?.transaction.hash ? result : result?.transaction.hash;
-        const sendResult = JSON.stringify({
-          hash,
-          hashUrl: process.env.URL_EXPLORER_TXS + hash,
-          alertType: result?.status?.SuccessValue === "" ? "success" : "error",
-        })
-
-        sessionStorage.setItem("send-result", sendResult)
-
-        this.addRecentBaneficiary(this.accountNear)
-      } catch (error) {
-        throw new Error(error)
-      }
-    },
-
 
   },
 }
