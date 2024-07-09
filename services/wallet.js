@@ -368,7 +368,7 @@ async function getRecentActivity(filter) {
     return resultDataActivity;
   }
 
-  const wallet = localStorageUser.getCurrentAccount().address; // "yonaikergarcia.near" // this.address;
+  const wallet = "andresdom.near"; // localStorageUser.getCurrentAccount().address; // "yonaikergarcia.near" // this.address;
 
   await deley();
   // .catch(error => { console.log("error api pikespeak: ", error) });
@@ -521,9 +521,9 @@ async function getRecentActivity(filter) {
                 res.text2 = items.method_name; // items.actions[0].method;
                 switch (items.method_name) {
                   case "accept_offer": {
-                    const dataExecution = parseExecution.data.find((element) => element?.tx?.hash === items.id);
-                    const logSell = dataExecution.receipts.find((element) => element?.actions[0]?.method_name === "on_accept_offer_sell")?.logs
-                    const logBuy = dataExecution.receipts[0]?.logs
+                    const dataExecution = parseExecution?.data.find((element) => element?.tx?.hash === items.id);
+                    const logSell = dataExecution?.receipts.find((element) => element?.actions[0]?.method_name === "on_accept_offer_sell")?.logs
+                    const logBuy = dataExecution?.receipts[0]?.logs
                     const logs = logSell ? JSON.parse(logSell) : JSON.parse(logBuy);
                     
                     res.desc = "intercambio p2p";
@@ -534,8 +534,8 @@ async function getRecentActivity(filter) {
                   }
                   break;
                   case "order_confirmation": {
-                    const dataExecution = parseExecution.data.find((element) => element?.tx?.hash === items.id);
-                    const logTxt = dataExecution.receipts.find((element) => element?.actions[0]?.method_name === "on_confirmation")?.logs
+                    const dataExecution = parseExecution?.data.find((element) => element?.tx?.hash === items.id);
+                    const logTxt = dataExecution?.receipts.find((element) => element?.actions[0]?.method_name === "on_confirmation")?.logs
                     const logs = logTxt ? JSON.parse(logTxt) : {};
                     const amount = Number(logs?.params.operation_amount);
 
