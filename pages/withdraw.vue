@@ -112,11 +112,17 @@
         <span style="--fs: 12px; --ls: normal">{{ balance }} {{ tokenSymbol }}</span>
       </v-card>
 
-      <v-list>
-        <v-list-item v-for="(payment, i) in payments" :key="i" @click="selectPayment(payment)">
-            {{ payment }}
-          <img v-if="selectedPayment == payment" src="@/assets/sources/icons/checked.svg" alt="checked icon" />
-          <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon" />
+      <v-list class="payment-list">
+        <v-list-item v-for="(payment, i) in payments" :key="i" class="payment-item" @click="selectPayment(payment)">
+          <div class="payment-details">
+            <div class="ml-2 payment-name">{{ payment.name }}</div>
+            <div class="mr-2 payment-info">
+              <span class="payment-rate">{{ (payment.rate * price).toFixed(2) }} VES/USDT</span>
+              <img v-if="selectedPayment === payment" src="@/assets/sources/icons/checked.svg" alt="checked icon" />
+              <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon" />
+            </div>
+          </div>
+          <div v-if="i < payments.length - 1" class="divider"></div>
         </v-list-item>
       </v-list>
       <h5 v-if="modalNoOffers" style="color: red !important;">{{ modalNoMessage }}</h5>
@@ -174,7 +180,7 @@ const { utils } = nearAPI;
 
 export default {
   name: "DepositPage",
-  middleware: ["verify-wallet"],
+  // middleware: ["verify-wallet"],
   data() {
     return {
       filter: ["usdt", "near", "arp"],
@@ -183,6 +189,7 @@ export default {
       btnContinue: true,
       moreBanks: false,
       otherPayments: [],
+      price: 0,
       originalPayments: [],
       listFlags: [],
       required: [
@@ -207,6 +214,7 @@ export default {
       modalNoMessage: false,
       poolOrders: null,
       nearBalanceObject: 0.0,
+      paymentMethods: new Map(), // Add paymentMethods as a data property
     };
   },
   head() {
@@ -229,6 +237,9 @@ export default {
       this.flagscdn();
     }
     this.getBalance();
+    walletUtils.getPrice("VES", "USDT").then(price => {
+            this.price =  price;   
+            }); 
     this.selects();
   },
 
@@ -242,13 +253,23 @@ export default {
       this.selectedPayment = payment;
       this.disabledContinue();
     },
+    // selectPaymentDialog(payment) {
+    //   this.selectedPayment = payment;
+    //   this.payments[2] = payment;
+    //   this.otherPayments = this.originalPayments.filter(item => !this.payments.includes(item));
+    //   // this.otherPayments = this.originalPayments.filter(
+    //   //   (item) => !this.payments.includes(item.payment_method)
+    //   // );
+    //   this.disabledContinue();
+    //   this.modelPayments = false;
+    // },
     selectPaymentDialog(payment) {
       this.selectedPayment = payment;
-      this.payments[2] = payment;
-      this.otherPayments = this.originalPayments.filter(item => !this.payments.includes(item));
-      // this.otherPayments = this.originalPayments.filter(
-      //   (item) => !this.payments.includes(item.payment_method)
-      // );
+      this.payments[2] = {
+        name: payment,
+        rate: this.paymentMethods.get(payment) || null, // Reference the paymentMethods map
+      };
+      this.otherPayments = this.originalPayments.filter(item => !this.payments.some(payment => payment.name === item));
       this.disabledContinue();
       this.modelPayments = false;
     },
@@ -336,38 +357,36 @@ export default {
     },
     selects() {
       const selects = gql`
-      query MyQuery( $token: String, $address: String ) {
-        offerssells(
-          where: {asset_contains: $token, owner_id_not: $address, is_pause: false, remaining_amount_gte: "1"}
-          orderBy: exchange_rate
-          orderDirection: desc
-        ) {
-          amount
-          asset
-          exchange_rate
-          fiat_method
-          id
-          max_limit
-          min_limit
-          owner_id
-          remaining_amount
-          status
-          terms_conditions
-          time
-          payment_method {
-            payment_method
-            payment_method_id
+        query MyQuery($token: String, $address: String) {
+          offerssells(
+            where: { asset_contains: $token, owner_id_not: $address, is_pause: false, remaining_amount_gte: "1" }
+            orderBy: exchange_rate
+            orderDirection: desc
+          ) {
+            amount
+            asset
+            exchange_rate
+            fiat_method
+            id
+            max_limit
+            min_limit
+            owner_id
+            remaining_amount
+            status
+            terms_conditions
+            time
+            payment_method {
+              payment_method
+              payment_method_id
+            }
           }
         }
-      }
       `;
-      // const eltoken = this.selectToken;
-      let paymentMethods = new Set();
+      this.paymentMethods = new Map();
       this.listOffers = [];
       this.poolOrders = this.$apollo
         .watchQuery({
           query: selects,
-          // fetchPolicy: 'network-only',
           pollInterval: 5000,
           variables: {
             token: this.tokenSymbol.toLocaleUpperCase(),
@@ -375,32 +394,47 @@ export default {
           }
         })
         .subscribe(({ data }) => {
+          // Clear current payments array
+          this.payments = [];
+          
+          // Process the offerssells data
           data.offerssells.forEach(offer => {
             offer.payment_method.forEach(method => {
-              paymentMethods.add(method.payment_method);
+              // Add method to the map with the corresponding exchange rate
+              this.paymentMethods.set(method.payment_method, offer.exchange_rate);
             });
           });
+
+          // Populate listOffers array
           Object.entries(data.offerssells).forEach(
             ([key, value]) => {
               this.listOffers.push(value);
             }
           );
-          paymentMethods = Array.from(paymentMethods);
-          paymentMethods.length > 3 ? this.moreBanks = true : this.moreBanks = false;
-          /**
-           * If the paymentMethods array includes "Pago Móvil",
-           * this code filters out "Pago Móvil" from the array
-           * and adds it back to the beginning of the array.
-           */
-          if (paymentMethods.includes("Pago Móvil")) {
-            paymentMethods = paymentMethods.filter(method => method !== "Pago Móvil");
-            paymentMethods.unshift("Pago Móvil");
+
+          // Convert Map to Array and handle moreBanks logic
+          let paymentMethodsArray = Array.from(this.paymentMethods.keys());
+          paymentMethodsArray.length > 3 ? this.moreBanks = true : this.moreBanks = false;
+
+          // Move "Pago Móvil" to the beginning if it exists
+          if (paymentMethodsArray.includes("Pago Móvil")) {
+            paymentMethodsArray = paymentMethodsArray.filter(method => method !== "Pago Móvil");
+            paymentMethodsArray.unshift("Pago Móvil");
           }
+          
 
-          this.payments = paymentMethods.slice(0, 3);
+          // Slice the first 3 methods and update the payments array
+          this.payments = paymentMethodsArray.slice(0, 3).map(method => {
+            return {
+              name: method,
+              rate: this.paymentMethods.get(method) || null, // Get the exchange rate from the map
+            };
+          });
 
-          this.otherPayments = paymentMethods.filter(item => !this.payments.includes(item));
-          this.originalPayments = paymentMethods;
+          // Handle other payments
+          this.otherPayments = paymentMethodsArray.filter(item => !this.payments.some(payment => payment.name === item));
+          this.originalPayments = paymentMethodsArray;
+
         });
     },
     async initContract() {
