@@ -2,6 +2,13 @@
   @include parent;
   padding-inline: var(--margin-global);
   margin-bottom: var(--margin-footer);
+
+  .btn-outlined {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
   
   &-content {
     display: flex;

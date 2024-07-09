@@ -339,7 +339,7 @@ export default {
       this.recentActivity()
     }, 1000*10); // se ejecuta cada 10 segundos */
     // eliminando variables de inicio de session
-    this.alertSend();
+    // this.alertSend();
   },
   methods: {
     navigateToExternalLink(url) {

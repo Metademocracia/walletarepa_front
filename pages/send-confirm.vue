@@ -289,7 +289,6 @@ export default {
     },
 
     async sendToken() {
-        console.log(this.to, this.attachedDeposit, this.dataToken.decimals, this.dataToken.contract)
       try {
         const account = await walletUtils.nearConnection();
         const isActiveToken = await account.viewFunctionV1(
