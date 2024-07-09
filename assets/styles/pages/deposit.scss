@@ -8,6 +8,43 @@
     gap: 20px;
   }
 
+  .payment-list {
+    width: 100%;
+    max-width: 500px !important; /* Adjust the max-width as needed */
+    margin: 0 auto;
+  }
+  .payment-item {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0;
+    position: relative;
+  }
+  .payment-details {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+  }
+  .payment-name {
+    flex: 1;
+    font-weight: bold !important;
+  }
+  .payment-info {
+    display: flex;
+    align-items: center;
+  }
+  .payment-rate {
+    margin-right: 10px;
+    font-size: 0.7em;
+    font-weight: 500 !important
+  }
+  .divider {
+    width: 100%;
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 8px 0;
+  }
+
 
   h5 {
     --fw: 700;
