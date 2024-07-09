@@ -368,7 +368,7 @@ async function getRecentActivity(filter) {
     return resultDataActivity;
   }
 
-  const wallet = "andresdom.near"; // localStorageUser.getCurrentAccount().address; // "yonaikergarcia.near" // this.address;
+  const wallet = localStorageUser.getCurrentAccount().address; // "yonaikergarcia.near" // this.address;
 
   await deley();
   // .catch(error => { console.log("error api pikespeak: ", error) });
