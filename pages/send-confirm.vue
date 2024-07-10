@@ -73,7 +73,7 @@
     </v-btn>
 
 
-    <section class="d-flex flex-column center" style="height: 245px; margin-block: 25px;">
+    <section class="d-flex flex-column center" style="height: 130px; margin-block: 25px;">
       <h2 class="ma-0">{{ attachedDeposit }} <span>{{ token }}</span></h2>
       <!-- <span>${{ deposit_usd }}</span> -->
     </section>
