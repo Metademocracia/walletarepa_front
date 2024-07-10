@@ -121,6 +121,79 @@
     </section>
 
     <!-- <img src="@/assets/sources/logos/logotype.svg" alt="logo icon" class="mx-auto mt-16 mb-8" style="width: 200px"> -->
+
+    <v-form ref="form" v-model="validForm">
+  
+      <ModalCryptos
+        ref="cryptos"
+        @on-selected-coin="coin => selectToken(coin)"
+      ></ModalCryptos>
+
+
+      <section class="d-flex flex-column" style="height: 248px;">
+        <v-text-field
+          v-model="amount"
+          placeholder="0.0"
+          type="number"
+          :rules="required"
+          required
+        ></v-text-field>
+
+        <v-btn
+          class="btn-outlined mx-auto"
+          style="--bg: var(--secondary); --b-color: var(--primary); --c: var(--primary); --fs: 12px; --fw: 700; --ls: 0.36px; --h: 34px; width: 121px;"
+          @click="maxBalance()"
+        >USAR MÁXIMO</v-btn>
+      </section>
+
+
+      <section class="d-flex flex-column" style="gap: 14px;">
+        <!--<v-card
+          class="btn-outlined space"
+          style="--bg: var(--secondary); --b-color: #D1C4E8; padding: 0 23px;"
+          @click="$refs.cryptos.model = true"
+        >-->
+        <v-card
+          class="btn-outlined space"
+          style="--bg: var(--secondary); --b-color: #D1C4E8; padding: 0 23px;"
+          @click="$refs.cryptos.model = true"
+        >
+          <h5 class="mb-0">SELECCIONAR RECURSO</h5>
+          
+          <div class="center" style="gap: 6px;">
+            <img :src="tokenImg" alt="near icon" style="width: 29px;">
+            <span style="--fs: 12px; --c: var(--primary); --ls: normal">{{ tokenSymbol }}</span>
+            <img src="@/assets/sources/icons/double-chevron-right.svg" alt="arrow right">
+          </div>
+        </v-card>
+
+        <v-card
+          class="btn-outlined space"
+          style="--bg: var(--secondary); --b-color: #D1C4E8; padding: 0 23px;"
+        >
+          <h5 class="mb-0">DISPONIBLE PARA ENVIAR</h5>
+          
+          <span style="--fs: 12px; --ls: normal">{{ balance }} {{ tokenSymbol }}</span>
+        </v-card>
+
+        <aside class="d-flex" style="gap: 12px">
+          <!--<v-btn class="btn-outlined flex-grow-1" style="--bg: var(--secondary);" @click="$router.go(-1)">
+            CANCELAR
+          </v-btn> -->
+
+          <v-btn
+            class="btn flex-grow-1"
+            @click="next()"
+          >
+            GENERAR QR
+          </v-btn>
+        </aside>
+      </section>
+      
+    
+  </v-form>
+
+
   </div>
 </template>
 
