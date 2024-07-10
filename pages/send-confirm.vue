@@ -199,6 +199,7 @@ export default {
     };
   },
   mounted() {
+    console.log("send-json", this.$route.query)
     const data = sessionStorage.getItem("send-json");
     if(data){
       const json = JSON.parse(data);
@@ -216,15 +217,15 @@ export default {
     const jsonObj = JSON.parse(jsonString);
     // Access the 'name' and 'symbol' properties within 'dataToken'
     // const dataTokenName = jsonObj.dataToken.name;
-    const dataTokenSymbol = jsonObj.dataToken.symbol;
+    const dataTokenSymbol = this.$route?.query?.token || jsonObj.dataToken.symbol;
     // Access the 'amount'
-    const amount = jsonObj.amount;
+    const amount = this.$route?.query?.amount || jsonObj.amount;
     // console.log(dataTokenName); // This will log the 'name' value to the console
     // console.log(dataTokenSymbol); // This will log the 'symbol' value to the console
     // console.log(amount); // This will log the 'amount' value to the console
     this.token = dataTokenSymbol;
     this.attachedDeposit = amount;
-    this.to = sessionStorage.getItem('send-to');
+    this.to = this.$route?.query?.wallet || sessionStorage.getItem('send-to');
     },
   methods: {
     cancel() {
