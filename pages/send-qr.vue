@@ -21,7 +21,7 @@
     <section class="d-flex flex-column" style="height: 248px;">
       <vue-qr
         id="qr-code"
-        :text="account.address"
+        :text="textQr"
         :bg-src="require('@/assets/sources/images/transparent.png')"
         :logo-src="require('@/assets/sources/logos/logo-qr.svg')"
         :logo-corner-radius="20"
@@ -168,7 +168,7 @@
 
           <v-btn
             class="btn flex-grow-1"
-            @click="next()"
+            @click="generarQr()"
           >
             GENERAR QR
           </v-btn>
@@ -197,6 +197,7 @@ export default {
       tokenSymbol: "USDT",
       validForm: true,
       dataToken: null,
+      textQr: "",
 
     }
   },
@@ -206,6 +207,11 @@ export default {
       title,
     }
   },
+
+  mounted() {
+    this.textQr = this.account.address;
+  },
+
   methods: {
     fnCopie(copy) {
       this.copie = true;
@@ -221,6 +227,13 @@ export default {
       this.tokenImg = token.icon;
       this.tokenSymbol = token.symbol;
       this.dataToken = token.name !== "NEAR" ? token : null;
+    },
+
+    generarQr() {
+      if(this.$refs.form.validate()) {
+        this.textQr = `http://localhost:8000/send-confirm?wallet=${this.account.address}&amount=${this.amount}&token=${this.dataToken?.symbol || this.tokenSymbol}`;
+        console.log("qr: ", this.textQr)
+      }
     },
 
     test(dataUrl, id) {
