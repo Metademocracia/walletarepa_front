@@ -199,14 +199,13 @@ export default {
     };
   },
   mounted() {
-    console.log("send-json", this.$route.query)
     const data = sessionStorage.getItem("send-json");
     if(data){
       const json = JSON.parse(data);
-      this.amount = json.amount
+      this.amount = this.$route?.query?.amount ||  json.amount
       if(json.dataToken){
         this.dataToken = json.dataToken;
-        this.tokenSymbol = json.dataToken.symbol;
+        this.tokenSymbol = this.$route?.query?.token || json.dataToken.symbol;
       } else {
         this.tokenSymbol = "NEAR";
       }
