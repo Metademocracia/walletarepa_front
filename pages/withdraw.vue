@@ -180,7 +180,7 @@ const { utils } = nearAPI;
 
 export default {
   name: "DepositPage",
-  middleware: ["verify-wallet"],
+  // middleware: ["verify-wallet"],
   data() {
     return {
       filter: ["usdt", "near", "arp"],
@@ -215,6 +215,7 @@ export default {
       poolOrders: null,
       nearBalanceObject: 0.0,
       paymentMethods: new Map(), // Add paymentMethods as a data property
+      nearToken: null
     };
   },
   head() {
@@ -229,8 +230,14 @@ export default {
   		this.poolOrders.unsubscribe();
     }
 	},
-  
   mounted() {
+    this.getNearTokenBalance()
+    if(this.nearToken < 0.05){
+      this.modalNoMessage = "Saldo de NEAR insuficiente para operar " + this.nearToken + ". Recargue su wallet al menos con 0.05 NEAR"
+      this.modalNoOffers = true;
+      this.btnLoading = false;
+    }
+
     if(sessionStorage.getItem("flags")) {
       this.listFlags = JSON.parse(sessionStorage.getItem("flags"));
     } else {
@@ -311,6 +318,12 @@ export default {
       }
 
       this.balance = balanceNear.toFixed(5); */
+    },
+
+    getNearTokenBalance() {
+      const allTokenBalances = JSON.parse(sessionStorage.getItem('allTokenBalances'));
+      this.nearToken = allTokenBalances.find(item => item.contract === "NEAR").balance || 0.0;
+      console.log(this.nearToken)
     },
 
     selectToken(token) {
