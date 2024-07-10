@@ -231,7 +231,7 @@ export default {
 
     generarQr() {
       if(this.$refs.form.validate()) {
-        this.textQr = `http://localhost:8000/send-confirm?wallet=${this.account.address}&amount=${this.amount}&token=${this.dataToken?.symbol || this.tokenSymbol}`;
+        this.textQr = `${process.env.DOMINIO_WEB}send-confirm?wallet=${this.account.address}&amount=${this.amount}&token=${this.dataToken?.symbol || this.tokenSymbol}`;
         console.log("qr: ", this.textQr)
       }
     },
