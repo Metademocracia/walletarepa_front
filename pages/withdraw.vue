@@ -180,7 +180,7 @@ const { utils } = nearAPI;
 
 export default {
   name: "DepositPage",
-  // middleware: ["verify-wallet"],
+  middleware: ["verify-wallet"],
   data() {
     return {
       filter: ["usdt", "near", "arp"],

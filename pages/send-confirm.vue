@@ -205,7 +205,7 @@ export default {
       this.amount = this.$route?.query?.amount ||  json.amount
       if(json.dataToken){
         this.dataToken = json.dataToken;
-        this.tokenSymbol = this.$route?.query?.token || json.dataToken.symbol;
+        this.tokenSymbol = this.$route?.query?.token || json.dataToken;
       } else {
         this.tokenSymbol = "NEAR";
       }
@@ -232,8 +232,8 @@ export default {
     },
     async send() {
         this.loading = true;
-
         if(this.tokenSymbol === "NEAR"){
+          // console.log(this.tokenSymbol)
           let err = false;
           await this.sendNear().catch(error => {
             this.$alert("error",{ desc: error })

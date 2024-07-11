@@ -367,40 +367,39 @@ export default {
       this.timer = setTimeout(this.previewSwap, 1000)
     },
     async previewSwap() {
-      this.amountReceive = 0
-      this.btnLoading = true
+      this.amountReceive = 0;
+      this.btnLoading = true;
 
-      this.amount = this.amountSend * 0.999
-      this.comission = this.amountSend * 0.001
+      this.amount = this.amountSend * 0.999;
+      this.comission = this.amountSend * 0.001;
 
-      // console.log(this.amount, this.fromToken?.contract, this.toToken?.contract)
       if (!this.amount || this.amount <= 0 || !this.fromToken?.contract || !this.toToken?.contract || !localStorage.getItem('address')) {
-        this.btnLoading = false
-        this.countSeconds = 0
-        return
+        this.btnLoading = false;
+        this.countSeconds = 0;
+        return;
       }
 
       if (!this.$refs.form.validate()) {
-        this.btnLoading = false
-        this.countSeconds = 0
-        return
+        this.btnLoading = false;
+        this.countSeconds = 0;
+        return;
       }
 
       if ((this.fromToken.contract === "near" || this.fromToken.contract === "wrap.near") && (this.toToken.contract === "near" || this.toToken.contract === "wrap.near")) {
-        this.amountReceive = this.amount
-        this.btnLoading = false
-        this.countSeconds = 10
+        this.amountReceive = this.amount;
+        this.btnLoading = false;
+        this.countSeconds = 10;
         const countdown = () => {
           if (this.countSeconds > 0) {
             setTimeout(() => {
               this.countSeconds = this.countSeconds - 1;
-              countdown(); // Llama recursivamente a la función para contar hacia atrás
+              countdown();
             }, 1000);
           }
         };
 
         countdown();
-        return
+        return;
       }
 
       const item = {
@@ -408,42 +407,47 @@ export default {
         tokenOut: this.toToken.contract,
         address: localStorage.getItem('address'),
         amount: this.amount
-      }
+      };
 
-      await axios.post(process.env.URL_BACKEND_SWAP +'/preview-swap', item)
-      // await axios.post("http://localhost:3000/api" +'/preview-swap', item)
-        .then((response) => {
-         //  console.log(response.data)
+      const maxAttempts = 5;
+      const delay = 5000; // 5 seconds
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const response = await axios.post(process.env.URL_BACKEND_SWAP + '/preview-swap', item);
+
           if (response.data) {
-            this.priceRoute = response.data.priceRoute
-            this.dataSwap = response.data.dataSwap
-
-            this.amountReceive = this.dataSwap.toAmount / Math.pow(10, this.dataSwap.toDecimals)
-
-            // console.log("DATA",this.priceRoute)
+            this.priceRoute = response.data.priceRoute;
+            this.dataSwap = response.data.dataSwap;
+            this.amountReceive = this.dataSwap.toAmount / Math.pow(10, this.dataSwap.toDecimals);
           }
 
-          this.btnLoading = false
-          this.countSeconds = 10
+          this.btnLoading = false;
+          this.countSeconds = 10;
 
           const countdown = () => {
             if (this.countSeconds > 0) {
               setTimeout(() => {
                 this.countSeconds = this.countSeconds - 1;
-                countdown(); // Llama recursivamente a la función para contar hacia atrás
+                countdown();
               }, 1000);
             }
           };
 
           countdown();
-                    
-        }).catch(() => {
-          this.btnLoading = false
-          console.log("ENTRPPP")
-          this.amountReceive = null
-          this.countSeconds = 0
-          throw new Error ("Failed to get data price route")
-        })
+          return; // Exit the loop if the request is successful
+        } catch (e) {
+          if (attempt >= maxAttempts) {
+            this.btnLoading = false;
+            this.amountReceive = null;
+            this.countSeconds = 0;
+            console.error("Max attempts reached. Error:", e);
+          } else {
+            // console.error(`Attempt ${attempt} failed. Retrying in ${delay / 1000} seconds...`, e);
+            await new Promise(resolve => setTimeout(resolve, delay)); // Wait for 5 seconds before retrying
+          }
+        }
+      }
     },
     async sendSwap() {
       try {

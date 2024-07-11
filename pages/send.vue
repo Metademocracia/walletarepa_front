@@ -214,7 +214,7 @@ export default {
       this.balance = Number(token.balance);
       this.tokenImg = token.icon;
       this.tokenSymbol = token.symbol;
-      this.dataToken = token.name !== "NEAR" ? token : null;
+      this.dataToken = token.name !== "NEAR" ? token : "NEAR";
     },
 
     selectFiat(fiat) {

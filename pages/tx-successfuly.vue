@@ -76,7 +76,7 @@ export default {
       // Parse the JSON string back into an object
       const jsonObj = JSON.parse(jsonString);
       // Access the 'symbol' property within 'dataToken'
-      const dataTokenSymbol = jsonObj.dataToken.symbol;
+      const dataTokenSymbol = jsonObj.dataToken.symbol === undefined ? jsonObj.dataToken : jsonObj.dataToken.symbol;
       // Access the 'amount'
       const amount = jsonObj.amount;
       // Set data properties

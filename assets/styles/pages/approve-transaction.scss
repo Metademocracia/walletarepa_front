@@ -93,4 +93,29 @@
     letter-spacing: normal;
     font-weight: 500 !important;
   }
+
 }
+
+.v-footer {
+  .text {
+    --fs: 9px;
+    --ff: var(--font2) !important;
+    --fw: 400 !important;
+    --ls: 0.27px !important;
+    color: var(--text2) !important;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  a {
+    color: var(--primary);
+    font-family: var(--font2);
+    font-size: 9px;
+    font-weight: 700 !important;
+    letter-spacing: 0.27px !important;
+    text-transform: uppercase;
+  }
+}
+
+
+
