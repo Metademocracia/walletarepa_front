@@ -118,8 +118,8 @@
           <div class="mr-2 payment-info">
             <div>
               <span class="payment-rate">{{ formatNumber((payment.rate * price)) }} VES/USDT</span>
-              <div class="payment-rate payment-limits">min {{ formatNumber(payment.min) }}</div>
-              <div class="payment-rate payment-limits">max {{ formatNumber(payment.max) }}</div>
+              <div class="payment-rate payment-limits">Min {{ formatNumber(payment.min) }}</div>
+              <div class="payment-rate payment-limits">Max {{ formatNumber(payment.max) }}</div>
             </div>
             <img v-if="selectedPayment === payment" src="@/assets/sources/icons/checked.svg" alt="checked icon" />
             <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon" />
