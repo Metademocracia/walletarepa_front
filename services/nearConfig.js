@@ -12,7 +12,8 @@ export function configNear(keyStores) {
       return {
         networkId: "mainnet",
         keyStore: keyStores,
-        nodeUrl: "https://rpc.mainnet.near.org",
+        // nodeUrl: "https://rpc.mainnet.near.org",
+        nodeUrl: "https://rpc.mainnet.pagoda.co",
         walletUrl: wallet,
         helperUrl: "https://helper.mainnet.near.org",
         explorerUrl: "https://explorer.mainnet.near.org",
