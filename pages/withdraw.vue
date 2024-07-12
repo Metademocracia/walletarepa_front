@@ -112,19 +112,21 @@
         <span style="--fs: 12px; --ls: normal">{{ balance }} {{ tokenSymbol }}</span>
       </v-card>
 
-      <v-list class="payment-list">
-        <v-list-item v-for="(payment, i) in payments" :key="i" class="payment-item" @click="selectPayment(payment)">
-          <div class="payment-details">
-            <div class="ml-2 payment-name">{{ payment.name }}</div>
-            <div class="mr-2 payment-info">
-              <span class="payment-rate">{{ (payment.rate * price).toFixed(2) }} VES/USDT</span>
-              <img v-if="selectedPayment === payment" src="@/assets/sources/icons/checked.svg" alt="checked icon" />
-              <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon" />
+      <v-list-item v-for="(payment, i) in payments" :key="i" class="payment-item" @click="selectPayment(payment)">
+        <div class="payment-details">
+          <div class="ml-2 payment-name">{{ payment.name }}</div>
+          <div class="mr-2 payment-info">
+            <div>
+              <span class="payment-rate">{{ formatNumber((payment.rate * price)) }} VES/USDT</span>
+              <div class="payment-rate payment-limits">min {{ formatNumber(payment.min) }}</div>
+              <div class="payment-rate payment-limits">max {{ formatNumber(payment.max) }}</div>
             </div>
+            <img v-if="selectedPayment === payment" src="@/assets/sources/icons/checked.svg" alt="checked icon" />
+            <img v-else src="@/assets/sources/icons/circle.svg" alt="circle icon" />
           </div>
-          <div v-if="i < payments.length - 1" class="divider"></div>
-        </v-list-item>
-      </v-list>
+        </div>
+        <div v-if="i < payments.length - 1" class="divider"></div>
+      </v-list-item>
       <h5 v-if="modalNoOffers" style="color: red !important;">{{ modalNoMessage }}</h5>
       <v-card 
       v-if="moreBanks" class="btn-outlined space"
@@ -180,7 +182,7 @@ const { utils } = nearAPI;
 
 export default {
   name: "DepositPage",
-  middleware: ["verify-wallet"],
+  // middleware: ["verify-wallet"],
   data() {
     return {
       filter: ["usdt", "near", "arp"],
@@ -272,10 +274,24 @@ export default {
     // },
     selectPaymentDialog(payment) {
       this.selectedPayment = payment;
-      this.payments[2] = {
-        name: payment,
-        rate: this.paymentMethods.get(payment) || null, // Reference the paymentMethods map
-      };
+      const paymentDetails = this.paymentMethods.get(payment);
+      
+      if (paymentDetails) {
+        this.payments[2] = {
+          name: payment,
+          rate: paymentDetails.rate || null, // Reference the paymentMethods map
+          min: paymentDetails.min_limit,
+          max: paymentDetails.max_limit,
+        };
+      } else {
+        this.payments[2] = {
+          name: payment,
+          rate: null,
+          min: null,
+          max: null,
+        };
+      }
+      
       this.otherPayments = this.originalPayments.filter(item => !this.payments.some(payment => payment.name === item));
       this.disabledContinue();
       this.modelPayments = false;
@@ -323,7 +339,7 @@ export default {
     getNearTokenBalance() {
       const allTokenBalances = JSON.parse(sessionStorage.getItem('allTokenBalances'));
       this.nearToken = allTokenBalances.find(item => item.contract === "NEAR").balance || 0.0;
-      console.log(this.nearToken)
+      // console.log(this.nearToken)
     },
 
     selectToken(token) {
@@ -368,13 +384,20 @@ export default {
           sessionStorage.setItem("flags", JSON.stringify(this.listFlags));
         });
     },
+    formatNumber(number) {
+        return new Intl.NumberFormat('es-VE', { 
+          style: 'decimal', 
+          minimumFractionDigits: 2, 
+          maximumFractionDigits: 2 
+        }).format(number);
+      },
     selects() {
       const selects = gql`
         query MyQuery($token: String, $address: String) {
           offerssells(
             where: { asset_contains: $token, owner_id_not: $address, is_pause: false, remaining_amount_gte: "1" }
             orderBy: exchange_rate
-            orderDirection: desc
+            orderDirection: asc
           ) {
             amount
             asset
@@ -412,11 +435,18 @@ export default {
           
           // Process the offerssells data
           data.offerssells.forEach(offer => {
-            offer.payment_method.forEach(method => {
-              // Add method to the map with the corresponding exchange rate
-              this.paymentMethods.set(method.payment_method, offer.exchange_rate);
+              offer.payment_method.forEach(method => {
+                // Add method to the map with the corresponding exchange rate and offer details
+                this.paymentMethods.set(method.payment_method, {
+                  rate: offer.exchange_rate,
+                  min_limit: offer.min_limit / 1e6,
+                  max_limit: offer.remaining_amount / 1e6, // Use remaining_amount as max limit
+                  id: offer.id,
+                  payment_method_id: method.payment_method_id,
+                });
+              });
             });
-          });
+
 
           // Populate listOffers array
           Object.entries(data.offerssells).forEach(
@@ -425,31 +455,43 @@ export default {
             }
           );
 
-          // Convert Map to Array and handle moreBanks logic
-          let paymentMethodsArray = Array.from(this.paymentMethods.keys());
+          // Convert Map to Array
+          let paymentMethodsArray = Array.from(this.paymentMethods.entries());
+
+          // Extract "Pago Móvil" and remove it from the array
+          const pagoMovilEntry = paymentMethodsArray.find(([method]) => method === "Pago Móvil");
+          paymentMethodsArray = paymentMethodsArray.filter(([method]) => method !== "Pago Móvil");
+
+          // Sort the remaining payment methods by exchange rate in descending order
+          paymentMethodsArray.sort((a, b) => b[1] - a[1]);
+
+          // Combine "Pago Móvil" at the beginning, if it exists
+          if (pagoMovilEntry) {
+            paymentMethodsArray.unshift(pagoMovilEntry);
+          }
+
+          // Handle moreBanks logic
           paymentMethodsArray.length > 3 ? this.moreBanks = true : this.moreBanks = false;
 
-          // Move "Pago Móvil" to the beginning if it exists
-          if (paymentMethodsArray.includes("Pago Móvil")) {
-            paymentMethodsArray = paymentMethodsArray.filter(method => method !== "Pago Móvil");
-            paymentMethodsArray.unshift("Pago Móvil");
-          }
-          
-
           // Slice the first 3 methods and update the payments array
-          this.payments = paymentMethodsArray.slice(0, 3).map(method => {
-            return {
-              name: method,
-              rate: this.paymentMethods.get(method) || null, // Get the exchange rate from the map
-            };
-          });
+          this.payments = paymentMethodsArray.slice(0, 3).map(([method, details]) => {
+              return {
+                name: method,
+                rate: details.rate || null, // Get the exchange rate from the map
+                min: details.min_limit,
+                max: details.max_limit,
+                id: details.id,
+                payment_method_id: details.payment_method_id,
+              };
+            });
 
           // Handle other payments
-          this.otherPayments = paymentMethodsArray.filter(item => !this.payments.some(payment => payment.name === item));
-          this.originalPayments = paymentMethodsArray;
+          this.otherPayments = paymentMethodsArray.slice(3).map(([method]) => method);
+          this.originalPayments = paymentMethodsArray.map(([method]) => method);
 
         });
     },
+
     async initContract() {
       this.tokenSymbol === "NEAR" ? await this.initContractNEAR() : await this.initContractUSDT();
     },
@@ -457,31 +499,15 @@ export default {
       this.btnLoading = true;
       const CONTRACT_NAME = process.env.VUE_APP_CONTRACT_NAME;
       const CONTRACT_NAME_USDT = process.env.VUE_APP_CONTRACT_NAME_USDT;
-      /**
-       * Converts the withdrawal amount to the appropriate format based on the token symbol.
-       * If the token symbol is "NEAR", the amount is multiplied by 1e24.
-       * If the token symbol is not "NEAR", the amount is multiplied by 1e6.
-       */
       const orderAmount = this.tokenSymbol === "NEAR" ? this.NEARyoctoNEAR(this.amount) : (this.amount * 1e6).toString();
-      // Filtering the list by payment method and the highest exchange rate
-      // and the remaining amount is greater than the order amount
-      // and the prder amount is greater than the min limit
-      this.filteredOffers = this.listOffers
-        .filter(offer => offer.payment_method.some(method => method.payment_method === this.selectedPayment))
-        .filter(offer => parseFloat(offer.remaining_amount) >= parseFloat(orderAmount))
-        .filter(offer => parseFloat(offer.min_limit) <= parseFloat(orderAmount))
-        .sort((a, b) => b.exchange_rate - a.exchange_rate)
-        .find(() => true);
-      const lowestMinAmount = Math.min(...this.listOffers.map(offer => offer.min_limit));
-      if (!this.filteredOffers) {
-        const lowestMinAmountFormated = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(lowestMinAmount) : lowestMinAmount / 1e6;
-        this.modalNoMessage = "No hay ofertas disponibles, busque un monto superior a " + lowestMinAmountFormated
+
+      if (this.amount < this.selectedPayment.min || this.amount > this.selectedPayment.max) {
+        this.modalNoMessage = "No hay ofertas disponibles, busque un monto superior a " + this.selectedPayment.min + " y menor a " + this.selectedPayment.max;
         this.modalNoOffers = true;
         this.btnLoading = false;
         return;
       }
-      // Filter paymet method as per selected payment
-      const filteredPaymentMethod = this.filteredOffers.payment_method.find(method => method.payment_method === this.selectedPayment);
+      // console.log(this.selectedPayment.id, this.selectedPayment.payment_method_id, this.selectedPayment.rate)
 
       try {
         const account = await walletUtils.nearConnection();
@@ -577,11 +603,11 @@ export default {
           gas: "120000000000000",
           args: {
             offer_type: 1,
-            offer_id: parseInt(this.filteredOffers.id),
+            offer_id: parseInt(this.selectedPayment.id),
             amount: orderAmount,
-            payment_method: parseInt(filteredPaymentMethod.payment_method_id),
+            payment_method: parseInt(this.selectedPayment.payment_method_id),
             datetime: now,
-            rate: parseFloat(this.filteredOffers.exchange_rate),
+            rate: parseFloat(this.selectedPayment.rate),
             assosiated: "arepaWallet"
           },
           attachedDeposit: "1"
