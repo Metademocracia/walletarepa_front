@@ -13,7 +13,7 @@ export default {
     URL_APIP_PRICE: process.env.URL_APIP_PRICE || "http://localhost:3000",
     URL_API_NFT: process.env.URL_API_NFT || "http://localhost:3000",
     URL_API_INDEXER: process.env.URL_API_INDEXER || "http://localhost:3000",
-    CLIEN_ID_GOOGLE: process.env.CLIEN_ID_GOOGLE || "http://localhost:3000",
+    // CLIEN_ID_GOOGLE: process.env.CLIEN_ID_GOOGLE || "http://localhost:3000",
     URL_EXPLORER: process.env.URL_EXPLORER || "http://localhost:3000",
     URL_EXPLORER_TXS: process.env.URL_EXPLORER_TXS || "http://localhost:3000",
     ROUTER_EXPLORER_NEAR: process.env.ROUTER_EXPLORER_NEAR || "http://localhost:3000",
