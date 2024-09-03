@@ -17,7 +17,7 @@ export default async function NearApi() {
     // connect to NEAR
     near = await connect(config),
     // create wallet connection
-    wallet = new WalletConnection(near);
+    wallet = new WalletConnection(near, "arepa-wallet");
 
   Vue.prototype.$wallet = wallet
   Vue.prototype.$near = near

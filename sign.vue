@@ -339,7 +339,7 @@ export default {
         /* const near = await nearAPI.connect(
 					CONFIG(new keyStores.BrowserLocalStorageKeyStore(), localStorage.getItem("wallet"))
 				); */
-				const wallet = new  nearAPI.WalletConnection(near);
+				const wallet = new  nearAPI.WalletConnection(near, "arepa-wallet");
 				const nearTransactions = await Promise.all(
 					txs.map(async tx => {
 						return await this.createTransactionFn(
@@ -393,7 +393,7 @@ export default {
       // const account = (await near.account(address)).getAccessKeys;
 
       // const near = await nearAPI.connect(CONFIG(new keyStores.BrowserLocalStorageKeyStore()));
-      const wallet = new nearAPI.WalletConnection(near);
+      const wallet = new nearAPI.WalletConnection(near, "arepa-wallet");
 
       if (!wallet || !near) {
         throw new Error(`No active wallet or NEAR connection.`)
@@ -551,7 +551,7 @@ async initContract() {
 				const near = await connect(
 					CONFIG(new keyStores.BrowserLocalStorageKeyStore(), localStorage.getItem("wallet"))
 				);
-				const wallet = new WalletConnection(near);
+				const wallet = new WalletConnection(near, "arepa-wallet");
 				const contract = new Contract(wallet.account(), CONTRACT_NAME, {
 					viewMethods: ["get_token_activo"],
 					changeMethods: [""],
@@ -737,7 +737,7 @@ async initContract() {
 				const near = await connect(
 					CONFIG(new keyStores.BrowserLocalStorageKeyStore(), localStorage.getItem("wallet"))
 				);
-				const wallet = new WalletConnection(near);
+				const wallet = new WalletConnection(near, "arepa-wallet");
 				const nearTransactions = await Promise.all(
 					transactions.map(async tx => {
 						return await this.createTransactionFn(
