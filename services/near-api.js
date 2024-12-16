@@ -8,8 +8,8 @@ export default async function NearApi() {
     config = {
       networkId: process.env.Network,
       keyStore, 
-      // nodeUrl: process.env.Network === "testnet" ? "https://rpc.testnet.near.org" : "https://rpc.mainnet.near.org",
-      nodeUrl: process.env.Network === "testnet" ? "https://rpc.testnet.near.org" : "https://rpc.mainnet.pagoda.co",
+      nodeUrl: process.env.Network === "testnet" ? "https://rpc.testnet.near.org" : "https://rpc.mainnet.near.org",
+      // nodeUrl: process.env.Network === "testnet" ? "https://rpc.testnet.near.org" : "https://rpc.mainnet.pagoda.co",
       walletUrl: localStorage.getItem("walletUrl"),
       helperUrl: process.env.Network === "testnet" ? "https://helper.testnet.near.org" : "https://helper.mainnet.near.org",
       explorerUrl: process.env.Network === "testnet" ? "https://explorer.testnet.near.org" : "https://explorer.mainnet.near.org",

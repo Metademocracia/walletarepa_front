@@ -443,7 +443,7 @@ export default {
       }
     },
     openExplorer() {
-      window.open("https://dao.metademocracia.social/Proposals?dao=arepa-digital.organizacion.near", 'self')
+      window.open("https://dao.arepa.digital/Proposals?dao=arepa-digital.organizacion.near", 'self')
     },
 
     fnCopie(copy) {
