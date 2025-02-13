@@ -92,7 +92,7 @@ export default {
           img: require("@/assets/sources/logos/metademocracia.svg"),
           name: "METADEMOCRACIA",
           color: "#ffff",
-          url: "https://dao.metademocracia.social/"
+          url: "https://dao.arepa.digital/"
         },
         {
           img: require("@/assets/sources/logos/ref-finance.svg"),

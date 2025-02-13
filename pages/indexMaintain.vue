@@ -95,9 +95,9 @@
 
         <v-btn
           class="btn"
-          to="/explore"
+          @click="irBudares()"
         >
-        explorar apps
+        explorar budares
         </v-btn>
 
         <article class="btn-outlined">
@@ -445,6 +445,11 @@ export default {
     openExplorer() {
       window.open("https://dao.arepa.digital/Proposals?dao=arepa-digital.organizacion.near", 'self')
     },
+
+    irBudares() {
+      window.open("https://dao.arepa.digital/daos", 'self')
+    },
+
 
     fnCopie(copy) {
       this.copie = true;
