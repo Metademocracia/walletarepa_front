@@ -97,7 +97,7 @@ export default {
         }) */
 
         await WalletUtils.getNearId(publicKey).then((item) => {
-          const red = process.env.Network === "testnet" ? "testnet" : "near";
+          const red = process.env.NETWORK === "testnet" ? "testnet" : "near";
           const accountId = item.find((item) => item.includes(red))
           if(accountId) {
             implicitAccountId = accountId

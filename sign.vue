@@ -281,7 +281,7 @@ export default {
         
         const keyStore = new nearAPI.keyStores.InMemoryKeyStore();
         const keyPairNew = nearAPI.KeyPair.fromString(privateKey);
-        await keyStore.setKey(process.env.Network, address, keyPairNew);
+        await keyStore.setKey(process.env.NETWORK, address, keyPairNew);
         const near = await nearAPI.connect(configNear(keyStore));
         // const account = await near.account(address);
 
@@ -388,7 +388,7 @@ export default {
       const keyStore = new nearAPI.keyStores.InMemoryKeyStore();
       const keyPairNew = nearAPI.KeyPair.fromString(privateKey);
       const localKey = keyPairNew.getPublicKey();
-      await keyStore.setKey(process.env.Network, address, keyPairNew);
+      await keyStore.setKey(process.env.NETWORK, address, keyPairNew);
       const near = await nearAPI.connect(configNear(keyStore));
       // const account = (await near.account(address)).getAccessKeys;
 
@@ -465,7 +465,7 @@ export default {
         const nearAPI = require('near-api-js');
         const keyStore = new nearAPI.keyStores.InMemoryKeyStore();
         const keyPairNew = nearAPI.KeyPair.fromString(privateKey);
-        await keyStore.setKey(process.env.Network, address, keyPairNew);
+        await keyStore.setKey(process.env.NETWORK, address, keyPairNew);
         const near = await nearAPI.connect(configNear(keyStore));
         const account = await near.account(address);
         

@@ -81,7 +81,7 @@ export default {
       valid:false,
       address: "",
       accountNear: null,
-      dominioNear: process.env.Network === "testnet" ? "." + process.env.Network : ".near",
+      dominioNear: process.env.NETWORK === "testnet" ? "." + process.env.NETWORK : ".near",
       required: [(v) => !!v || "Campo requerido"],
       copie: false,
       errorAccount: null,

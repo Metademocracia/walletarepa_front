@@ -1,0 +1,54 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main  # Change this to your default branch if it's not 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Create .env file
+        run: |
+          echo "Network=mainnet" > .env
+          echo "NEAR_ENV=mainnet" >> .env
+          echo "BASE_URL=/" >> .env
+          echo "DOMINIO_WEB=${{ secrets.DOMINIO_WEB }}" >> .env
+          echo "VUE_APP_PASSPHRASE=${{ secrets.VUE_APP_PASSPHRASE }}" >> .env
+          echo "URL_BACKEND=${{ secrets.URL_BACKEND }}" >> .env
+          echo "URL_BACKEND_SWAP=${{ secrets.URL_BACKEND_SWAP }}" >> .env
+          echo "URL_APIP_PRICE=${{ secrets.URL_APIP_PRICE }}" >> .env
+          echo "URL_API_NFT=${{ secrets.URL_API_NFT }}" >> .env
+          echo "URL_EXPLORER=${{ secrets.URL_EXPLORER }}" >> .env
+          echo "URL_EXPLORER_TXS=${{ secrets.URL_EXPLORER_TXS }}" >> .env
+          echo "ROUTER_EXPLORER_NEAR=${{ secrets.ROUTER_EXPLORER_NEAR }}" >> .env
+          echo "ROUTER_RPC=${{ secrets.ROUTER_RPC }}" >> .env
+          echo "URL_API_INDEXER=${{ secrets.URL_API_INDEXER }}" >> .env
+          echo "GRAPH_URL=${{ secrets.GRAPH_URL }}" >> .env
+          echo "VUE_APP_CONTRACT_NAME=${{ secrets.VUE_APP_CONTRACT_NAME }}" >> .env
+          echo "VUE_APP_CONTRACT_NAME_USDT=${{ secrets.VUE_APP_CONTRACT_NAME_USDT }}" >> .env
+          echo "VUE_APP_CONTRACT_NAME_DAO_METADEMOCRACIA=${{ secrets.VUE_APP_CONTRACT_NAME_DAO_METADEMOCRACIA }}" >> .env
+          echo "VUE_APP_API_MAIL_URL=${{ secrets.VUE_APP_API_MAIL_URL }}" >> .env
+          echo "VUE_APP_CHAT_FIREBASE=${{ secrets.VUE_APP_CHAT_FIREBASE }}" >> .env
+          echo "VUE_API_KEY_PIKESPEAK=${{ secrets.VUE_API_KEY_PIKESPEAK }}" >> .env
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/walletarepa-front:latest

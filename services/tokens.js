@@ -15,7 +15,7 @@ import localStorageUser from '~/services/local-storage-user';
  */
 /* function getListContractToken(address) {
   // https://api.kitwallet.app/account//likelyTokensFromBlock
-  if(process.env.Network === "mainnet" ){
+  if(process.env.NETWORK === "mainnet" ){
     return axios.get(`https://api.fastnear.com/v1/account/${address}/ft`)
       .then(response => {
         const tokens = response.data.tokens
@@ -23,7 +23,7 @@ import localStorageUser from '~/services/local-storage-user';
       }).catch(error => {return error}
     );
   } else {
-    const network = !process.env.Network ? "-testnet" : process.env.Network === "mainnet" ? "" : "-testnet";
+    const network = !process.env.NETWORK ? "-testnet" : process.env.NETWORK === "mainnet" ? "" : "-testnet";
     return axios.get(`https://api${network}.nearblocks.io/v1/kitwallet/account/${address}/likelyTokensFromBlock?fromBlockTimestamp=0`)
       .then(response => {
         if(!response.data?.list) throw new Error("no existe likelyTokensFromBlock");

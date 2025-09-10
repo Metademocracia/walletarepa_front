@@ -5,7 +5,7 @@ const development = process.env.NODE_ENV !== "production";
 
 export default {
   env: {
-    Network: process.env.Network || "testnet",
+    Network: process.env.NETWORK || "testnet",
     baseUrl: process.env.BASE_URL || "http://localhost:3000",
     WEB_DOMAIN: process.env.WEB_DOMAIN || "http://localhost:3000",
     URL_BACKEND: process.env.URL_BACKEND || "http://localhost:3000",

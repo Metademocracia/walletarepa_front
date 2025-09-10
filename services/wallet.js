@@ -14,7 +14,7 @@ const formatTokenAmount = (value, decimals = 18, precision = 2) => value && Big(
 const parseTokenAmount = (value, decimals = 18) => value && Big(value).times(Big(10).pow(decimals)).toFixed();
 
 function shortenAddress(address) {
-  const addresFinal = address === undefined ? "" : address.length > 25 ? address.substring(0,9)+"..."+address.substring((address.length - process.env.Network.length - 7), address.length) : address;
+  const addresFinal = address === undefined ? "" : address.length > 25 ? address.substring(0,9)+"..."+address.substring((address.length - process.env.NETWORK.length - 7), address.length) : address;
   return addresFinal
 }
 
@@ -103,7 +103,7 @@ async function nearConnection(accountId) {
   // creates a public / private key pair using the provided private key
   const keyPair = KeyPair.fromString(PRIVATE_KEY);
   // adds the keyPair you created to keyStore
-  await myKeyStore.setKey(process.env.Network, address, keyPair);
+  await myKeyStore.setKey(process.env.NETWORK, address, keyPair);
   const nearConnection = await connect(configNear(myKeyStore));
   const account = await nearConnection.account(address);
   return account
@@ -115,14 +115,14 @@ async function nearConnection(accountId) {
   let nearId;
   let error = ""
   
-  if(process.env.Network === "testnet") {
+  if(process.env.NETWORK === "testnet") {
     const params = {
       "query":"\n  query mintbase_js_data__accountsByPublicKey(\n    $publicKey: String!\n  ) {\n    accounts: access_keys(\n  where: {\n  public_key: { _eq: $publicKey }\n removed_at: { _is_null: true }\n      }\n    ) {\n      id: account_id\n    }\n  }\n",
       "variables":{"publicKey": _publicKey},
       "operationName":"mintbase_js_data__accountsByPublicKey"
     }
 
-    await axios.post(`https://interop-${process.env.Network}.hasura.app/v1/graphql`,  params)
+    await axios.post(`https://interop-${process.env.NETWORK}.hasura.app/v1/graphql`,  params)
       .then((response) => {
         if(response.data?.data?.accounts[0]) {
           nearId = response.data?.data?.accounts[0].id
@@ -159,7 +159,7 @@ async function getNearId(publicKey) {
   
     const masterController = new AbortController();
 
-    const network = process.env.Network === "testnet" ? 'testnet' : 'mainnet';
+    const network = process.env.NETWORK === "testnet" ? 'testnet' : 'mainnet';
 
     const INDEXERSERVICEURL = network === "testnet" ? 'https://api-testnet.nearblocks.io/v1/kitwallet' 
     : 'https://api3.nearblocks.io/v1/kitwallet';

@@ -1,10 +1,10 @@
 // Cross-domain proxy prefix
 // const API_PROXY_PREFIX='/api'
 // const BASE_URL = process.env.NODE_ENV === 'production' ? process.env.VUE_APP_API_BASE_URL : API_PROXY_PREFIX
-const wallet = process.env.Network === 'mainnet' ? 'https://mi.arepa.digital' : 'http://localhost:8000'
+const wallet = process.env.NETWORK === 'mainnet' ? 'https://mi.arepa.digital' : 'http://localhost:8000'
 
 export function configNear(keyStores) {
-  const network = process.env.Network
+  const network = process.env.NETWORK
   const enviroment = false
   const NETWORK = (enviroment) ? network : network;
   switch (NETWORK) {

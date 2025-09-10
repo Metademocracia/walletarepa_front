@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  wallet-arepa-front:
+    image: metademocracia/wallet-arepa-frontend:latest
+    container_name: wallet-arepa-front-latest
+    restart: always
+    ports:
+      - "80:80" # Maps port 80 on the host to port 80 in the container
+    networks:
+      - app-network
+
+  npm:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager
+    restart: always
+    ports:
+      - "80:80"
+      - "81:81" # NPM admin panel
+      - "443:443"
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    networks:
+      - app-network
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower-latest
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=30
+
+networks:
+  app-network:
+    external: true
+    name: nginx-shared

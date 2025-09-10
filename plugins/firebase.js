@@ -6,7 +6,7 @@ import "firebase/compat/storage";
 // Chat testnet
 // Your web app's Firebase configuration
 const firebaseConfig =
-  process.env.Network === "mainnet"
+  process.env.NETWORK === "mainnet"
     ? {
         apiKey: process.env.VUE_APP_CHAT_FIREBASE_API_KEY,
         authDomain: "nearp2pmainnet.firebaseapp.com",

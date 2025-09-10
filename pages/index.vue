@@ -241,7 +241,7 @@ export default {
       alertType: "success",
       hash: null,
       hashUrl: null,
-      network: process.env.Network,
+      network: process.env.NETWORK,
       copie: false,
       logoWallet,
       linkExplorer: "",

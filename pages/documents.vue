@@ -75,7 +75,7 @@ export default {
   methods: {
     async getContractIds(wallet) {
       console.log("wallet: ", wallet)
-      if (process.env.Network === "mainnet") {
+      if (process.env.NETWORK === "mainnet") {
         const serviceUrl = `https://api.fastnear.com/v0/account/${wallet}/nft`;
 
         const result = await axios.get(serviceUrl);
