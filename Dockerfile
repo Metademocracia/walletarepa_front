@@ -9,7 +9,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies using npm ci for faster, more reliable builds
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # Copy the rest of the application source code
 COPY . .
