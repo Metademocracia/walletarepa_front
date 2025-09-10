@@ -54,7 +54,7 @@ async function getBalance(_address) {
   const reservedTransaction = amount !== 0 ? Math.min(balanceWallet - reservedStorage, 0.05) : 0;
   const balanceAvalible = balanceWallet - reservedStorage - reservedTransaction;
 
-  const response = await axios.post(process.env.URL_APIP_PRICE, { fiat: "USD", crypto: "NEAR" });
+  const response = await axios.post(process.env.URL_APIP_PRICE, { fiat: "USD", crypto: "wNEAR" });
   const _price = Number(response.data[0].value);
 
   return { 
