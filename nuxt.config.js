@@ -137,6 +137,9 @@ export default {
       default: {
         httpEndpoint: process.env.GRAPH_URL,
         fetchPolicy: 'network-only', // Add this line
+        headers: {
+          Authorization: 'Bearer 5bbe3f24e298a1443a7876d8269a6504',
+        },
       },
     },
   },
