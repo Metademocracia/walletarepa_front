@@ -395,7 +395,7 @@ export default {
       const selects = gql`
         query MyQuery($token: String, $address: String) {
           offerssells(
-            where: { asset_contains: $token, owner_id_not: $address, is_pause: false, remaining_amount_gte: "1" }
+            where: { asset_contains: $token, owner_id_not: $address, is_pause: false, remaining_amount_gte: "1", id_not_in: [10, 41] }
             orderBy: exchange_rate
             orderDirection: asc
           ) {
