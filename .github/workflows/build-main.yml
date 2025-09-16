@@ -24,7 +24,7 @@ jobs:
 
       - name: Create .env file
         run: |
-          echo "Network=mainnet" > .env
+          echo "NETWORK=mainnet" > .env
           echo "NEAR_ENV=mainnet" >> .env
           echo "BASE_URL=/" >> .env
           echo "DOMINIO_WEB=${{ secrets.DOMINIO_WEB }}" >> .env
