@@ -511,8 +511,22 @@ export default {
 
       try {
         const account = await walletUtils.nearConnection();
+        
+        // 1. Get the user's address again to be safe
+        const userAddress = wallet.getCurrentAccount().address;
+        if (!userAddress) {
+          throw new Error("User address not found. Please log in again.");
+        }
 
-        const result = await account.viewFunction(CONTRACT_NAME_USDT, "storage_balance_of", { account_id: `${this.address.split(".")[0]}.${CONTRACT_NAME}` });
+        // 2. Construct the subaccount ID
+        const subaccountId = `${userAddress.split(".")[0]}.${CONTRACT_NAME}`;
+
+        // 3. Make the viewFunction call with the guaranteed valid ID
+        const result = await account.viewFunction(
+          CONTRACT_NAME_USDT, 
+          "storage_balance_of", 
+          { account_id: subaccountId }
+        );
         
         if ( this.nearBalanceObject < 0.0126 && result == null ) {
           this.modalNoMessage = "Se requiere un balance mínimo de 0.0127 NEAR para iniciar por primera vez la transacción";
