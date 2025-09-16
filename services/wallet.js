@@ -478,7 +478,7 @@ async function getRecentActivity(filter) {
 
       await deley()
     
-      let parseExecution =  await getPikespeak(`/tx/parsed-execution-by-contract?contract=yonaikergarcia.near`);
+      let parseExecution =  await getPikespeak(`/tx/parsed-execution-by-contract?contract=${wallet}`);
       if(!parseExecution) parseExecution = [];
 
       moment.locale('es');

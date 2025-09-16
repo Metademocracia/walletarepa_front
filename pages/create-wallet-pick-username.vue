@@ -141,7 +141,7 @@ export default {
       }
       
       const accountInput = value + this.dominioNear;
-
+      console.log(accountInput)
       if((/^[a-z0-9_-]+$/.test(value))) {
 
         const keyStore = new keyStores.InMemoryKeyStore()
