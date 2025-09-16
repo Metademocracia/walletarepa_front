@@ -581,6 +581,7 @@ export default {
           // **Critical Check**: Ensure the subaccount contract ID is valid before proceeding.
           if (!this.subcontract || !this.subcontract.contract) {
             console.error("Subcontract is invalid before calling storage_deposit.");
+            this.btnLoading = false;
             return;
           }
 
@@ -615,7 +616,7 @@ export default {
           args: cleanedFtTransferArgs,
           attachedDeposit: "1"
         });
-        console.log("ft_transfer");
+        console.log("ft_transfer", ftTransfer);
         // // if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
         // //   // console.log("error al transferir token");
         // //   // this.btnLoading = false;
@@ -641,7 +642,7 @@ export default {
           args: cleanedAcceptOfferArgs,
           attachedDeposit: "1"
         });
-        console.log( "accept_offer");
+        console.log( "accept_offer", acceptOffer);
         // if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
         //   // console.log("error al aceptar la oferta", acceptOffer);
         //   // this.btnLoading = false;
@@ -675,7 +676,7 @@ export default {
       // Filtering the list by payment method and the highest exchange rate
       // and the remaining amount is greater than the order amount
       this.filteredOffers = this.listOffers
-        .filter(offer => offer.payment_method.some(method => method.payment_method === this.selectedPayment))
+        .filter(offer => offer.payment_method.some(method => method.payment_method === this.selectedPayment.name))
         .filter(offer => parseFloat(offer.remaining_amount) >= parseFloat(orderAmount))
         .filter(offer => parseFloat(offer.min_limit) <= parseFloat(orderAmount))
         .sort((a, b) => b.exchange_rate - a.exchange_rate)
@@ -689,7 +690,7 @@ export default {
         return;
       }
       // Filter paymet method as per selected payment
-      const filteredPaymentMethod = this.filteredOffers.payment_method.find(method => method.payment_method === this.selectedPayment);
+      const filteredPaymentMethod = this.filteredOffers.payment_method.find(method => method.payment_method === this.selectedPayment.name);
 
       const account = await walletUtils.nearConnection();
 
@@ -710,9 +711,9 @@ export default {
           .format("YYYY-MM-DD HH:mm:ss")
           .toString();
         if (this.subcontract === null) {
-          this.subcontract = { contract: `${this.address.split(".")[0]}.${CONTRACT_NAME}` };;
+          this.subcontract = { contract: `${this.address.split(".")[0]}.${CONTRACT_NAME}` };
           // DEBUG: Logging arguments for create_subcontract_user (NEAR)
-          const createSubcontractArgsNEAR = {};
+          const createSubcontractArgsNEAR = { subaccount_id: this.subcontract.contract, asset: "NEAR" };
           console.log("Calling create_subcontract_user (NEAR) with:", createSubcontractArgsNEAR);
           const cleanedCreateSubcontractArgsNEAR = JSON.parse(JSON.stringify(createSubcontractArgsNEAR));
           const createSubCobtractUser = await account.functionCall({
@@ -722,6 +723,7 @@ export default {
             args: cleanedCreateSubcontractArgsNEAR,
             attachedDeposit: vldeposit
           });
+          console.log("create_subcontract_user (NEAR)", createSubCobtractUser);
           // console.log(createSubCobtractUser)
           if (!createSubCobtractUser || createSubCobtractUser.status.SuccessValue !== "") {
             // console.log("error al crear subcontrato");
@@ -742,6 +744,7 @@ export default {
           args: cleanedDepositArgsNEAR,
           attachedDeposit: orderAmount
         });
+        console.log("deposit (NEAR)", ftTransfer);
 
         if (!ftTransfer || ftTransfer.status.SuccessValue !== "") {
           // console.log("error al transferir token");
@@ -769,6 +772,7 @@ export default {
           args: cleanedAcceptOfferArgsNEAR,
           attachedDeposit: "1"
         });
+        console.log("accept_offer (NEAR)", acceptOffer);
 
         if (!acceptOffer || acceptOffer.status.SuccessValue !== "") {
           // console.log("error al aceptar la oferta", acceptOffer);
@@ -779,7 +783,9 @@ export default {
       } catch (error) {
         this.subcontract = {};
         this.btnLoading = false;
-        console.error("Error in initContractNEAR:", error.message);
+        this.modalNoMessage = error.message
+        this.modalNoOffers = true;
+        console.error("Error in initContractNEAR:", error);
         return;
       }
       this.btnLoading = false;
