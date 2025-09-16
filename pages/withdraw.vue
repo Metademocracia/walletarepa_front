@@ -522,11 +522,10 @@ export default {
         const subaccountId = `${userAddress.split(".")[0]}.${CONTRACT_NAME}`;
 
         // 3. Make the viewFunction call with the guaranteed valid ID
-        const result = await account.viewFunction(
-          CONTRACT_NAME_USDT, 
-          "storage_balance_of", 
-          { account_id: subaccountId }
-        );
+        // DEBUG: Logging arguments for storage_balance_of
+        const storageBalanceArgs = { account_id: `${this.address.split(".")[0]}.${CONTRACT_NAME}` };
+        console.log("Calling storage_balance_of with:", storageBalanceArgs);
+        const result = await account.viewFunction(CONTRACT_NAME_USDT, "storage_balance_of", storageBalanceArgs);
         
         if ( this.nearBalanceObject < 0.0126 && result == null ) {
           this.modalNoMessage = "Se requiere un balance mínimo de 0.0127 NEAR para iniciar por primera vez la transacción";
@@ -542,10 +541,13 @@ export default {
           return;
         }
 
+        // DEBUG: Logging arguments for get_subcontract
+        const getSubcontractArgs = { user_id: this.address };
+        console.log("Calling get_subcontract with:", getSubcontractArgs);
         this.subcontract = await account.viewFunctionV1(
           CONTRACT_NAME,
           "get_subcontract",
-          { user_id: this.address }
+          getSubcontractArgs
         );
         const now = moment()
           .format("YYYY-MM-DD HH:mm:ss")
@@ -553,11 +555,14 @@ export default {
         
         if (this.subcontract === null) {
           this.subcontract = { contract: `${this.address.split(".")[0]}.${CONTRACT_NAME}` };
+          // DEBUG: Logging arguments for create_subcontract_user
+          const createSubcontractArgs = { subaccount_id: this.subcontract.contract, asset: "USDT" };
+          console.log("Calling create_subcontract_user with:", createSubcontractArgs);
           const createSubCobtractUser = await account.functionCall({
             contractId: CONTRACT_NAME,
             methodName: "create_subcontract_user",
             gas: "30000000000000",
-            args: { subaccount_id: this.subcontract.contract, asset: "USDT" },
+            args: createSubcontractArgs,
             attachedDeposit: "1"
           });
           console.log( "create_subcontract_user");
@@ -589,10 +594,13 @@ export default {
             return;
           }
 
+           // DEBUG: Logging arguments for storage_deposit
+           const storageDepositArgs = { account_id: this.subcontract.contract };
+           console.log("Calling storage_deposit with:", storageDepositArgs);
            const activarSubcuenta = await account.functionCall({
              contractId: CONTRACT_NAME_USDT,
              methodName: "storage_deposit",
-             args: { account_id: this.subcontract.contract },
+             args: storageDepositArgs,
              gas: "30000000000000",
              attachedDeposit: "1250000000000000000000"
            });
@@ -605,11 +613,14 @@ export default {
         //   // }
         }
         
+        // DEBUG: Logging arguments for ft_transfer
+        const ftTransferArgs = { receiver_id: this.subcontract.contract, amount: orderAmount };
+        console.log("Calling ft_transfer with:", ftTransferArgs);
         const ftTransfer = await account.functionCall({
           contractId: CONTRACT_NAME_USDT,
           methodName: "ft_transfer",
           gas: "15000000000000",
-          args: { receiver_id: this.subcontract.contract, amount: orderAmount },
+          args: ftTransferArgs,
           attachedDeposit: "1"
         });
         console.log("ft_transfer");
@@ -620,11 +631,8 @@ export default {
         // //   console.log("Error en ft_transfer");
         // // }
 
-        const acceptOffer = await account.functionCall({
-          contractId: CONTRACT_NAME,
-          methodName: "accept_offer",
-          gas: "120000000000000",
-          args: {
+        // DEBUG: Logging arguments for accept_offer
+        const acceptOfferArgs = {
             offer_type: 1,
             offer_id: parseInt(this.selectedPayment.id),
             amount: orderAmount,
@@ -632,7 +640,13 @@ export default {
             datetime: now,
             rate: parseFloat(this.selectedPayment.rate),
             assosiated: "arepaWallet"
-          },
+          };
+        console.log("Calling accept_offer with:", acceptOfferArgs);
+        const acceptOffer = await account.functionCall({
+          contractId: CONTRACT_NAME,
+          methodName: "accept_offer",
+          gas: "120000000000000",
+          args: acceptOfferArgs,
           attachedDeposit: "1"
         });
         console.log( "accept_offer");
@@ -650,7 +664,7 @@ export default {
         this.btnLoading = false;
         this.modalNoMessage = error.message
         this.modalNoOffers = true;
-        console.error(error.message);
+        console.error("Error in initContractUSDT:", error);
         return;
       }
 
@@ -690,10 +704,13 @@ export default {
       const account = await walletUtils.nearConnection();
 
       try {
+        // DEBUG: Logging arguments for get_subcontract (NEAR)
+        const getSubcontractArgsNEAR = { user_id: this.address };
+        console.log("Calling get_subcontract (NEAR) with:", getSubcontractArgsNEAR);
         this.subcontract = await account.viewFunctionV1(
           CONTRACT_NAME,
           "get_subcontract",
-          { user_id: this.address }
+          getSubcontractArgsNEAR
         );
 
         const vldeposit = "100000000000000000000000";
@@ -703,11 +720,14 @@ export default {
           .toString();
         if (this.subcontract === null) {
           this.subcontract = { contract: `${this.address.split(".")[0]}.${CONTRACT_NAME}` };;
+          // DEBUG: Logging arguments for create_subcontract_user (NEAR)
+          const createSubcontractArgsNEAR = {};
+          console.log("Calling create_subcontract_user (NEAR) with:", createSubcontractArgsNEAR);
           const createSubCobtractUser = await account.functionCall({
             contractId: CONTRACT_NAME,
             methodName: "create_subcontract_user",
             gas: "80000000000000",
-            args: {},
+            args: createSubcontractArgsNEAR,
             attachedDeposit: vldeposit
           });
           // console.log(createSubCobtractUser)
@@ -719,11 +739,14 @@ export default {
         }
 
 
+        // DEBUG: Logging arguments for deposit (NEAR)
+        const depositArgsNEAR = { sub_contract: this.subcontract.contract };
+        console.log("Calling deposit (NEAR) with:", depositArgsNEAR);
         const ftTransfer = await account.functionCall({
           contractId: CONTRACT_NAME,
           methodName: "deposit",
           gas: "300000000000000",
-          args: { sub_contract: this.subcontract.contract },
+          args: depositArgsNEAR,
           attachedDeposit: orderAmount
         });
 
@@ -734,11 +757,8 @@ export default {
         }
 
 
-        const acceptOffer = await account.functionCall({
-          contractId: CONTRACT_NAME,
-          methodName: "accept_offer",
-          gas: "300000000000000",
-          args: {
+        // DEBUG: Logging arguments for accept_offer (NEAR)
+        const acceptOfferArgsNEAR = {
             offer_type: 1,
             offer_id: parseInt(this.filteredOffers.id),
             amount: orderAmount,
@@ -746,7 +766,13 @@ export default {
             datetime: now,
             rate: parseFloat(this.filteredOffers.exchange_rate),
             assosiated: "arepaWallet"
-          },
+          };
+        console.log("Calling accept_offer (NEAR) with:", acceptOfferArgsNEAR);
+        const acceptOffer = await account.functionCall({
+          contractId: CONTRACT_NAME,
+          methodName: "accept_offer",
+          gas: "300000000000000",
+          args: acceptOfferArgsNEAR,
           attachedDeposit: "1"
         });
 
@@ -759,7 +785,7 @@ export default {
       } catch (error) {
         this.subcontract = {};
         this.btnLoading = false;
-        console.error(error.message);
+        console.error("Error in initContractNEAR:", error.message);
         return;
       }
       this.btnLoading = false;
