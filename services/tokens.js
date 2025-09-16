@@ -113,10 +113,10 @@ async function getListTokensBalance() {
     try {
       const address = localStorageUser.getCurrentAccount().address;
       const contractFromBlock = await walletUtils.getPikespeak(`/account/balance/${address}`);
-      console.log("contractFromBlock: ", contractFromBlock);
+      // console.log("contractFromBlock: ", contractFromBlock);
 
       const listContract = contractFromBlock ? contractFromBlock.data.filter((item) => item.contract.toLowerCase() !== 'near').map((element) => { return element }) : [];
-      console.log("listContract: ", listContract);
+      // console.log("listContract: ", listContract);
       
       const list = {
         fts: [],
