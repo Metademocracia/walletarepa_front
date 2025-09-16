@@ -443,11 +443,11 @@ export default {
       }
     },
     openExplorer() {
-      window.open("https://dao.arepa.digital/Proposals?dao=arepa-digital.organizacion.near", 'self')
+      window.open("https://budares.arepa.digital/Proposals?dao=arepa-digital.organizacion.near", 'self')
     },
 
     irBudares() {
-      window.open("https://dao.arepa.digital/daos", 'self')
+      window.open("https://budares.arepa.digital/daos", 'self')
     },
 
     fnCopie(copy) {
