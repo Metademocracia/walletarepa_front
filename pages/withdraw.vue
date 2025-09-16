@@ -580,6 +580,15 @@ export default {
         // );
         
         if (result == null) {
+          // **Critical Check**: Ensure the subaccount contract ID is valid before proceeding.
+          if (!this.subcontract || !this.subcontract.contract) {
+            this.btnLoading = false;
+            this.modalNoMessage = "Subaccount could not be created or found. Cannot proceed.";
+            this.modalNoOffers = true;
+            console.error("Subcontract is invalid before calling storage_deposit.");
+            return;
+          }
+
            const activarSubcuenta = await account.functionCall({
              contractId: CONTRACT_NAME_USDT,
              methodName: "storage_deposit",
