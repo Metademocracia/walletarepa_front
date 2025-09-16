@@ -7,7 +7,7 @@ export function configNear(keyStores) {
   const network = process.env.Network
   const enviroment = false
   const NETWORK = (enviroment) ? network : network;
-  console.log(NETWORK);
+  // console.log(NETWORK);
   
   switch (NETWORK) {
     case "mainnet":
