@@ -110,20 +110,79 @@ async function getBalanceInitNear(_address) {
  * @throws {Error} If an error occurs while retrieving the token balances.
  */
 async function getListTokensBalance() {
+    /* function deley() {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 3000);
+      });
+    } */
     try {
       const address = localStorageUser.getCurrentAccount().address;
-      const contractFromBlock = await walletUtils.getPikespeak(`/account/balance/${address}`);
-      // console.log("contractFromBlock: ", contractFromBlock);
+      // const contractFromBlock = await getListContractToken(address);
+      // await deley()
+      const contractFromBlock = await walletUtils.getPikespeak(`/account/balance/${address}`) // .catch(error => { console.log("error api pikespeak: ", error) });
+      console.log("contractFromBlock: ", contractFromBlock);
+      /* await deley()
+      const metadataFt = await walletUtils.getPikespeak(`/money/ft-list`) // .catch(error => { console.log("error api pikespeak: ", error) });
+      console.log("metadataFt: ", metadataFt);
+      console.log("contractFromBlock: ", contractFromBlock);
 
+      const datafinal = !contractFromBlock ? [] : contractFromBlock.data.filter((item) => item.contract.toLowerCase() !== 'near');
+
+      const listaFt = await datafinal.map(async (element) => {
+        let price = 0 ;
+         
+        const decimals = metadataFt.data.find((item) => item.token_account_id === element.contract)?.decimals;
+        const priceToken = await getPriceToken({ symbol: element.symbol });
+        if (priceToken) {
+          price = priceToken;
+        }
+
+        
+          const balanceUsd = (Number(element.amount) * Number(price)).toFixed(2);
+          let balanceofi = element.amount
+
+          if (balanceofi.toString().includes('.')) {
+            const parts = balanceofi.toString().split('.');
+            if (parts[1].length > 14) {
+              balanceofi = parseFloat(parts[0] + '.' + parts[1].slice(0, 14));
+            }
+          }
+          const tokenBalanceData = {
+            contract: element.contract,
+            balance: Number(element.amount), // walletUtils.formatTokenAmount(balance, decimals, 5),
+            balanceTotal: String(balanceofi),
+            name: element.symbol,
+            symbol: element.symbol,
+            decimals,
+            icon: element.symbol === 'Wrapped Ether' 
+              ? "https://assets.ref.finance/images/2396.png" 
+              : element.symbol === 'wNEAR' 
+                ? require('@/assets/sources/logos/near-icon.svg') 
+                : element.icon,
+            balance_usd: isNaN(balanceUsd) ? 0.00 : balanceUsd,
+            price
+          };
+
+        
+        return tokenBalanceData;
+      });
+
+      console.log("listaFt: ", listaFt); */
+
+
+      // if (!contractFromBlock) return;
+     
       const listContract = contractFromBlock ? contractFromBlock.data.filter((item) => item.contract.toLowerCase() !== 'near').map((element) => { return element }) : [];
-      // console.log("listContract: ", listContract);
-      
+      console.log("listContract: ", listContract);
       const list = {
         fts: [],
         nfts: [],
       };
 
       const allTokenBalances = [];
+
 
       /**
        * Retrieves the NEAR balance data from session storage or fetches it from the walletUtils.getBalance() function.
@@ -132,45 +191,50 @@ async function getListTokensBalance() {
        * @returns {Promise<Object>} The NEAR balance data object.
        */
       const nearBalancePromise = async () => {
-        const balanceNear = await walletUtils.getBalance();
-        const nearBalanceData = {
-          contract: "NEAR",
-          balance: balanceNear.near.toFixed(5),
-          balanceTotal: String(balanceNear.near),
-          name: "NEAR",
-          symbol: "NEAR",
-          decimals: 24,
-          icon: require('@/assets/sources/logos/near-icon.svg'),
-          balance_usd: balanceNear.usd.toFixed(2),
-          price: balanceNear.price
-        };
-        allTokenBalances.push(nearBalanceData);
-        return nearBalanceData;
+        // let nearBalanceData = sessionStorage.getItem('NEAR');
+        /* if (nearBalanceData) {
+          return JSON.parse(nearBalanceData);
+        } else { */
+          const balanceNear = await walletUtils.getBalance();
+          const nearBalanceData = {
+            contract: "NEAR",
+            balance: balanceNear.near.toFixed(5),
+            balanceTotal: String(balanceNear.near),
+            name: "NEAR",
+            symbol: "NEAR",
+            decimals: 24,
+            icon: require('@/assets/sources/logos/near-icon.svg'),
+            balance_usd: balanceNear.usd.toFixed(2),
+            price: balanceNear.price
+          };
+          // sessionStorage.setItem('NEAR', JSON.stringify(nearBalanceData));
+          allTokenBalances.push(nearBalanceData);
+          return nearBalanceData;
+        // }
       };
 
       /**
-       * Process token balances from the API response
+       * Array of promises that fetches token balances for each contract in the list.
+       * @type {Promise<Array<Object>>}
        */
-      const processTokenBalances = () => {
-        return listContract.map((token) => {
+      const tokenBalancesPromises = listContract.map(async (contract) => {
+        /* let tokenBalanceData = sessionStorage.getItem(contract);
+        if (tokenBalanceData) {
+          return JSON.parse(tokenBalanceData);
+        } else { */
           try {
-            const amount = Number(token.amount);
+            const metadata = await getTokenMetadata(contract);
+            let { balance, price } = { balance: 0, price: 0 };
             
-            if (amount > 0) {
-              // Use default decimals for common tokens, or extract from symbol if available
-              let decimals = 24; // Default for NEAR tokens
-              const price = 0; // You might want to get this from your price API
-              
-              // Extract decimals from symbol if available (e.g., "NEAR [Storage]" might indicate different decimals)
-              if (token.symbol.includes('[') && token.symbol.includes(']')) {
-                // Handle special tokens like storage tokens
-                decimals = 24; // Adjust based on your token standards
-              } else if (token.contract.includes('usdt') || token.symbol.includes('USDt')) {
-                decimals = 6; // USDT typically has 6 decimals
-              }
-              
-              const balanceUsd = (amount * price).toFixed(2);
-              let balanceofi = amount;
+            const getBalance = await getTokenBalance({ contract, address, symbol: metadata.symbol });
+            if (getBalance) {
+              balance = getBalance.balance;
+              price = getBalance.price;
+            }
+
+            if (Number(balance) > 0) {
+              const balanceUsd = (Number(walletUtils.formatTokenAmount(balance, metadata.decimals, 5)) * Number(price)).toFixed(2);
+              let balanceofi = balance / Math.pow(10, metadata.decimals);
 
               if (balanceofi.toString().includes('.')) {
                 const parts = balanceofi.toString().split('.');
@@ -180,48 +244,163 @@ async function getListTokensBalance() {
               }
 
               const tokenBalanceData = {
-                contract: token.contract,
-                balance: walletUtils.formatTokenAmount(amount * Math.pow(10, decimals), decimals, 5),
+                contract,
+                balance: walletUtils.formatTokenAmount(balance, metadata.decimals, 5),
                 balanceTotal: String(balanceofi),
-                name: token.symbol,
-                symbol: token.symbol,
-                decimals,
-                icon: token.icon || (token.symbol === 'Wrapped Ether' 
+                name: metadata.name,
+                symbol: metadata.symbol,
+                decimals: metadata.decimals,
+                icon: metadata.name === 'Wrapped Ether' 
                   ? "https://assets.ref.finance/images/2396.png" 
-                  : token.symbol === 'wNEAR' 
+                  : metadata.name === 'Wrapped NEAR fungible token' 
                     ? require('@/assets/sources/logos/near-icon.svg') 
-                    : null),
+                    : metadata.icon,
                 balance_usd: isNaN(balanceUsd) ? 0.00 : balanceUsd,
                 price
               };
-              
+              // sessionStorage.setItem(contract, JSON.stringify(tokenBalanceData));
               allTokenBalances.push(tokenBalanceData);
               return tokenBalanceData;
             }
-            return null; // Added return for map callback
           } catch (error) {
-            console.error("Error processing token:", token.contract, error);
-            return null;
+            // Handle errors if needed
           }
-        }).filter(Boolean);
-      };
+        // }
+      });
 
-      const [nearBalance, ...tokenBalances] = await Promise.all([
-        nearBalancePromise(), 
-        ...processTokenBalances()
-      ]);
+      const [nearBalance, ...tokenBalances] = await Promise.all([nearBalancePromise(), ...tokenBalancesPromises]);
 
       list.fts.push(nearBalance);
-      list.fts.push(...tokenBalances);
+      list.fts.push(...tokenBalances.filter(Boolean));
 
       sessionStorage.setItem('allTokenBalances', JSON.stringify(allTokenBalances));
 
+      
+
       return list;
     } catch (error) {
-      console.error("Error in getListTokensBalance:", error);
-      throw error;
+      // Handle errors if needed
     }
   }
+
+// /**
+//  * Retrieves a list of token balances for a given user's address.
+//  * @returns {Promise<Object>} The list of token balances, categorized as fungible tokens (fts) and non-fungible tokens (nfts).
+//  * @throws {Error} If an error occurs while retrieving the token balances.
+//  */
+// async function getListTokensBalance() {
+//     try {
+//       const address = localStorageUser.getCurrentAccount().address;
+//       const contractFromBlock = await walletUtils.getPikespeak(`/account/balance/${address}`);
+//       // console.log("contractFromBlock: ", contractFromBlock);
+
+//       const listContract = contractFromBlock ? contractFromBlock.data.filter((item) => item.contract.toLowerCase() !== 'near').map((element) => { return element }) : [];
+//       // console.log("listContract: ", listContract);
+      
+//       const list = {
+//         fts: [],
+//         nfts: [],
+//       };
+
+//       const allTokenBalances = [];
+
+//       /**
+//        * Retrieves the NEAR balance data from session storage or fetches it from the walletUtils.getBalance() function.
+//        * If the balance data is found in session storage, it is returned. Otherwise, the balance data is fetched,
+//        * stored in session storage, added to the allTokenBalances array, and then returned.
+//        * @returns {Promise<Object>} The NEAR balance data object.
+//        */
+//       const nearBalancePromise = async () => {
+//         const balanceNear = await walletUtils.getBalance();
+//         const nearBalanceData = {
+//           contract: "NEAR",
+//           balance: balanceNear.near.toFixed(5),
+//           balanceTotal: String(balanceNear.near),
+//           name: "NEAR",
+//           symbol: "NEAR",
+//           decimals: 24,
+//           icon: require('@/assets/sources/logos/near-icon.svg'),
+//           balance_usd: balanceNear.usd.toFixed(2),
+//           price: balanceNear.price
+//         };
+//         allTokenBalances.push(nearBalanceData);
+//         return nearBalanceData;
+//       };
+
+//       /**
+//        * Process token balances from the API response
+//        */
+//       const processTokenBalances = () => {
+//         return listContract.map((token) => {
+//           try {
+//             const amount = Number(token.amount);
+            
+//             if (amount > 0) {
+//               // Use default decimals for common tokens, or extract from symbol if available
+//               let decimals = 24; // Default for NEAR tokens
+//               const price = 0; // You might want to get this from your price API
+              
+//               // Extract decimals from symbol if available (e.g., "NEAR [Storage]" might indicate different decimals)
+//               if (token.symbol.includes('[') && token.symbol.includes(']')) {
+//                 // Handle special tokens like storage tokens
+//                 decimals = 24; // Adjust based on your token standards
+//               } else if (token.contract.includes('usdt') || token.symbol.includes('USDt')) {
+//                 decimals = 6; // USDT typically has 6 decimals
+//               }
+              
+//               const balanceUsd = (amount * price).toFixed(2);
+//               let balanceofi = amount;
+
+//               if (balanceofi.toString().includes('.')) {
+//                 const parts = balanceofi.toString().split('.');
+//                 if (parts[1].length > 14) {
+//                   balanceofi = parseFloat(parts[0] + '.' + parts[1].slice(0, 14));
+//                 }
+//               }
+
+//               const tokenBalanceData = {
+//                 contract: token.contract,
+//                 balance: walletUtils.formatTokenAmount(amount * Math.pow(10, decimals), decimals, 5),
+//                 balanceTotal: String(balanceofi),
+//                 name: token.symbol,
+//                 symbol: token.symbol,
+//                 decimals,
+//                 icon: token.icon || (token.symbol === 'Wrapped Ether' 
+//                   ? "https://assets.ref.finance/images/2396.png" 
+//                   : token.symbol === 'wNEAR' 
+//                     ? require('@/assets/sources/logos/near-icon.svg') 
+//                     : null),
+//                 balance_usd: isNaN(balanceUsd) ? 0.00 : balanceUsd,
+//                 price
+//               };
+              
+//               allTokenBalances.push(tokenBalanceData);
+//               return tokenBalanceData;
+//             }
+//             return null; // Added return for map callback
+//           } catch (error) {
+//             console.error("Error processing token:", token.contract, error);
+//             return null;
+//           }
+//         }).filter(Boolean);
+//       };
+
+//       const [nearBalance, ...tokenBalances] = await Promise.all([
+//         nearBalancePromise(), 
+//         ...processTokenBalances()
+//       ]);
+
+//       list.fts.push(nearBalance);
+//       list.fts.push(...tokenBalances);
+
+//       sessionStorage.setItem('allTokenBalances', JSON.stringify(allTokenBalances));
+
+//       return list;
+//     } catch (error) {
+//       console.error("Error in getListTokensBalance:", error);
+//       throw error;
+//     }
+//   }
 
 
 /* async function getInventoryUser() {
