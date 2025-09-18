@@ -103,7 +103,7 @@ async function nearConnection(accountId) {
   // creates a public / private key pair using the provided private key
   const keyPair = KeyPair.fromString(PRIVATE_KEY);
   // adds the keyPair you created to keyStore
-  await myKeyStore.setKey(process.env.NETWORK, address, keyPair);
+  await myKeyStore.setKey(process.env.Network, address, keyPair);
   const nearConnection = await connect(configNear(myKeyStore));
   const account = await nearConnection.account(address);
   return account

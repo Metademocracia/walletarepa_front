@@ -450,18 +450,25 @@ export default {
       }
     },
     async sendSwap() {
+      console.log("--- Starting sendSwap ---");
+      console.log("From Token:", this.fromToken.contract, "| To Token:", this.toToken.contract);
+      console.log("Amount to Send:", this.amountSend, "| Amount to Receive:", this.amountReceive, "| Commission:", this.comission);
+
       try {
+        console.log("Connecting to NEAR...");
         const account = await walletUtils.nearConnection();
+        console.log("Connected to account:", account.accountId);
 
-        // console.log(this.fromToken.contract)
-        // console.log(this.toToken.contract)
+        const hashes = [];
+        console.log("Initializing hashes array");
 
-        const hashes = []
-
+        // Scenario 1: NEAR -> wNEAR
         if (this.fromToken.contract === "near" && this.toToken.contract === "wrap.near") {
-          // console.log("deposit", this.amount)
-          // console.log(utils.format.parseNearAmount(String(this.amount)))
+          console.log("--- Executing Scenario: NEAR -> wNEAR ---");
+          console.log("Amount:", this.amount, "| Commission:", this.comission);
+
           try {
+            console.log("Calling near_deposit...");
             const result = await account.functionCall({
               contractId: "wrap.near",
               methodName: "near_deposit",
@@ -469,31 +476,44 @@ export default {
               gas: "300000000000000",
               attachedDeposit: utils.format.parseNearAmount(String(this.amount))
             });
+            console.log("near_deposit result:", result);
 
             const hash = !result?.transaction.hash ? result : result?.transaction.hash;
+            console.log("Transaction hash:", hash);
 
             if (!hash) {
-              this.$router.push({ path: '/swap-error'})
+              console.error("Error: No hash from near_deposit");
+              this.$router.push({ path: '/swap-error' });
+              return;
             }
 
+            console.log("Sending commission via sendMoney...");
             await account.sendMoney(
-              "arepa-digital.organizacion.near", // receiver account
-              utils.format.parseNearAmount(String(this.comission)) // amount in yoctoNEAR
+              "arepa-digital.organizacion.near",
+              utils.format.parseNearAmount(String(this.comission))
             );
+            console.log("Commission sent successfully");
 
             const item = {
               hash,
               method: "near_deposit"
-            }
+            };
+            hashes.push(item);
+            console.log("Added to hashes:", item);
 
-            hashes.push(item)
           } catch (error) {
-            this.$router.push({ path: '/swap-error'})
+            console.error("Error in NEAR -> wNEAR scenario:", error);
+            this.$router.push({ path: '/swap-error' });
+            return;
           }
-          
+
+        // Scenario 2: wNEAR -> NEAR
         } else if (this.fromToken.contract === "wrap.near" && this.toToken.contract === "near") {
-          // console.log("withdraw", this.amount)
+          console.log("--- Executing Scenario: wNEAR -> NEAR ---");
+          console.log("Amount:", this.amount, "| Commission:", this.comission);
+
           try {
+            console.log("Calling near_withdraw...");
             const result = await account.functionCall({
               contractId: "wrap.near",
               methodName: "near_withdraw",
@@ -503,84 +523,122 @@ export default {
               gas: "300000000000000",
               attachedDeposit: "1"
             });
+            console.log("near_withdraw result:", result);
 
             const hash = !result?.transaction.hash ? result : result?.transaction.hash;
+            console.log("Transaction hash:", hash);
 
             if (!hash) {
-              this.$router.push({ path: '/swap-error'})
+              console.error("Error: No hash from near_withdraw");
+              this.$router.push({ path: '/swap-error' });
+              return;
             }
 
+            console.log("Sending commission via ft_transfer...");
             await account.functionCall({
               contractId: "wrap.near",
               methodName: "ft_transfer",
-              args: { 
+              args: {
                 receiver_id: "arepa-digital.organizacion.near",
                 amount: utils.format.parseNearAmount(String(this.comission))
               },
               attachedDeposit: "1"
             });
+            console.log("Commission sent successfully");
 
             const item = {
               hash,
               method: "near_withdraw"
-            }
+            };
+            hashes.push(item);
+            console.log("Added to hashes:", item);
 
-            hashes.push(item)
           } catch (error) {
-            this.$router.push({ path: '/swap-error'})
+            console.error("Error in wNEAR -> NEAR scenario:", error);
+            this.$router.push({ path: '/swap-error' });
+            return;
           }
 
-          
+        // Scenario 3: Multi-step swap
         } else {
+          console.log("--- Executing Scenario: Multi-step swap ---");
+          console.log("Price Route:", JSON.stringify(this.priceRoute, null, 2));
+
           try {
             for (const tx of this.priceRoute) {
+              console.log(`Processing transaction for receiver: ${tx.receiverId}`);
               for (const functionCall of tx.functionCalls) {
+                console.log(`Calling ${functionCall.methodName} with args:`, functionCall.args);
+
+                // Clean the args to remove Vue reactivity
+                const cleanedArgs = JSON.parse(JSON.stringify(functionCall.args));
+                console.log("Cleaned args:", cleanedArgs);
+
+                // Fix for impersonation: replace account_id in storage_deposit
+                if (functionCall.methodName === 'storage_deposit' && cleanedArgs.account_id) {
+                  console.log(`Fixing storage_deposit: Replacing ${cleanedArgs.account_id} with ${account.accountId}`);
+                  cleanedArgs.account_id = account.accountId;
+                }
+
                 const result = await account.functionCall({
                   contractId: tx.receiverId,
                   methodName: functionCall.methodName,
-                  args: functionCall.args,
+                  args: cleanedArgs,
                   gas: functionCall.gas,
                   attachedDeposit: functionCall.amount
                 });
+                console.log(`${functionCall.methodName} result:`, result);
 
                 const hash = !result?.transaction.hash ? result : result?.transaction.hash;
+                console.log("Transaction hash:", hash);
 
                 if (!hash) {
-                  this.$router.push({ path: '/swap-error'})
+                  console.error(`Error: No hash from ${functionCall.methodName}`);
+                  this.$router.push({ path: '/swap-error' });
+                  return;
                 }
 
                 const item = {
                   hash,
                   method: functionCall.methodName
-                }
-
-                hashes.push(item)
+                };
+                hashes.push(item);
+                console.log("Added to hashes:", item);
               }
             }
 
+            // Commission payment
             if (this.fromToken.contract === "near") {
+              console.log("Sending commission (native NEAR)...");
               await account.sendMoney(
-                "arepa-digital.organizacion.near", // receiver account
-                utils.format.parseNearAmount(String(this.comission)) // amount in yoctoNEAR
+                "arepa-digital.organizacion.near",
+                utils.format.parseNearAmount(String(this.comission))
               );
+              console.log("Commission sent successfully");
             } else {
-              const comission = String(parseInt(this.comission / Math.pow(10, this.fromToken.decimals)))
+              const commissionAmount = String(parseInt(this.comission * Math.pow(10, this.fromToken.decimals)));
+              console.log("Sending commission (FT) via ft_transfer, amount:", commissionAmount);
               await account.functionCall({
                 contractId: this.fromToken.contract,
                 methodName: "ft_transfer",
-                args: { 
+                args: {
                   receiver_id: "arepa-digital.organizacion.near",
-                  amount: comission
+                  amount: commissionAmount
                 },
                 attachedDeposit: "1"
               });
+              console.log("Commission sent successfully");
             }
+
           } catch (error) {
-            this.$router.push({ path: '/swap-error'})
+            console.error("Error in Multi-step swap scenario:", error);
+            this.$router.push({ path: '/swap-error' });
+            return;
           }
         }
 
-        // console.log("hashes", hashes)
+        console.log("--- Swap sequence complete ---");
+        console.log("Final hashes:", hashes);
 
         const dataItem = {
           from: this.fromToken.icon,
@@ -588,13 +646,18 @@ export default {
           amount: this.amountSend,
           receive: this.amountReceive,
           hashes
-        }
+        };
+        console.log("Data for completion page:", dataItem);
 
-        const data = this.encrypt(JSON.stringify(dataItem), "123456")
+        const data = this.encrypt(JSON.stringify(dataItem), "123456");
+        console.log("Encrypted data:", data);
 
-        this.$router.push({ path: '/swap-complete', query: { data }})
+        this.$router.push({ path: '/swap-complete', query: { data } });
+        console.log("Navigated to swap-complete");
+
       } catch (error) {
-        console.error(error)
+        console.error("--- Critical error in sendSwap ---", error);
+        this.$router.push({ path: '/swap-error' });
       }
     },
     limitStr(item, num) {
