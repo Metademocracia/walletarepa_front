@@ -14,7 +14,8 @@ export function configNear(keyStores) {
       return {
         networkId: "mainnet",
         keyStore: keyStores,
-        nodeUrl: "https://free.rpc.fastnear.com",
+        // Allow overriding the RPC at build/deploy time via ROUTER_RPC. Fall back to fastnear for compatibility.
+        nodeUrl: process.env.ROUTER_RPC || "https://free.rpc.fastnear.com",
         // nodeUrl: "https://rpc.mainnet.pagoda.co",
         walletUrl: wallet,
         helperUrl: "https://helper.mainnet.near.org",
