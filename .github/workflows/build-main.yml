@@ -26,29 +26,29 @@ jobs:
         run: |
           echo "NETWORK=mainnet" > .env
           echo "NEAR_ENV=mainnet" >> .env
-          echo "CLIEN_ID_GOOGLE=150455385589-s2n08nesi9dvbtsmsob8docl0164ah0a.apps.googleusercontent.com" >> .env
+          echo "CLIEN_ID_GOOGLE=${{ secrets.CLIEN_ID_GOOGLE }}" >> .env
           echo "BASE_URL=/" >> .env
           echo "VUE_APP_PASSPHRASE=${{ secrets.VUE_APP_PASSPHRASE }}" >> .env
           echo "CLAVE=${{ secrets.CLAVE }}" >> .env
-          echo "URL_BACKEND=https://walletp2p.metademocracia.social/wallet-p2p" >> .env
-          echo "URL_NEARP2P_BOT=https://nearp2pbot.metademocracia.social" >> .env
-          echo "URL_BACKEND_SWAP=https://swap.metademocracia.social/api" >> .env
-          echo "URL_APIP_PRICE=https://nearp2p.metademocracia.social/api/sendmailp2p/get-price" >> .env
-          echo "URL_API_NFT=https://nearp2p.metademocracia.social/api/sendmailp2p/get-user-nft" >> .env
-          echo "URL_EXPLORER=https://nearblocks.io/es/address/" >> .env
-          echo "URL_EXPLORER_TXS=https://nearblocks.io/es/txns/" >> .env
-          echo "ROUTER_EXPLORER_NEAR=https://nearblocks.io/" >> .env
-          echo "ROUTER_RPC=https://free.rpc.fastnear.com" >> .env
-          echo "URL_API_INDEXER=https://api.nearblocks.io/v1" >> .env
-          echo "GRAPH_URL=https://gateway.thegraph.com/api/subgraphs/id/7qaGSN91wUHJBNzjMZkCNUn5JRHDeSScrhUrPHwbUt28" >> .env
-          echo "VUE_APP_CONTRACT_NAME=v4.nearp2pdex.near" >> .env
-          echo "VUE_APP_CONTRACT_NAME_USDT=usdt.tether-token.near" >> .env
+          echo "URL_BACKEND=${{ secrets.URL_BACKEND }}" >> .env
+          echo "URL_NEARP2P_BOT=${{ secrets.URL_NEARP2P_BOT }}" >> .env
+          echo "URL_BACKEND_SWAP=${{ secrets.URL_BACKEND_SWAP }}" >> .env
+          echo "URL_APIP_PRICE=${{ secrets.URL_APIP_PRICE }}" >> .env
+          echo "URL_API_NFT=${{ secrets.URL_API_NFT }}" >> .env
+          echo "URL_EXPLORER=${{ secrets.URL_EXPLORER }}" >> .env
+          echo "URL_EXPLORER_TXS=${{ secrets.URL_EXPLORER_TXS }}" >> .env
+          echo "ROUTER_EXPLORER_NEAR=${{ secrets.ROUTER_EXPLORER_NEAR }}" >> .env
+          echo "ROUTER_RPC=${{ secrets.ROUTER_RPC }}" >> .env
+          echo "URL_API_INDEXER=${{ secrets.URL_API_INDEXER }}" >> .env
+          echo "GRAPH_URL=${{ secrets.GRAPH_URL }}" >> .env
+          echo "VUE_APP_CONTRACT_NAME=${{ secrets.VUE_APP_CONTRACT_NAME }}" >> .env
+          echo "VUE_APP_CONTRACT_NAME_USDT=${{ secrets.VUE_APP_CONTRACT_NAME_USDT }}" >> .env
           echo "VUE_APP_CONTRACT_NAME_DAO_METADEMOCRACIA=${{ secrets.VUE_APP_CONTRACT_NAME_DAO_METADEMOCRACIA }}" >> .env
-          echo "VUE_APP_API_MAIL_URL=https://nearp2p.metademocracia.social/api/sendmailp2p/" >> .env
-          echo "VUE_APP_CHAT_FIREBASE=CHATS" >> .env
+          echo "VUE_APP_API_MAIL_URL=${{ secrets.VUE_APP_API_MAIL_URL }}" >> .env
+          echo "VUE_APP_CHAT_FIREBASE=${{ secrets.VUE_APP_CHAT_FIREBASE }}" >> .env
           echo "VUE_APP_CHAT_FIREBASE_API_KEY=${{ secrets.VUE_APP_CHAT_FIREBASE_API_KEY }}" >> .env
           echo "VUE_API_KEY_PIKESPEAK=${{ secrets.VUE_API_KEY_PIKESPEAK }}" >> .env
-          echo "WEB_DOMAIN=https://mi.arepa.digital/" >> .env
+          echo "WEB_DOMAIN=${{ secrets.WEB_DOMAIN }}" >> .env
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v2

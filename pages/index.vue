@@ -295,33 +295,33 @@ export default {
     }
 	},
   mounted() {
-    console.log('Env vars check:');
-    console.log('NETWORK:', process.env.NETWORK);
-    console.log('NEAR_ENV:', process.env.NEAR_ENV);
-    console.log('BASE_URL:', process.env.BASE_URL);
-    console.log('WEB_DOMAIN:', process.env.WEB_DOMAIN);
-    console.log('URL_BACKEND:', process.env.URL_BACKEND);
-    console.log('URL_NEARP2P_BOT:', process.env.URL_NEARP2P_BOT);
-    console.log('URL_BACKEND_SWAP:', process.env.URL_BACKEND_SWAP);
-    console.log('URL_APIP_PRICE:', process.env.URL_APIP_PRICE);
-    console.log('URL_API_NFT:', process.env.URL_API_NFT);
-    console.log('URL_API_INDEXER:', process.env.URL_API_INDEXER);
-    console.log('CLIEN_ID_GOOGLE:', process.env.CLIEN_ID_GOOGLE);
-    console.log('URL_EXPLORER:', process.env.URL_EXPLORER);
-    console.log('URL_EXPLORER_TXS:', process.env.URL_EXPLORER_TXS);
-    console.log('ROUTER_EXPLORER_NEAR:', process.env.ROUTER_EXPLORER_NEAR);
-    console.log('ROUTER_RPC:', process.env.ROUTER_RPC);
-    console.log('VUE_APP_CONTRACT_NAME:', process.env.VUE_APP_CONTRACT_NAME);
-    console.log('VUE_APP_CONTRACT_NAME_USDT:', process.env.VUE_APP_CONTRACT_NAME_USDT);
-    console.log('VUE_APP_CONTRACT_NAME_DAO_METADEMOCRACIA:', process.env.VUE_APP_CONTRACT_NAME_DAO_METADEMOCRACIA);
-    console.log('VUE_APP_API_MAIL_URL:', process.env.VUE_APP_API_MAIL_URL);
-    console.log('VUE_APP_CHAT_FIREBASE:', process.env.VUE_APP_CHAT_FIREBASE);
-    console.log('VUE_APP_CHAT_FIREBASE_API_KEY:', process.env.VUE_APP_CHAT_FIREBASE_API_KEY);
-    console.log('VUE_APP_PASSPHRASE:', process.env.VUE_APP_PASSPHRASE);
-    console.log('CLAVE:', process.env.CLAVE);
-    console.log('ROUTER_RPC:', process.env.ROUTER_RPC);
-    console.log('GRAPH_URL:', process.env.GRAPH_URL);
-    console.log('VUE_API_KEY_PIKESPEAK:', process.env.VUE_API_KEY_PIKESPEAK);
+    // console.log('Env vars check:');
+    // console.log('NETWORK:', process.env.NETWORK);
+    // console.log('NEAR_ENV:', process.env.NEAR_ENV);
+    // console.log('BASE_URL:', process.env.BASE_URL);
+    // console.log('WEB_DOMAIN:', process.env.WEB_DOMAIN);
+    // console.log('URL_BACKEND:', process.env.URL_BACKEND);
+    // console.log('URL_NEARP2P_BOT:', process.env.URL_NEARP2P_BOT);
+    // console.log('URL_BACKEND_SWAP:', process.env.URL_BACKEND_SWAP);
+    // console.log('URL_APIP_PRICE:', process.env.URL_APIP_PRICE);
+    // console.log('URL_API_NFT:', process.env.URL_API_NFT);
+    // console.log('URL_API_INDEXER:', process.env.URL_API_INDEXER);
+    // console.log('CLIEN_ID_GOOGLE:', process.env.CLIEN_ID_GOOGLE);
+    // console.log('URL_EXPLORER:', process.env.URL_EXPLORER);
+    // console.log('URL_EXPLORER_TXS:', process.env.URL_EXPLORER_TXS);
+    // console.log('ROUTER_EXPLORER_NEAR:', process.env.ROUTER_EXPLORER_NEAR);
+    // console.log('ROUTER_RPC:', process.env.ROUTER_RPC);
+    // console.log('VUE_APP_CONTRACT_NAME:', process.env.VUE_APP_CONTRACT_NAME);
+    // console.log('VUE_APP_CONTRACT_NAME_USDT:', process.env.VUE_APP_CONTRACT_NAME_USDT);
+    // console.log('VUE_APP_CONTRACT_NAME_DAO_METADEMOCRACIA:', process.env.VUE_APP_CONTRACT_NAME_DAO_METADEMOCRACIA);
+    // console.log('VUE_APP_API_MAIL_URL:', process.env.VUE_APP_API_MAIL_URL);
+    // console.log('VUE_APP_CHAT_FIREBASE:', process.env.VUE_APP_CHAT_FIREBASE);
+    // console.log('VUE_APP_CHAT_FIREBASE_API_KEY:', process.env.VUE_APP_CHAT_FIREBASE_API_KEY);
+    // console.log('VUE_APP_PASSPHRASE:', process.env.VUE_APP_PASSPHRASE);
+    // console.log('CLAVE:', process.env.CLAVE);
+    // console.log('ROUTER_RPC:', process.env.ROUTER_RPC);
+    // console.log('GRAPH_URL:', process.env.GRAPH_URL);
+    // console.log('VUE_API_KEY_PIKESPEAK:', process.env.VUE_API_KEY_PIKESPEAK);
 
     this.getOrders(); // Call orderSell function
 
