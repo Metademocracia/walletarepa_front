@@ -383,7 +383,7 @@ export default {
             sessionStorage.setItem('terms', this.terms);
             /// //////////////////////////////////////
             this.tokenSymbol = this.data[0].asset;
-            this.tokenImage = this.data[0].asset === "USDT" ? "https://nearp2p.com/dv/portal/usdt.svg" : "https://nearp2p.com/dv/portal/near-wallet-icon.svg";
+            this.tokenImage = this.data[0].asset === "USDT" ? "https://metademocracia.fra1.digitaloceanspaces.com/walletp2p/usdt-svgrepo-com.svg" : "https://nearp2p.com/dv/portal/near-wallet-icon.svg";
        
             this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
             this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
@@ -713,12 +713,12 @@ export default {
     // },
     async sendMailCancel(order) { 
         const data = await walletUtils.verifyWallet();
-        const email = data?.data?.email;
+        const email = await encrypDecript.decrypFromDb(data?.data?.email);
         if(this.dataTrader.length>0){
           const emailTrader = await encrypDecript.decryp(this.dataTrader[0].email);
           const BASE_URL_MAIL = process.env.VUE_APP_API_MAIL_URL;
           const MAILCANCEL = `${BASE_URL_MAIL}cancel/`;
-          const serviceUrl = `${MAILCANCEL}admin@nearp2p.com/${emailTrader},${email}/${order}`;
+          const serviceUrl = `${MAILCANCEL}info@metademocracia.social/${emailTrader},${email}/${order}`;
           if(emailTrader){   
            await axios.get(serviceUrl);
           }
@@ -726,12 +726,12 @@ export default {
 		},
     async sendMailDispute(order) { 
         const data = await walletUtils.verifyWallet();
-        const email = data?.data?.email;
+        const email = await encrypDecript.decrypFromDb(data?.data?.email);
         if(this.dataTrader.length>0){
           const emailTrader = await encrypDecript.decryp(this.dataTrader[0].email);
           const BASE_URL_MAIL = process.env.VUE_APP_API_MAIL_URL;
           const MAILDISPUTE = `${BASE_URL_MAIL}dispute/`;
-          const serviceUrl = `${MAILDISPUTE}admin@nearp2p.com/${emailTrader},${email}/${order}/sell`;
+          const serviceUrl = `${MAILDISPUTE}info@metademocracia.social/${emailTrader},${email}/${order}/sell`;
           if(emailTrader){   
             await axios.get(serviceUrl);
           }
@@ -739,11 +739,11 @@ export default {
 		},
     async sendMail(typeOffer, order) { 
         const data = await walletUtils.verifyWallet();
-        const email = data?.data?.email;
+        const email = await encrypDecript.decrypFromDb(data?.data?.email);
         if(this.dataTrader.length>0){
           const emailTrader = await encrypDecript.decryp(this.dataTrader[0].email);
           const BASE_URL_MAIL = process.env.VUE_APP_API_MAIL_URL;
-          const MAIL = `${BASE_URL_MAIL}admin@nearp2p.com/`;
+          const MAIL = `${BASE_URL_MAIL}info@metademocracia.social/`;
           const serviceUrlTrader = `${MAIL}${emailTrader}/${order}/${typeOffer.toString()}`;
           const serviceUrlCustomer = `${MAIL}${email}/${order}/${typeOffer.toString()}`;
           // console.log(serviceUrl);
@@ -754,7 +754,7 @@ export default {
        }
 		},
     async sendBotMessage(orderId, sTatus, signerId, ownerId, tYpe) {
-          await axios.post(process.env.URL_BACKEND +'/api/v1/botp2p/handle_update', 
+          await axios.post(process.env.URL_NEARP2P_BOT +'/handle_update', 
           { order_id: orderId,
             status: sTatus,
             signer_id: signerId,

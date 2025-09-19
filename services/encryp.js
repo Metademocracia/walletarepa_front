@@ -1,6 +1,7 @@
 const CryptoJS = require("crypto-js");
 
 const key = process.env.VUE_APP_PASSPHRASE;
+const keyFromDb = process.env.CLAVE;
 
 const stringToHex = (str) => {
   let hex = '';
@@ -32,13 +33,25 @@ function encryp(data){
 }
 
 function decryp(data){
+  console.log('key', key)
   // const dataString = hexToString(data);
   const wA = CryptoJS.AES.decrypt(data, key);
+  return wA.toString(CryptoJS.enc.Utf8);
+}
+
+function decrypFromDb(data){
+  // const dataString = hexToString(data);
+  const keyHex = CryptoJS.enc.Utf8.parse(keyFromDb);
+  const wA = CryptoJS.DES.decrypt(data, keyHex, {
+    mode: CryptoJS.mode.ECB,
+    padding: CryptoJS.pad.Pkcs7
+  });
   return wA.toString(CryptoJS.enc.Utf8);
 }
 
 
 export default {
   encryp,
-  decryp
+  decryp,
+  decrypFromDb
 }

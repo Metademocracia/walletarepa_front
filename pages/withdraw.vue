@@ -514,7 +514,7 @@ export default {
 
         // DEBUG: Logging arguments for storage_balance_of
         const storageBalanceArgs = { account_id: `${this.address.split(".")[0]}.${CONTRACT_NAME}` };
-        console.log("Calling storage_balance_of with:", storageBalanceArgs);
+        // console.log("Calling storage_balance_of with:", storageBalanceArgs);
         const cleanedStorageBalanceArgs = JSON.parse(JSON.stringify(storageBalanceArgs));
         const result = await account.viewFunction(CONTRACT_NAME_USDT, "storage_balance_of", cleanedStorageBalanceArgs);
         
@@ -534,7 +534,7 @@ export default {
 
         // DEBUG: Logging arguments for get_subcontract
         const getSubcontractArgs = { user_id: this.address };
-        console.log("Calling get_subcontract with:", getSubcontractArgs);
+        // console.log("Calling get_subcontract with:", getSubcontractArgs);
         const cleanedGetSubcontractArgs = JSON.parse(JSON.stringify(getSubcontractArgs));
         this.subcontract = await account.viewFunctionV1(
           CONTRACT_NAME,
@@ -549,7 +549,7 @@ export default {
           this.subcontract = { contract: `${this.address.split(".")[0]}.${CONTRACT_NAME}` };
           // DEBUG: Logging arguments for create_subcontract_user
           const createSubcontractArgs = { subaccount_id: this.subcontract.contract, asset: "USDT" };
-          console.log("Calling create_subcontract_user with:", createSubcontractArgs);
+          // console.log("Calling create_subcontract_user with:", createSubcontractArgs);
           const cleanedCreateSubcontractArgs = JSON.parse(JSON.stringify(createSubcontractArgs));
           const createSubCobtractUser = await account.functionCall({
             contractId: CONTRACT_NAME,
@@ -558,7 +558,7 @@ export default {
             args: cleanedCreateSubcontractArgs,
             attachedDeposit: "1"
           });
-          console.log( "create_subcontract_user");
+          // console.log( "create_subcontract_user");
           console.log(createSubCobtractUser);
           // console.log(createSubCobtractUser)
           // if (!createSubCobtractUser || createSubCobtractUser.status.SuccessValue !== "") {
@@ -587,7 +587,7 @@ export default {
 
            // DEBUG: Logging arguments for storage_deposit
            const storageDepositArgs = { account_id: this.subcontract.contract };
-           console.log("Calling storage_deposit with:", storageDepositArgs);
+           // console.log("Calling storage_deposit with:", storageDepositArgs);
            const cleanedStorageDepositArgs = JSON.parse(JSON.stringify(storageDepositArgs));
            const activarSubcuenta = await account.functionCall({
              contractId: CONTRACT_NAME_USDT,
@@ -607,7 +607,7 @@ export default {
         
         // DEBUG: Logging arguments for ft_transfer
         const ftTransferArgs = { receiver_id: this.subcontract.contract, amount: orderAmount };
-        console.log("Calling ft_transfer with:", ftTransferArgs);
+        // console.log("Calling ft_transfer with:", ftTransferArgs);
         const cleanedFtTransferArgs = JSON.parse(JSON.stringify(ftTransferArgs));
         const ftTransfer = await account.functionCall({
           contractId: CONTRACT_NAME_USDT,
@@ -633,7 +633,7 @@ export default {
           rate: parseFloat(this.selectedPayment.rate),
           assosiated: "arepaWallet"
           };
-        console.log("Calling accept_offer with:", acceptOfferArgs);
+        // console.log("Calling accept_offer with:", acceptOfferArgs);
         const cleanedAcceptOfferArgs = JSON.parse(JSON.stringify(acceptOfferArgs));
         const acceptOffer = await account.functionCall({
           contractId: CONTRACT_NAME,

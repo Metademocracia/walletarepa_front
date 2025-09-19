@@ -5,10 +5,11 @@ const development = process.env.NODE_ENV !== "production";
 
 export default {
   env: {
-    Network: process.env.NETWORK || "testnet",
+    NETWORK: process.env.NETWORK || "testnet",
     baseUrl: process.env.BASE_URL || "http://localhost:3000",
     WEB_DOMAIN: process.env.WEB_DOMAIN || "http://localhost:3000",
     URL_BACKEND: process.env.URL_BACKEND || "http://localhost:3000",
+    URL_NEARP2P_BOT: process.env.URL_NEARP2P_BOT || "http://localhost:3000",
     URL_BACKEND_SWAP: process.env.URL_BACKEND_SWAP || "http://localhost:3000",
     URL_APIP_PRICE: process.env.URL_APIP_PRICE || "http://localhost:3000",
     URL_API_NFT: process.env.URL_API_NFT || "http://localhost:3000",
@@ -22,8 +23,11 @@ export default {
     VUE_APP_CONTRACT_NAME_USDT: process.env.VUE_APP_CONTRACT_NAME_USDT || "http://localhost:3000",
     VUE_APP_CONTRACT_NAME_DAO_METADEMOCRACIA: process.env.VUE_APP_CONTRACT_NAME_DAO_METADEMOCRACIA || "http://localhost:3000",
     VUE_APP_API_MAIL_URL: process.env.VUE_APP_API_MAIL_URL || "http://localhost:3000",
-    VUE_APP_CHAT_FIREBASE: process.env.VUE_APP_CHAT_FIREBASE,
+    VUE_APP_CHAT_FIREBASE: process.env.VUE_APP_CHAT_FIREBASE || "TESTNET",
+    VUE_APP_CHAT_FIREBASE_API_KEY: process.env.VUE_APP_CHAT_FIREBASE_API_KEY,
     VUE_APP_PASSPHRASE: process.env.VUE_APP_PASSPHRASE,
+    CLAVE: process.env.CLAVE,
+    GRAPH_URL: process.env.GRAPH_URL || "https://your-graphql-endpoint.com/graphql",
     VUE_API_KEY_PIKESPEAK: process.env.VUE_API_KEY_PIKESPEAK,
   },
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
@@ -137,8 +141,10 @@ export default {
       default: {
         httpEndpoint: process.env.GRAPH_URL,
         fetchPolicy: 'network-only', // Add this line
-        headers: {
-          Authorization: 'Bearer 5bbe3f24e298a1443a7876d8269a6504',
+        httpLinkOptions: {
+          headers: {
+            Authorization: 'Bearer 5bbe3f24e298a1443a7876d8269a6504',
+          },
         },
       },
     },

@@ -185,8 +185,8 @@ export default {
   data() {
     return {
       photo: null,
-      orderId: sessionStorage.getItem("orderId"),
-      operation: sessionStorage.getItem("operation"),
+      orderId: localStorage.getItem("orderId"),
+      operation: localStorage.getItem("operation"),
       MessageSpecialId,
       MessageType,
       uid: "2",
@@ -200,7 +200,7 @@ export default {
       showInfoCard: false,
       showMoreInfoCard: false,
       infoMessage: "Los Mercantes de este P2P express son verificados y con KYC previo, si Ud. por alguna razón no se siente seguro, puede cancelar la operación en cualquier momento, o iniciar una disputa.",
-      terms: sessionStorage.getItem("terms"),
+      terms: localStorage.getItem("terms"),
       chat: null,
       file: null,
       unreadMessagesCount: 0,
@@ -233,7 +233,7 @@ export default {
   },
   mounted() {
     this.getMessages()
-    this.terms = sessionStorage.getItem("terms");
+    this.terms = localStorage.getItem("terms");
     this.showInfoCard= true
     // this.pollData();
     // this.getMessages()
@@ -346,6 +346,7 @@ export default {
     },
 
     getMessages() {
+      console.log(`${this.operation}${this.orderId}`)
       // console.log("VUE_APP_CHAT_FIREBASE",process.env.VUE_APP_CHAT_FIREBASE)
       /* db
         .collection(process.env.VUE_APP_CHAT_FIREBASE)

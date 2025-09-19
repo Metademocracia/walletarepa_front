@@ -378,19 +378,19 @@ export default {
                 }
                 this.orderHistory(orderId, operation);
               } */
-              sessionStorage.removeItem('operation');
-              sessionStorage.removeItem('orderId');
+              localStorage.removeItem('operation');
+              localStorage.removeItem('orderId');
               
               // this.$router.push('/');
               return
             };
             
-            let orderId = sessionStorage.getItem('orderId');
-            let operation = sessionStorage.getItem('operation');
+            let orderId = localStorage.getItem('orderId');
+            let operation = localStorage.getItem('operation');
 
             if(orderId === "undefined" || operation === "undefined" || orderId === undefined || operation === undefined || !orderId || !operation ) {
-              sessionStorage.setItem('orderId', data[0].order_id);
-              sessionStorage.setItem('operation', this.operation);
+              localStorage.setItem('orderId', data[0].order_id);
+              localStorage.setItem('operation', this.operation);
               orderId = data[0].order_id;
               operation = this.operation;
             }
@@ -398,8 +398,8 @@ export default {
             let order =  data.find((item) => item.order_id === orderId);
 
             if(order === "undefined" || order === undefined || !order){
-              sessionStorage.setItem('orderId', data[0].order_id);
-              sessionStorage.setItem('operation', this.operation);
+              localStorage.setItem('orderId', data[0].order_id);
+              localStorage.setItem('operation', this.operation);
               orderId = data[0].order_id;
               operation = this.operation;
               order =  data.find((item) => item.order_id === orderId);
@@ -407,12 +407,12 @@ export default {
             
             this.data = [];
             this.data.push(order);
-            sessionStorage.setItem('data', this.data.length);
+            localStorage.setItem('data', this.data.length);
             this.trader(this.data[0].owner_id);
             this.terms = this.data[0].terms_conditions;
             /// //////////////////////////////////////
             this.tokenSymbol = this.data[0].asset;
-            this.tokenImage = this.data[0].asset === "USDT" ? "https://nearp2p.com/dv/portal/usdt.svg" : "https://nearp2p.com/dv/portal/near-wallet-icon.svg";
+            this.tokenImage = this.data[0].asset === "USDT" ? "https://metademocracia.fra1.digitaloceanspaces.com/walletp2p/usdt-svgrepo-com.svg" : "https://nearp2p.com/dv/portal/near-wallet-icon.svg";
             this.fiatSymbol = this.data[0].fiat_method === "1" ? "Bs." : "$" ;
             this.crypto = this.data[0].fiat_method === "1" ? "VES" : "USD" ;
 
@@ -421,7 +421,7 @@ export default {
               this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
             });
             this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
-            sessionStorage.setItem('operationAmount', this.operationAmount);
+            localStorage.setItem('operationAmount', this.operationAmount);
             this.orderId = this.data[0].order_id;
 
             this.endTime = this.data[0].time * 60;
@@ -477,7 +477,7 @@ export default {
               Object.entries(data.ordersells).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
-                sessionStorage.setItem('data', this.data.length);
+                localStorage.setItem('data', this.data.length);
                 this.trader(this.data[0].owner_id);
                 this.terms = this.data[0].terms_conditions;
                 // console.log(this.crypto, this.data[0].asset)
@@ -493,7 +493,7 @@ export default {
                   this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
                 });
                 this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
-                sessionStorage.setItem('operationAmount', this.operationAmount);
+                localStorage.setItem('operationAmount', this.operationAmount);
                 this.orderId = this.data[0].order_id;
                 localStorage.setItem('ord erId', this.orderId)
                 this.endTime = this.data[0].time * 60;
@@ -578,7 +578,7 @@ export default {
               Object.entries(data.orderbuys).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
-                sessionStorage.setItem('data', this.data.length);
+                localStorage.setItem('data', this.data.length);
                 this.trader(this.data[0].owner_id);
                 this.terms = this.data[0].terms_conditions;
 
@@ -591,7 +591,7 @@ export default {
 
                 walletUtils.getPrice(this.crypto, this.data[0].asset).then(price => {
                   this.exchangeRate = this.data[0].exchange_rate * price;
-                  sessionStorage.setItem('exchangeRate', this.exchangeRate);
+                  localStorage.setItem('exchangeRate', this.exchangeRate);
                   this.receiveAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) * this.exchangeRate: (this.data[0].operation_amount / 1e6) * this.exchangeRate;
                 });
                 this.operationAmount = this.tokenSymbol === "NEAR" ? this.yoctoNEARNEAR(this.data[0].operation_amount) : (this.data[0].operation_amount / 1e6);
@@ -672,17 +672,17 @@ export default {
               Object.entries(data).forEach(([key, value]) => {
                 this.dataCancel.push(value);
                 if(this.dataCancel[0].status === 4){
-                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  localStorage.clear(); // Clear all data from localStorage
                   localStorage.removeItem('emailCounter')
-                  sessionStorage.removeItem('orderId')
-                  sessionStorage.removeItem('operation')
+                  localStorage.removeItem('orderId')
+                  localStorage.removeItem('operation')
                   this.$router.push('/tx-canceled');
                 }
                 if(this.dataCancel[0].status === 2 || this.dataCancel[0].status === 3){
-                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  localStorage.clear(); // Clear all data from localStorage
                   localStorage.removeItem('emailCounter')
-                  sessionStorage.removeItem('orderId')
-                  sessionStorage.removeItem('operation')
+                  localStorage.removeItem('orderId')
+                  localStorage.removeItem('operation')
                   this.$router.push('/tx-executed');
                 }
               });
@@ -715,16 +715,16 @@ export default {
               Object.entries(data.orderhistorysells).forEach(([key, value]) => {
                 this.dataCancel.push(value);
                 if(this.dataCancel[0].status === 4){
-                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  localStorage.clear(); // Clear all data from localStorage
                   localStorage.removeItem('emailCounter')
-                  sessionStorage.removeItem('orderId')
+                  localStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                   this.$router.push('/tx-canceled');
                 }
                 if(this.dataCancel[0].status === 2){
-                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  localStorage.clear(); // Clear all data from localStorage
                   localStorage.removeItem('emailCounter')
-                  sessionStorage.removeItem('orderId')
+                  localStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                   this.$router.push('/tx-executed');
                 }
@@ -758,16 +758,16 @@ export default {
               Object.entries(data.orderhistorybuys).forEach(([key, value]) => {
                 this.dataCancel.push(value);
                 if(this.dataCancel[0].status === 4){
-                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  localStorage.clear(); // Clear all data from localStorage
                   localStorage.removeItem('emailCounter')
-                  sessionStorage.removeItem('orderId')
+                  localStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                   this.$router.push('/tx-canceled');
                 }
                 if(this.dataCancel[0].status === 2){
-                  sessionStorage.clear(); // Clear all data from sessionStorage
+                  localStorage.clear(); // Clear all data from localStorage
                   localStorage.removeItem('emailCounter')
-                  sessionStorage.removeItem('orderId')
+                  localStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                     this.$router.push('/tx-executed');
                 }
@@ -853,15 +853,18 @@ export default {
 			},
     async sendMail() { 
         const data = await walletUtils.verifyWallet();
-        const email = data?.data?.email;
+        const email = await encrypDecript.decrypFromDb(data?.data?.email);
         if(this.dataTrader.length>0){
           const emailTrader = await encrypDecript.decryp(this.dataTrader[0].email);
+          console.log(this.dataTrader[0].email)
           const BASE_URL_MAIL = process.env.VUE_APP_API_MAIL_URL;
-          const MAIL = `${BASE_URL_MAIL}admin@nearp2p.com/`;
+          const MAIL = `${BASE_URL_MAIL}info@metademocracia.social/`;
           const serviceUrlTrader = `${MAIL}${emailTrader}/0/nueva`;
           const serviceUrlCustomer = `${MAIL}${email}/0/nueva`;
           //  console.log(serviceUrlTrader, serviceUrlCustomer);
-          if(emailTrader && (!localStorage.getItem('emailCounter') || localStorage.getItem('emailCounter') !== 'true')){   
+          if(localStorage.getItem('emailCounter') !== 'true'){  
+            // console.log('Sending email to trader and customer'); 
+            // console.log(serviceUrlCustomer, serviceUrlTrader);
             await axios.get(serviceUrlTrader);
             await axios.get(serviceUrlCustomer);
             localStorage.setItem('emailCounter', "true");
@@ -870,7 +873,7 @@ export default {
 		},
     async sendBotMessage(orderId, sTatus, signerId, ownerId, tYpe) {
       if(!localStorage.getItem('MessageCounter')){
-          await axios.post(process.env.URL_BACKEND +'/api/v1/botp2p/handle_update', 
+          await axios.post(process.env.URL_NEARP2P_BOT +'/handle_update', 
           { order_id: orderId,
             status: sTatus,
             signer_id: signerId,
@@ -897,13 +900,13 @@ export default {
     //         this.seconds = 0;
     //     }  
     //     if(this.dataCancel.length > 0 && this.dataCancel[0].status === 3){
-    //         sessionStorage.clear(); // Clear all data from sessionStorage
+    //         localStorage.clear(); // Clear all data from localStorage
     //         localStorage.removeItem('emailCounter')
     //         localStorage.removeItem('orddderId')
     //         this.$router.push('/tx-executed');
     //     }
     //     if(this.dataCancel.length > 0 && this.dataCancel[0].status === 4){
-    //         sessionStorage.clear(); // Clear all data from sessionStorage
+    //         localStorage.clear(); // Clear all data from localStorage
     //         localStorage.removeItem('emailCounter')
     //         localStorage.removeItem('orddderId')
     //         this.$router.push('/tx-canceled');
