@@ -319,6 +319,7 @@ export default {
     console.log('VUE_APP_CHAT_FIREBASE_API_KEY:', process.env.VUE_APP_CHAT_FIREBASE_API_KEY);
     console.log('VUE_APP_PASSPHRASE:', process.env.VUE_APP_PASSPHRASE);
     console.log('CLAVE:', process.env.CLAVE);
+    console.log('ROUTER_RPC:', process.env.ROUTER_RPC);
     console.log('GRAPH_URL:', process.env.GRAPH_URL);
     console.log('VUE_API_KEY_PIKESPEAK:', process.env.VUE_API_KEY_PIKESPEAK);
 
