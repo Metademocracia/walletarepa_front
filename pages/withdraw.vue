@@ -513,9 +513,13 @@ export default {
         const account = await walletUtils.nearConnection();
 
         // DEBUG: Logging arguments for storage_balance_of
+        console.log('CONTRACT_NAME:', CONTRACT_NAME);
+        console.log('CONTRACT_NAME_USDT:', CONTRACT_NAME_USDT);
+        console.log('this.address:', this.address);
         const storageBalanceArgs = { account_id: `${this.address.split(".")[0]}.${CONTRACT_NAME}` };
-        // console.log("Calling storage_balance_of with:", storageBalanceArgs);
+        console.log('storageBalanceArgs:', storageBalanceArgs);
         const cleanedStorageBalanceArgs = JSON.parse(JSON.stringify(storageBalanceArgs));
+        console.log('cleanedStorageBalanceArgs:', cleanedStorageBalanceArgs);
         const result = await account.viewFunction(CONTRACT_NAME_USDT, "storage_balance_of", cleanedStorageBalanceArgs);
         
         if ( this.nearBalanceObject < 0.0126 && result == null ) {
