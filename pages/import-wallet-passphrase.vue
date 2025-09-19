@@ -100,13 +100,17 @@ export default {
         }) */
         
         await WalletUtils.getNearId(publicKey).then((item) => {
+          console.log('getNearId result:', item);
           const red = process.env.NETWORK === "testnet" ? "testnet" : "near";
+          console.log('red:', red);
           const accountId = item.find((item) => item.includes(red))
+          console.log('accountId found:', accountId);
           if(accountId) {
             address = accountId
           }
+          console.log('final address:', address);
         }).catch((error) => {
-          console.log(error)
+          console.log('getNearId error:', error);
         })
 
         // agregando nueva cuenta
