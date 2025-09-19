@@ -24,10 +24,10 @@ jobs:
 
       - name: Create .env file
         run: |
-          echo "NETWORK=${{ secrets.NETWORK }}" > .env
-          echo "NEAR_ENV=${{ secrets.NEAR_ENV }}" >> .env
+          echo "NETWORK=mainnet" > .env
+          echo "NEAR_ENV=mainnet" >> .env
           echo "CLIEN_ID_GOOGLE=${{ secrets.CLIEN_ID_GOOGLE }}" >> .env
-          echo "BASE_URL=${{ secrets.BASE_URL }}" >> .env
+          echo "BASE_URL=/" >> .env
           echo "VUE_APP_PASSPHRASE=${{ secrets.VUE_APP_PASSPHRASE }}" >> .env
           echo "CLAVE=${{ secrets.CLAVE }}" >> .env
           echo "URL_BACKEND=${{ secrets.URL_BACKEND }}" >> .env
