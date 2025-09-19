@@ -240,8 +240,8 @@ export default {
       this.btnLoading = false;
     }
 
-    if(sessionStorage.getItem("flags")) {
-      this.listFlags = JSON.parse(sessionStorage.getItem("flags"));
+    if(localStorage.getItem("flags")) {
+      this.listFlags = JSON.parse(localStorage.getItem("flags"));
     } else {
       this.flagscdn();
     }
@@ -313,7 +313,7 @@ export default {
     },
     
     async getBalance() {
-      const storedTokenBalances = JSON.parse(sessionStorage.getItem('allTokenBalances'));
+      const storedTokenBalances = JSON.parse(localStorage.getItem('allTokenBalances'));
       // console.log(storedTokenBalances.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase()))
       if(storedTokenBalances) {
         const tokenSelect  = storedTokenBalances.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase())
@@ -337,7 +337,7 @@ export default {
     },
 
     getNearTokenBalance() {
-      const allTokenBalances = JSON.parse(sessionStorage.getItem('allTokenBalances'));
+      const allTokenBalances = JSON.parse(localStorage.getItem('allTokenBalances'));
       this.nearToken = allTokenBalances.find(item => item.contract === "NEAR").balance || 0.0;
       // console.log(this.nearToken)
     },
@@ -381,7 +381,7 @@ export default {
               this.listFlags.push(value);
             }
           );
-          sessionStorage.setItem("flags", JSON.stringify(this.listFlags));
+          localStorage.setItem("flags", JSON.stringify(this.listFlags));
         });
     },
     formatNumber(number) {

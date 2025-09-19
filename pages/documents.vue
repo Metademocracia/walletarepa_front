@@ -69,7 +69,7 @@ export default {
   beforeUnmount() {
     // Clear session storage when the component is unmounted
     window.addEventListener("beforeunload", () => {
-      sessionStorage.clear();
+      
     });
   },
   methods: {
@@ -91,17 +91,17 @@ export default {
     },
     async getNftContractsByAccount() {
       try {
-          const wallet = localStorage.getItem('address'); // Use sessionStorage instead of localStorage
+          const wallet = localStorage.getItem('address'); // Use localStorage instead of localStorage
           if (!wallet) {
               return;
           }
           
-          let collections = sessionStorage.getItem('collections'); // Retrieve collections from sessionStorage
+          let collections = localStorage.getItem('collections'); // Retrieve collections from localStorage
           console.log("collections1: ", collections)
           if (!collections) {
               collections = await walletUtils.getNfts(wallet);
               console.log("collections2: ", collections)
-              sessionStorage.setItem('collections', JSON.stringify(collections)); // Cache collections in sessionStorage
+              localStorage.setItem('collections', JSON.stringify(collections)); // Cache collections in localStorage
           } else {
               collections = JSON.parse(collections); // Parse cached collections if available
           }

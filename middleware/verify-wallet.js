@@ -2,7 +2,7 @@ import walletUtils from '@/services/wallet';
 
 
 export default async function(context) {
-  const data = sessionStorage.getItem('data') ? sessionStorage.getItem('data') : 0;
+  const data = localStorage.getItem('data') ? localStorage.getItem('data') : 0;
   try {
     const utilsdata = await walletUtils.verifyWallet();
     if (!utilsdata || !(utilsdata?.data?.email && utilsdata?.data?.cedula && utilsdata?.data?.name && utilsdata?.data?.walletname)) {

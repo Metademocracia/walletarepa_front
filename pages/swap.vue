@@ -335,7 +335,7 @@ export default {
     },
     loadTokens() {
       // const inventory = await tokens.getInventoryUser();
-      const storedTokenBalances = JSON.parse(sessionStorage.getItem('allTokenBalances'));
+      const storedTokenBalances = JSON.parse(localStorage.getItem('allTokenBalances'));
       const inventory = { fts: storedTokenBalances }; // await tokens.getListTokensBalance()
 
       console.log("inventory", inventory)

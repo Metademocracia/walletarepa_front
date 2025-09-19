@@ -171,13 +171,13 @@ export default {
           amount: this.amount,
           dataToken: this.dataToken,
         })
-        sessionStorage.setItem("send-json", json);
+        localStorage.setItem("send-json", json);
         this.$router.push({ path: "/send-details" });
       }
     },
 
     async getBalance() {
-      const storedTokenBalances = JSON.parse(sessionStorage.getItem('allTokenBalances'));
+      const storedTokenBalances = JSON.parse(localStorage.getItem('allTokenBalances'));
       // console.log(storedTokenBalances.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase()))
       if(storedTokenBalances) {
         const tokenSelect  = storedTokenBalances.find((item) => item.symbol.toLocaleLowerCase() === "USDT".toLocaleLowerCase())
@@ -220,7 +220,7 @@ export default {
     selectFiat(fiat) {
       const selectedFiat = this.listFiats.find(item => item.fiat_method === fiat);
       if (selectedFiat) {
-        sessionStorage.setItem('selectedFiat', selectedFiat.id);
+        localStorage.setItem('selectedFiat', selectedFiat.id);
       } else {
         console.error('Fiat not found');
       }
@@ -322,11 +322,11 @@ export default {
               Object.entries(data).forEach(([key, value]) => {
                 this.data = [];
                 this.data.push(value);
-                sessionStorage.setItem('data', this.data.length);
+                localStorage.setItem('data', this.data.length);
                 this.orderId = this.data[0].order_id;
-                sessionStorage.setItem('data', this.data.length);
+                localStorage.setItem('data', this.data.length);
                 localStorage.setItem('emailCounter', 'true');
-                sessionStorage.setItem('orderId', this.data[0].order_id);
+                localStorage.setItem('orderId', this.data[0].order_id);
               });
           });
     },
@@ -369,9 +369,9 @@ export default {
     //           Object.entries(data.orderbuys).forEach(([key, value]) => {
     //             this.data = [];
     //             this.data.push(value);
-    //             sessionStorage.setItem('data', this.data.length);
+    //             localStorage.setItem('data', this.data.length);
     //             this.orderId = this.data[0].order_id;
-    //             sessionStorage.setItem('data', this.data.length);
+    //             localStorage.setItem('data', this.data.length);
     //             localStorage.setItem('emailCounter', 'true');
     //             localStorage.setItem('orderId', this.data[0].order_id);
     //           });

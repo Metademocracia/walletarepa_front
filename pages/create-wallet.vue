@@ -135,8 +135,8 @@ export default {
           },
         }).then(() => {
           this.loading = false
-          sessionStorage.setItem("email", this.emailImput.toLowerCase());
-          sessionStorage.setItem("cedula", this.cedulaImput);
+          localStorage.setItem("email", this.emailImput.toLowerCase());
+          localStorage.setItem("cedula", this.cedulaImput);
           // localStorage.setItem("login", true);
           
           // this.$router.push(utils.routeAction(this.$route.query.action,"/create-wallet-verification"));

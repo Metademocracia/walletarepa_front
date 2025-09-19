@@ -96,7 +96,7 @@ export default {
       domain: null,
       contract: null,
       token: {},
-      address: sessionStorage.getItem("connectAppAddressSelect"),
+      address: localStorage.getItem("connectAppAddressSelect"),
       loginNear: false,
     }
   },
@@ -108,13 +108,13 @@ export default {
     }
   },
   created() {
-    // const token = sessionStorage.getItem("token");
+    // const token = localStorage.getItem("token");
     /* let tokenJSON;
     if(this.$route.query.token){
       // const tokenString = window.atob(this.$route.query.token);
       const tokenString = encryp.decryp(this.$route.query.token);
       tokenJSON = JSON.parse(tokenString);
-      // sessionStorage.setItem("token", tokenString);
+      // localStorage.setItem("token", tokenString);
     }
 
     
@@ -154,8 +154,8 @@ export default {
       
       const account = localStorageUser.getAccount(this.address)
     
-      // sessionStorage.removeItem("token");
-      // sessionStorage.removeItem("connectAppAddressSelect")
+      // localStorage.removeItem("token");
+      // localStorage.removeItem("connectAppAddressSelect")
     
       if(this.token?.public_key) {
         const accountNear = await walletFn.nearConnection(this.address)
@@ -238,8 +238,8 @@ export default {
       })
       const token = window.btoa(json)
       
-      // sessionStorage.removeItem("token");
-      // sessionStorage.removeItem("connectAppAddressSelect")
+      // localStorage.removeItem("token");
+      // localStorage.removeItem("connectAppAddressSelect")
       
       // const paramsOrigin = this.$route.query?.success_url.split("?").length > 0 ? "&" : "?"
       // const ruta =  `${this.$route.query?.success_url}${paramsOrigin}account_id=${account.address}&all_keys=${account.privateKey}`;// this.token.success;

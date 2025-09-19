@@ -116,15 +116,15 @@ export default {
       const jsonCreateImportProccess = JSON.stringify({
         path: "/",
       })
-      sessionStorage.setItem("create-import-proccess", jsonCreateImportProccess);
-      console.log(sessionStorage.getItem("create-import-proccess"))
+      localStorage.setItem("create-import-proccess", jsonCreateImportProccess);
+      console.log(localStorage.getItem("create-import-proccess"))
       this.$router.push({ path: '/import-wallet'});
     },
     createAccount() { 
       const jsonCreateImportProccess = JSON.stringify({
         path: "/",
       })
-      sessionStorage.setItem("create-import-proccess", jsonCreateImportProccess);
+      localStorage.setItem("create-import-proccess", jsonCreateImportProccess);
       this.$router.push({ path: '/create-wallet'});
     }
   },

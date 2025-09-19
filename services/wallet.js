@@ -361,7 +361,7 @@ async function getRecentActivity(filter) {
     });
   }
   let resultDataActivity = [];
-  const cacheDataActivity = sessionStorage.getItem('recentActivity');
+  const cacheDataActivity = localStorage.getItem('recentActivity');
 
   if(cacheDataActivity && !filter) {
     resultDataActivity = JSON.parse(cacheDataActivity);
@@ -578,7 +578,7 @@ async function getRecentActivity(filter) {
   
 
   if(!filter) {
-    sessionStorage.setItem('recentActivity', JSON.stringify(resultDataActivity))
+    localStorage.setItem('recentActivity', JSON.stringify(resultDataActivity))
   }
 
   return resultDataActivity;

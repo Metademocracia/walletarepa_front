@@ -114,8 +114,8 @@ export default {
       this.disabledResend = true
         await axios.post(process.env.URL_BACKEND +'/wallet/send-code-verify-email', 
         {
-          email: sessionStorage.getItem("email"),
-          cedula: sessionStorage.getItem("cedula")
+          email: localStorage.getItem("email"),
+          cedula: localStorage.getItem("cedula")
         }, {
           headers: {
             'accept': 'application/json',
@@ -134,7 +134,7 @@ export default {
       this.error = null;
       
       // const route = "email-wallet-import"
-      const params = {email: sessionStorage.getItem("email"), cedula: sessionStorage.getItem("cedula"), code: this.otp.toString()}
+      const params = {email: localStorage.getItem("email"), cedula: localStorage.getItem("cedula"), code: this.otp.toString()}
       
       /* const importWalletNickname = localStorage.getItem("importEmailNickname")
       if(importWalletNickname !== undefined && importWalletNickname !== null) {

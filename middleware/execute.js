@@ -14,14 +14,14 @@ export default function ({ redirect }) {
       const tokenString = encryp.decryp(this.$route.query.token);
       const tokenJSON = JSON.parse(tokenString);
       
-      sessionStorage.setItem("token", tokenString);
+      localStorage.setItem("token", tokenString);
 
       // console.log("entro aqui en grande 3")
       token = tokenJSON
     } else {
       // console.log("entro aqui en grande 4")
-      // console.log(sessionStorage.getItem("token"))
-      token = JSON.parse(sessionStorage.getItem("token"));
+      // console.log(localStorage.getItem("token"))
+      token = JSON.parse(localStorage.getItem("token"));
     } 
     
     console.log("entro aqui en grande 5")

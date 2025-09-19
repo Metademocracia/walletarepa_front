@@ -115,8 +115,8 @@ export default {
         
         localStorage.setItem("auth", true)
 
-        // this.$router.push({ path: sessionStorage.getItem("create-import-proccess")})
-        // this.$router.push(JSON.parse(sessionStorage.getItem("create-import-proccess")))
+        // this.$router.push({ path: localStorage.getItem("create-import-proccess")})
+        // this.$router.push(JSON.parse(localStorage.getItem("create-import-proccess")))
 
         this.$router.push({path: '/'});
         // this.$router.push(this.localePath(utils.routeLogin(this.$route.query.action)));

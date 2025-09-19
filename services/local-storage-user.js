@@ -134,7 +134,7 @@ function getCurrentAccount() {
 function getListUser() {
   try {
     let listUsers = localStorage.getItem('listUser');
-    const listUnlock = sessionStorage.getItem('listUser')
+    const listUnlock = localStorage.getItem('listUser')
     if (listUnlock && listUnlock !== 'undefined' && listUnlock !== 'null' && listUnlock !== undefined && listUnlock !== null) {
       listUsers = listUnlock
     }

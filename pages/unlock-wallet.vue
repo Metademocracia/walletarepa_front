@@ -131,7 +131,7 @@ export default {
 
         const userMapStr = JSON.stringify(Array.from(usersData))
 
-        sessionStorage.setItem('listUser', userMapStr)
+        localStorage.setItem('listUser', userMapStr)
         localStorage.setItem('listUser', userMapStr)
 
         // const token = localStorage.getItem("token")

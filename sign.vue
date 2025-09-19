@@ -216,12 +216,12 @@ export default {
       // const tokenString = window.atob(this.$route.query.token);
       const tokenString = encryp.decryp(this.$route.query.token);
       const tokenJSON = JSON.parse(tokenString);
-      // sessionStorage.setItem("token", tokenString);
+      // localStorage.setItem("token", tokenString);
       this.token = tokenJSON
     }
   },
   mounted() {
-    // this.token = JSON.parse(sessionStorage.getItem("token"));
+    // this.token = JSON.parse(localStorage.getItem("token"));
     this.loadData();
   },
   methods: {
@@ -272,7 +272,7 @@ export default {
           this.$alert(ALERT_TYPE.ERROR, { desc: "Su balance no es suficiente" })
           return
         }
-        // const token = JSON.parse(sessionStorage.getItem("token"));
+        // const token = JSON.parse(localStorage.getItem("token"));
         const dataUser = localStorageUser.getAccount(this.token.from);
         const privateKey = dataUser.privateKey;
         const address = dataUser.address;
@@ -456,7 +456,7 @@ export default {
           this.$alert(ALERT_TYPE.ERROR, { desc: "Su balance no es suficiente" })
           return
         }
-        // const token = JSON.parse(sessionStorage.getItem("token"));
+        // const token = JSON.parse(localStorage.getItem("token"));
         const dataUser = localStorageUser.getAccount(this.token.from);
         const privateKey = dataUser.privateKey;
         const address = dataUser.address;
@@ -508,7 +508,7 @@ export default {
         )
         const token = window.btoa(json)
         
-        // sessionStorage.removeItem("token");
+        // localStorage.removeItem("token");
         
         // console.log("response: ", json);
 

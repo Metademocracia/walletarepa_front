@@ -299,7 +299,7 @@ export default {
 
     // this.orderSell();
     this.address = wallet.getCurrentAccount().address;
-    sessionStorage.removeItem("create-import-proccess");
+    localStorage.removeItem("create-import-proccess");
 
     // localStorage.removeItem("importEmailNickname");
     // localStorage.removeItem("importEmail");
@@ -357,7 +357,7 @@ export default {
       // Set an interval to keep checking for a balance in session storage every 5 seconds
       
       // console.log('Checking for balance in session storage...');
-      const storedBalance = sessionStorage.getItem('balance');
+      const storedBalance = localStorage.getItem('balance');
       if (storedBalance) {
         this.balance = storedBalance;
         this.$refs.modalCryptos.model = true;
@@ -376,7 +376,7 @@ export default {
 
         // condition one get from session storage allTokenBalances
         // Check if data exists in session storage
-        let storedTokenBalances = JSON.parse(sessionStorage.getItem('allTokenBalances'));
+        let storedTokenBalances = JSON.parse(localStorage.getItem('allTokenBalances'));
 
         if (!storedTokenBalances) {
           console.log('No token balances found in session storage.');
@@ -388,7 +388,7 @@ export default {
         // Set an interval to keep checking for data in session storage every 5 seconds
         const intervalIdOne = setInterval(() => {
           // console.log('Checking for data in session storage...');
-          storedTokenBalances = JSON.parse(sessionStorage.getItem('allTokenBalances'));
+          storedTokenBalances = JSON.parse(localStorage.getItem('allTokenBalances'));
 
           if (storedTokenBalances) {
             // console.log('Loaded data from session storage:', storedTokenBalances);
@@ -401,7 +401,7 @@ export default {
 
         // Condition two get from  session storage balance
         // Check if balance exists in session storage
-        let storedBalance = sessionStorage.getItem('balance');
+        let storedBalance = localStorage.getItem('balance');
 
         if (storedBalance) {
           this.balance = storedBalance;
@@ -415,7 +415,7 @@ export default {
         // Set an interval to keep checking for a balance in session storage every 5 seconds
         const intervalIdTwo = setInterval(() => {
           // console.log('Checking for balance in session storage...');
-          storedBalance = sessionStorage.getItem('balance');
+          storedBalance = localStorage.getItem('balance');
           if (storedBalance) {
             this.balance = storedBalance;
             // console.log('Loaded balance from session storage:', this.balance);
@@ -426,7 +426,7 @@ export default {
         }, 5000);
       },
     alertSend() {
-      const result = sessionStorage.getItem("send-result");
+      const result = localStorage.getItem("send-result");
 
       if(result) {
         const resultSend = JSON.parse(result);
@@ -439,7 +439,7 @@ export default {
 
         this.$alert(resultSend.alertType,{ desc: `<a href="${resultSend.hashUrl}" target="_blank">${resultSend.hash}</a>` })
 
-        sessionStorage.removeItem("send-result");
+        localStorage.removeItem("send-result");
       }
     },
     openExplorer() {
@@ -558,18 +558,18 @@ export default {
             
             if(data.length <= 0){
               localStorage.removeItem('emailCounter');
-              sessionStorage.removeItem('orderId');
+              localStorage.removeItem('orderId');
               localStorage.removeItem('operation');
               this.pendingTrades = false;
               return;
             }
 
-            let orderId = sessionStorage.getItem('orderId');
+            let orderId = localStorage.getItem('orderId');
             let operation = localStorage.getItem('operation');
             
             
             if(orderId === "undefined" || operation === "undefined" || orderId === undefined || operation === undefined || !orderId || !operation ) {
-              sessionStorage.setItem('orderId', data[0].order_id);
+              localStorage.setItem('orderId', data[0].order_id);
               localStorage.setItem('operation', this.operation);
               orderId = data[0].order_id;
               operation = this.operation;
@@ -578,7 +578,7 @@ export default {
             let order =  data.find((item) => item.order_id === orderId);
 
             if(order === "undefined" || order === undefined || !order){
-              sessionStorage.setItem('orderId', data[0].order_id);
+              localStorage.setItem('orderId', data[0].order_id);
               localStorage.setItem('operation', this.operation);
               orderId = data[0].order_id;
               operation = this.operation;
@@ -593,11 +593,11 @@ export default {
     },
     enviar() {
       this.$router.push({ path: "/send" });
-      sessionStorage.setItem("push", "withdraw");
+      localStorage.setItem("push", "withdraw");
     },
     recargar() {
       this.$router.push({ path: "/deposit" });
-      sessionStorage.setItem("push", "deposit");
+      localStorage.setItem("push", "deposit");
     },
     // async orderBuy() {
     //   const selects = gql`
@@ -644,7 +644,7 @@ export default {
     //           });
     //         } else {
     //             localStorage.removeItem('emailCounter');
-    //             sessionStorage.removeItem('orderId');
+    //             localStorage.removeItem('orderId');
     //             localStorage.removeItem('operation');
     //             this.pendingTrades = false;
     //         }

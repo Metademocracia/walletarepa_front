@@ -206,8 +206,8 @@ export default {
     }
 	},
   mounted() {
-    if(sessionStorage.getItem("flags")) {
-      this.listFlags = JSON.parse(sessionStorage.getItem("flags"));
+    if(localStorage.getItem("flags")) {
+      this.listFlags = JSON.parse(localStorage.getItem("flags"));
     } else {
       this.flagscdn();
     }
@@ -304,7 +304,7 @@ export default {
               this.listFlags.push(value);
             }
           );
-          sessionStorage.setItem("flags", JSON.stringify(this.listFlags));
+          localStorage.setItem("flags", JSON.stringify(this.listFlags));
         });
     },
     selects() {
@@ -334,7 +334,7 @@ export default {
         }
       }
       `;
-      // const selectedFiat = sessionStorage.getItem('selectedFiat');
+      // const selectedFiat = localStorage.getItem('selectedFiat');
       // const eltoken = this.selectToken;
       let paymentMethods = new Set();
       this.listOffers = [];

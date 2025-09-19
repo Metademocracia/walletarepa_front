@@ -1,6 +1,6 @@
 export default function (data) {
   // If the user is not authenticated
-  if(!sessionStorage.getItem("create-import-proccess")) {
+  if(!localStorage.getItem("create-import-proccess")) {
     return data.redirect('/')
   }
 

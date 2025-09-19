@@ -79,7 +79,7 @@ export default {
       contrcat: null,
       address: null,
       routeCancel: null,
-      token: {}, // JSON.parse(sessionStorage.getItem("token")),
+      token: {}, // JSON.parse(localStorage.getItem("token")),
     }
   },
   head() {
@@ -89,7 +89,7 @@ export default {
     }
   },
   created() {
-    sessionStorage.removeItem("create-import-proccess")
+    localStorage.removeItem("create-import-proccess")
 
     // console.log((atob(this.$route.query.transactions).toString("UTF-10")))
 
@@ -100,7 +100,7 @@ export default {
       // const tokenString = window.atob(this.$route.query.token);
       const tokenString = encryp.decryp(this.$route.query.token);
       const tokenJSON = JSON.parse(tokenString);
-      // sessionStorage.setItem("token", tokenString);
+      // localStorage.setItem("token", tokenString);
       this.token = tokenJSON
     }
     
@@ -112,7 +112,7 @@ export default {
       // const tokenString = window.atob(this.$route.query.token);
       const tokenString = encryp.decryp(this.$route.query.token);
       const tokenJSON = JSON.parse(tokenString);
-      // sessionStorage.setItem("token", tokenString);
+      // localStorage.setItem("token", tokenString);
       this.token = tokenJSON
 
       this.domain = this.token.domain;
@@ -142,7 +142,7 @@ export default {
         path: "/login",
         query: this.$route.query
       })
-      sessionStorage.setItem("login-create-import-proccess", jsonCreateImportProccess);
+      localStorage.setItem("login-create-import-proccess", jsonCreateImportProccess);
       this.$router.push({path: '/'});
     }
 
@@ -171,7 +171,7 @@ export default {
         path: "/login",
         query: this.$route.query
       })
-      sessionStorage.setItem("create-import-proccess", jsonCreateImportProccess);
+      localStorage.setItem("create-import-proccess", jsonCreateImportProccess);
       this.$router.push({path: '/import-wallet'});
     },
     selectAccount(address, array){
@@ -198,7 +198,7 @@ export default {
       
       // if (!this.address || !this.domain || !this.contract) {console.log("error"); return}
       
-      sessionStorage.setItem("connectAppAddressSelect", this.address);
+      localStorage.setItem("connectAppAddressSelect", this.address);
       
       this.$router.push({ path: "/login-limited-permissions", query: this.$route.query });
       

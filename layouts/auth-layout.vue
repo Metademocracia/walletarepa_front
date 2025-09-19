@@ -59,10 +59,10 @@ export default {
       const route = this.$route.path
 
       if (route.endsWith("/")) {
-        if(!sessionStorage.getItem("indexSelect")) return route.slice(0, -1)
+        if(!localStorage.getItem("indexSelect")) return route.slice(0, -1)
 
-        if(sessionStorage.getItem("indexSelect") === "create-import") {
-          sessionStorage.removeItem("indexSelect")
+        if(localStorage.getItem("indexSelect") === "create-import") {
+          localStorage.removeItem("indexSelect")
           return "/create-import";  
         }
         return route.slice(0, -1);

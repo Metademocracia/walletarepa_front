@@ -144,7 +144,7 @@ export default {
 
   mounted() {
     // localStorage.removeItem("common-beneficiary");
-    const data = sessionStorage.getItem("send-json");
+    const data = localStorage.getItem("send-json");
     if(data){
       const json = JSON.parse(data);
       this.amount = json.amount
@@ -231,7 +231,7 @@ export default {
 
     next() {
       if(this.$refs.formEnvio.validate()) {
-        sessionStorage.setItem("send-to", this.accountNear)
+        localStorage.setItem("send-to", this.accountNear)
         this.addRecentBaneficiary(this.accountNear);
         this.$router.push({ path: "/send-confirm" });
       }

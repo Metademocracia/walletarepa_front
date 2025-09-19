@@ -70,8 +70,8 @@ export default {
     const date = moment.tz(new Date(), "America/Caracas").format("DD/MM/YYYY HH:mm");
     this.formattedDate = date;
 
-    // Retrieve the item from sessionStorage
-    const jsonString = sessionStorage.getItem("send-json");
+    // Retrieve the item from localStorage
+    const jsonString = localStorage.getItem("send-json");
     if (jsonString) {
       // Parse the JSON string back into an object
       const jsonObj = JSON.parse(jsonString);
@@ -82,13 +82,13 @@ export default {
       // Set data properties
       this.token = dataTokenSymbol;
       this.attachedDeposit = amount;
-      this.to = sessionStorage.getItem('send-to');
+      this.to = localStorage.getItem('send-to');
     } else {
       this.$router.push('/')
     }
 
-    // Retrieve the item from sessionStorage
-    const jsonString1 = sessionStorage.getItem("send-result");
+    // Retrieve the item from localStorage
+    const jsonString1 = localStorage.getItem("send-result");
     if (jsonString1) {
       // Parse the JSON string back into an object
       const jsonObj1 = JSON.parse(jsonString1);

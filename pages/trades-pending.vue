@@ -672,14 +672,14 @@ export default {
               Object.entries(data).forEach(([key, value]) => {
                 this.dataCancel.push(value);
                 if(this.dataCancel[0].status === 4){
-                  localStorage.clear(); // Clear all data from localStorage
+                   // Clear all data from localStorage
                   localStorage.removeItem('emailCounter')
                   localStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                   this.$router.push('/tx-canceled');
                 }
                 if(this.dataCancel[0].status === 2 || this.dataCancel[0].status === 3){
-                  localStorage.clear(); // Clear all data from localStorage
+                   // Clear all data from localStorage
                   localStorage.removeItem('emailCounter')
                   localStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
@@ -715,14 +715,14 @@ export default {
               Object.entries(data.orderhistorysells).forEach(([key, value]) => {
                 this.dataCancel.push(value);
                 if(this.dataCancel[0].status === 4){
-                  localStorage.clear(); // Clear all data from localStorage
+                   // Clear all data from localStorage
                   localStorage.removeItem('emailCounter')
                   localStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                   this.$router.push('/tx-canceled');
                 }
                 if(this.dataCancel[0].status === 2){
-                  localStorage.clear(); // Clear all data from localStorage
+                   // Clear all data from localStorage
                   localStorage.removeItem('emailCounter')
                   localStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
@@ -758,14 +758,14 @@ export default {
               Object.entries(data.orderhistorybuys).forEach(([key, value]) => {
                 this.dataCancel.push(value);
                 if(this.dataCancel[0].status === 4){
-                  localStorage.clear(); // Clear all data from localStorage
+                   // Clear all data from localStorage
                   localStorage.removeItem('emailCounter')
                   localStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
                   this.$router.push('/tx-canceled');
                 }
                 if(this.dataCancel[0].status === 2){
-                  localStorage.clear(); // Clear all data from localStorage
+                   // Clear all data from localStorage
                   localStorage.removeItem('emailCounter')
                   localStorage.removeItem('orderId')
                   localStorage.removeItem('operation')
@@ -900,13 +900,13 @@ export default {
     //         this.seconds = 0;
     //     }  
     //     if(this.dataCancel.length > 0 && this.dataCancel[0].status === 3){
-    //         localStorage.clear(); // Clear all data from localStorage
+    //          // Clear all data from localStorage
     //         localStorage.removeItem('emailCounter')
     //         localStorage.removeItem('orddderId')
     //         this.$router.push('/tx-executed');
     //     }
     //     if(this.dataCancel.length > 0 && this.dataCancel[0].status === 4){
-    //         localStorage.clear(); // Clear all data from localStorage
+    //          // Clear all data from localStorage
     //         localStorage.removeItem('emailCounter')
     //         localStorage.removeItem('orddderId')
     //         this.$router.push('/tx-canceled');

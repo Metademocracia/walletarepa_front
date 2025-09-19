@@ -193,7 +193,7 @@ export default {
 
       this.$router.push("/")
       // Clear session storage
-      sessionStorage.clear()
+      localStorage.clear()
     },
     async loadWallets() {
       const walletsAddress = localStorageUser.getAccountsWithKeys()
@@ -210,14 +210,14 @@ export default {
       const jsonCreateImportProccess = JSON.stringify({
         path: "/",
       })
-      sessionStorage.setItem("create-import-proccess", jsonCreateImportProccess);
+      localStorage.setItem("create-import-proccess", jsonCreateImportProccess);
       this.$router.push({ path: '/import-wallet'});
     },
     createAccount() { 
       const jsonCreateImportProccess = JSON.stringify({
         path: "/",
       })
-      sessionStorage.setItem("create-import-proccess", jsonCreateImportProccess);
+      localStorage.setItem("create-import-proccess", jsonCreateImportProccess);
       this.$router.push({ path: '/create-wallet'});
     },
 

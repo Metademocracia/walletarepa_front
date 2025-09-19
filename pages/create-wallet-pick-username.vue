@@ -200,8 +200,8 @@ export default {
           await axios.post(process.env.URL_BACKEND +'/wallet/create-nickname',
           {
             nickname: newAccount,
-            email: sessionStorage.getItem("email"),
-            cedula: sessionStorage.getItem("cedula")
+            email: localStorage.getItem("email"),
+            cedula: localStorage.getItem("cedula")
           }, {
             headers: {
               'accept': 'application/json',

@@ -66,7 +66,7 @@ export default {
     }
   },
   created() {
-    sessionStorage.setItem("indexSelect", "create-import");
+    localStorage.setItem("indexSelect", "create-import");
   },
   mounted() {    
     // localStorage.removeItem("auth");
@@ -88,13 +88,13 @@ export default {
   methods: {
     onContinue(rute) {
         // const typeSession = rute === "/create-wallet" ? "create" : "import";
-        if(!sessionStorage.getItem("login-create-import-proccess")) {
+        if(!localStorage.getItem("login-create-import-proccess")) {
           const jsonCreateImportProccess = JSON.stringify({
             path: "/",
           })
-          sessionStorage.setItem("create-import-proccess", jsonCreateImportProccess);
+          localStorage.setItem("create-import-proccess", jsonCreateImportProccess);
         } else {
-          sessionStorage.setItem("create-import-proccess", sessionStorage.getItem("login-create-import-proccess"));
+          localStorage.setItem("create-import-proccess", localStorage.getItem("login-create-import-proccess"));
         }
 
         this.$router.push({ path: rute });

@@ -176,7 +176,7 @@ export default {
       // console.log('Loading data...');
 
       // Check if data exists in session storage
-      // const storedTokenBalances = JSON.parse(sessionStorage.getItem('allTokenBalances'));
+      // const storedTokenBalances = JSON.parse(localStorage.getItem('allTokenBalances'));
 
       const inventory = await tokens.updateBalanceLocalStorage();
       /* // console.log('Stored data:', storedTokenBalances);
@@ -235,7 +235,7 @@ export default {
       // console.log('Total balance:', totalBalance);
 
       // Store the total balance in session storage
-      // sessionStorage.setItem('balance', totalBalance.toFixed(2));
+      // localStorage.setItem('balance', totalBalance.toFixed(2));
       // console.log('Stored total balance in session storage:', totalBalance);
 
       this.loading = false;

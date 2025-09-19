@@ -95,7 +95,7 @@ async function getTokenMetadata(contract) {
 
 // Function to clear session storage when the user reloads the browser
 window.addEventListener("beforeunload", () => {
-  sessionStorage.clear();
+  
 });
 
 async function getBalanceInitNear(_address) {
@@ -191,7 +191,7 @@ async function getBalanceInitNear(_address) {
 //        * @returns {Promise<Object>} The NEAR balance data object.
 //        */
 //       const nearBalancePromise = async () => {
-//         // let nearBalanceData = sessionStorage.getItem('NEAR');
+//         // let nearBalanceData = localStorage.getItem('NEAR');
 //         /* if (nearBalanceData) {
 //           return JSON.parse(nearBalanceData);
 //         } else { */
@@ -207,7 +207,7 @@ async function getBalanceInitNear(_address) {
 //             balance_usd: balanceNear.usd.toFixed(2),
 //             price: balanceNear.price
 //           };
-//           // sessionStorage.setItem('NEAR', JSON.stringify(nearBalanceData));
+//           // localStorage.setItem('NEAR', JSON.stringify(nearBalanceData));
 //           allTokenBalances.push(nearBalanceData);
 //           return nearBalanceData;
 //         // }
@@ -218,7 +218,7 @@ async function getBalanceInitNear(_address) {
 //        * @type {Promise<Array<Object>>}
 //        */
 //       const tokenBalancesPromises = listContract.map(async (contract) => {
-//         /* let tokenBalanceData = sessionStorage.getItem(contract);
+//         /* let tokenBalanceData = localStorage.getItem(contract);
 //         if (tokenBalanceData) {
 //           return JSON.parse(tokenBalanceData);
 //         } else { */
@@ -258,7 +258,7 @@ async function getBalanceInitNear(_address) {
 //                 balance_usd: isNaN(balanceUsd) ? 0.00 : balanceUsd,
 //                 price
 //               };
-//               // sessionStorage.setItem(contract, JSON.stringify(tokenBalanceData));
+//               // localStorage.setItem(contract, JSON.stringify(tokenBalanceData));
 //               allTokenBalances.push(tokenBalanceData);
 //               return tokenBalanceData;
 //             }
@@ -273,7 +273,7 @@ async function getBalanceInitNear(_address) {
 //       list.fts.push(nearBalance);
 //       list.fts.push(...tokenBalances.filter(Boolean));
 
-//       sessionStorage.setItem('allTokenBalances', JSON.stringify(allTokenBalances));
+//       localStorage.setItem('allTokenBalances', JSON.stringify(allTokenBalances));
 
       
 
@@ -393,7 +393,7 @@ async function getListTokensBalance() {
       list.fts.push(nearBalance);
       list.fts.push(...tokenBalances);
 
-      sessionStorage.setItem('allTokenBalances', JSON.stringify(allTokenBalances));
+      localStorage.setItem('allTokenBalances', JSON.stringify(allTokenBalances));
 
       return list;
     } catch (error) {
@@ -477,7 +477,7 @@ async function updateBalanceLocalStorage() {
   }
 
   // Store the total balance in session storage
-  sessionStorage.setItem('balance', totalBalance.toFixed(2));
+  localStorage.setItem('balance', totalBalance.toFixed(2));
   
   return inventory;
 }

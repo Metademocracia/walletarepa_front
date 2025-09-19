@@ -199,7 +199,7 @@ export default {
     };
   },
   mounted() {
-    const data = sessionStorage.getItem("send-json");
+    const data = localStorage.getItem("send-json");
     if(data){
       const json = JSON.parse(data);
       this.amount = this.$route?.query?.amount ||  json.amount
@@ -210,8 +210,8 @@ export default {
         this.tokenSymbol = "NEAR";
       }
     }
-    // Retrieve the item from sessionStorage
-    const jsonString = sessionStorage.getItem("send-json");
+    // Retrieve the item from localStorage
+    const jsonString = localStorage.getItem("send-json");
     // Parse the JSON string back into an object
     const jsonObj = JSON.parse(jsonString);
     // Access the 'name' and 'symbol' properties within 'dataToken'
@@ -224,7 +224,7 @@ export default {
     // console.log(amount); // This will log the 'amount' value to the console
     this.token = dataTokenSymbol;
     this.attachedDeposit = amount;
-    this.to = this.$route?.query?.wallet || sessionStorage.getItem('send-to');
+    this.to = this.$route?.query?.wallet || localStorage.getItem('send-to');
     },
   methods: {
     cancel() {
@@ -257,7 +257,7 @@ export default {
         }
 
 
-        sessionStorage.removeItem('allTokenBalances')
+        localStorage.removeItem('allTokenBalances')
         
         
 
@@ -282,7 +282,7 @@ export default {
           alertType: result?.status?.SuccessValue === "" ? "success" : "error",
         })
 
-        sessionStorage.setItem("send-result", sendResult)
+        localStorage.setItem("send-result", sendResult)
       } catch (error) {
         throw new Error(error)
       }
@@ -328,7 +328,7 @@ export default {
           alertType: result?.status?.SuccessValue === "" ? "success" : "error",
         })
 
-        sessionStorage.setItem("send-result", sendResult)
+        localStorage.setItem("send-result", sendResult)
 
       } catch (error) {
         throw new Error(error)
