@@ -33,6 +33,8 @@ services:
     environment:
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_POLL_INTERVAL=30
+    networks:
+      - app-network
 
 networks:
   app-network:
